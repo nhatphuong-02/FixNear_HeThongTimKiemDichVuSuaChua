@@ -658,13 +658,11 @@ GO
 CREATE TABLE dbo.Conversation (
     ConversationId  INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NULL,
-    ShopId          INT             NOT NULL,
     Status          INT             NOT NULL CONSTRAINT DF_Conversation_Status DEFAULT (1), -- 1: OPEN
     CreatedAt       DATETIME2       NOT NULL CONSTRAINT DF_Conversation_CreatedAt DEFAULT SYSDATETIME(),
     UpdatedAt       DATETIME2       NULL,
     CONSTRAINT PK_Conversation PRIMARY KEY (ConversationId),
-    CONSTRAINT FK_Conversation_Request FOREIGN KEY (RepairRequestId) REFERENCES dbo.RepairRequest(RepairRequestId),
-    CONSTRAINT FK_Conversation_Shop FOREIGN KEY (ShopId) REFERENCES dbo.Shop(ShopId)
+    CONSTRAINT FK_Conversation_Request FOREIGN KEY (RepairRequestId) REFERENCES dbo.RepairRequest(RepairRequestId)
 );
 GO
 
