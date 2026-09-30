@@ -1,6 +1,6 @@
 ﻿/* ==================================================================
-   FixNearDB - FULL SEED DATA SCRIPT
-   - Bao phủ 100% các bảng (46 bảng)
+   FixNearDB - FULL SEED DATA SCRIPT (CẬP NHẬT CHO DB MỚI)
+   - Bao phủ 100% các bảng
    - Mỗi bảng 2-3 records
    - Data liên kết chuỗi logic: Từ tạo User -> Đặt lịch -> Báo giá -> Thanh toán -> Đánh giá -> Bảo hành -> Chat
    ================================================================== */
@@ -139,9 +139,9 @@ SET @PartManHinh = (SELECT TOP 1 RepairPartId FROM dbo.RepairPart WHERE PartCode
 SET @PartOngNuoc = (SELECT TOP 1 RepairPartId FROM dbo.RepairPart WHERE PartCode=N'PART-PVC');
 
 PRINT N'7. Repair Requests (Nhật đặt lịch 2 đơn)...';
--- Đơn 1: Đem máy ra tiệm (Method=2) - Shop 1 (ĐT)
+-- Đơn 1: Đem máy ra tiệm (Method=2) - Shop 1 (ĐT). AddressId để NULL theo db mới.
 INSERT INTO dbo.RepairRequest (CustomerId, ShopId, AddressId, RepairMethod, Description, Status, Priority)
-VALUES (@Cus_Nhat, @Shop1, @AddrCus1, 2, N'Máy rơi vỡ nát màn hình, mai mình mang ra tiệm', 4, 2); -- 4: In_Progress
+VALUES (@Cus_Nhat, @Shop1, NULL, 2, N'Máy rơi vỡ nát màn hình, mai mình mang ra tiệm', 4, 2); -- 4: In_Progress
 SET @Req1 = SCOPE_IDENTITY();
 INSERT INTO dbo.RepairRequestImage (RepairRequestId, ImageUrl) VALUES (@Req1, N'iphone_vo.jpg'), (@Req1, N'iphone_vo2.jpg');
 INSERT INTO dbo.RepairRequestService (RepairRequestId, ServiceId) VALUES (@Req1, @SvcManHinh);
@@ -161,8 +161,8 @@ INSERT INTO dbo.RepairAssignment (RepairRequestId, TechnicianId, AssignedByUserI
     (@Req1, @Tech_Hoang, @U_Tien, 2), -- 2: ACCEPTED
     (@Req2, @Tech_Phuong, @U_Tien, 2);
 INSERT INTO dbo.RepairSchedule (RepairRequestId, TechnicianId, StartTime, EndTime, Status) VALUES 
-    (@Req1, @Tech_Hoang, DATEADD(DAY, 1, SYSDATETIME()), DATEADD(DAY, 1, DATEADD(HOUR, 2, SYSDATETIME())), 1),
-    (@Req2, @Tech_Phuong, DATEADD(DAY, -1, SYSDATETIME()), DATEADD(DAY, -1, DATEADD(HOUR, 1, SYSDATETIME())), 2); -- 2: Completed
+    (@Req1, @Tech_Hoang, DATEADD(DAY, 1, SYSUTCDATETIME()), DATEADD(DAY, 1, DATEADD(HOUR, 2, SYSUTCDATETIME())), 1),
+    (@Req2, @Tech_Phuong, DATEADD(DAY, -1, SYSUTCDATETIME()), DATEADD(DAY, -1, DATEADD(HOUR, 1, SYSUTCDATETIME())), 2); -- 2: Completed
 
 PRINT N'9. Quotes...';
 INSERT INTO dbo.Quote (RepairRequestId, TechnicianId, QuoteNumber, TotalAmount, Status, CustomerResponse) VALUES 
@@ -171,17 +171,23 @@ INSERT INTO dbo.Quote (RepairRequestId, TechnicianId, QuoteNumber, TotalAmount, 
 SET @Quote1 = (SELECT TOP 1 QuoteId FROM dbo.Quote WHERE QuoteNumber=N'QT-001');
 SET @Quote2 = (SELECT TOP 1 QuoteId FROM dbo.Quote WHERE QuoteNumber=N'QT-002');
 
+-- LƯU Ý: Bỏ insert vào cột `Amount` vì cột này ở db mới được tự tính (AS CAST(...) PERSISTED)
 -- ItemType: 1=SVC, 2=ITEM, 3=PART
-INSERT INTO dbo.QuoteDetail (QuoteId, ItemType, ServiceRefId, RepairItemRefId, RepairPartRefId, Quantity, UnitPrice, Amount) VALUES 
-    (@Quote1, 1, @SvcManHinh, NULL, NULL, 1, 100000, 100000),
-    (@Quote1, 3, NULL, NULL, @PartManHinh, 1, 6000000, 6000000),
-    (@Quote2, 2, NULL, @ItemKham, NULL, 1, 50000, 50000),
-    (@Quote2, 1, @SvcOngNuoc, NULL, NULL, 1, 100000, 100000);
+INSERT INTO dbo.QuoteDetail (QuoteId, ItemType, ServiceRefId, RepairItemRefId, RepairPartRefId, Quantity, UnitPrice) VALUES 
+    (@Quote1, 1, @SvcManHinh, NULL, NULL, 1, 100000),
+    (@Quote1, 3, NULL, NULL, @PartManHinh, 1, 6000000),
+    (@Quote2, 2, NULL, @ItemKham, NULL, 1, 50000),
+    (@Quote2, 1, @SvcOngNuoc, NULL, NULL, 1, 100000);
+
 INSERT INTO dbo.QuoteHistory (QuoteId, NewStatus, ChangeNote) VALUES (@Quote1, 3, N'Khách chốt giá màn hình'), (@Quote2, 3, N'Khách ok sửa nước');
 
 PRINT N'10. Báo cáo & Hóa đơn...';
-INSERT INTO dbo.RepairPartUsage (RepairRequestId, RepairPartId, Quantity, UnitPriceAtUsage, Amount) VALUES (@Req1, @PartManHinh, 1, 6000000, 6000000);
-INSERT INTO dbo.RepairReport (RepairRequestId, TechnicianId, Diagnosis, WorkDescription) VALUES (@Req1, @Tech_Hoang, N'Hỏng màn', N'Đã thay'), (@Req2, @Tech_Phuong, N'Vỡ ống', N'Đã nối');
+-- Bỏ insert cột `Amount` vì là PERSISTED computed column
+INSERT INTO dbo.RepairPartUsage (RepairRequestId, RepairPartId, Quantity, UnitPriceAtUsage) 
+VALUES (@Req1, @PartManHinh, 1, 6000000);
+
+INSERT INTO dbo.RepairReport (RepairRequestId, TechnicianId, Diagnosis, WorkDescription) 
+VALUES (@Req1, @Tech_Hoang, N'Hỏng màn', N'Đã thay'), (@Req2, @Tech_Phuong, N'Vỡ ống', N'Đã nối');
 
 INSERT INTO dbo.Invoice (RepairRequestId, InvoiceNumber, CustomerId, ShopId, TotalAmount, Status) VALUES 
     (@Req1, N'INV-001', @Cus_Nhat, @Shop1, 6100000, 1), -- 1: UNPAID
@@ -189,9 +195,10 @@ INSERT INTO dbo.Invoice (RepairRequestId, InvoiceNumber, CustomerId, ShopId, Tot
 SET @Inv1 = (SELECT TOP 1 InvoiceId FROM dbo.Invoice WHERE InvoiceNumber=N'INV-001');
 SET @Inv2 = (SELECT TOP 1 InvoiceId FROM dbo.Invoice WHERE InvoiceNumber=N'INV-002');
 
-INSERT INTO dbo.InvoiceDetail (InvoiceId, Description, Quantity, UnitPrice, Amount) VALUES 
-    (@Inv1, N'Thay màn hình + Part', 1, 6100000, 6100000),
-    (@Inv2, N'Khám và nối ống', 1, 150000, 150000);
+-- Bỏ insert cột `Amount`
+INSERT INTO dbo.InvoiceDetail (InvoiceId, Description, Quantity, UnitPrice) VALUES 
+    (@Inv1, N'Thay màn hình + Part', 1, 6100000),
+    (@Inv2, N'Khám và nối ống', 1, 150000);
 
 PRINT N'11. Thanh toán...';
 -- Status: 2=SUCCESS | PaymentMethod: 1=CASH, 3=BANK_TRANSFER
@@ -200,16 +207,17 @@ SET @Pay2 = SCOPE_IDENTITY();
 INSERT INTO dbo.PaymentTransaction (PaymentId, TransactionCode, Status, Message) VALUES (@Pay2, N'MBBANK-123', 2, N'CK OK');
 
 PRINT N'12. Đánh giá (Review)...';
-INSERT INTO dbo.Review (RepairRequestId, CustomerId, ShopId, Rating, Comment, Status) VALUES 
-    (@Req2, @Cus_Nhat, @Shop2, 5, N'Phương làm nhanh gọn, nhiệt tình lắm', 1),
-    (@Req1, @Cus_Nhat, @Shop1, 4, N'Shop phục vụ tốt, giá hơi cao', 1);
+-- Thêm TechnicianId vào để tính điểm Average
+INSERT INTO dbo.Review (RepairRequestId, CustomerId, ShopId, TechnicianId, Rating, Comment, Status) VALUES 
+    (@Req2, @Cus_Nhat, @Shop2, @Tech_Phuong, 5, N'Phương làm nhanh gọn, nhiệt tình lắm', 1),
+    (@Req1, @Cus_Nhat, @Shop1, @Tech_Hoang, 4, N'Shop phục vụ tốt, giá hơi cao', 1);
 SET @Rev2 = (SELECT TOP 1 ReviewId FROM dbo.Review WHERE ShopId=@Shop2);
 INSERT INTO dbo.ReviewImage (ReviewId, ImageUrl) VALUES (@Rev2, N'ong_nuoc_xong.jpg');
 INSERT INTO dbo.ReviewReply (ReviewId, RepliedByUserId, ReplyContent) VALUES (@Rev2, @U_Tien, N'Cảm ơn bạn Nhật đã ủng hộ ạ!');
 
 PRINT N'13. Bảo hành...';
 INSERT INTO dbo.Warranty (RepairRequestId, InvoiceId, WarrantyCode, StartDate, EndDate, Status) VALUES 
-    (@Req2, @Inv2, N'WAR-002', CAST(SYSDATETIME() AS DATE), DATEADD(MONTH, 3, CAST(SYSDATETIME() AS DATE)), 1);
+    (@Req2, @Inv2, N'WAR-002', CAST(SYSUTCDATETIME() AS DATE), DATEADD(MONTH, 3, CAST(SYSUTCDATETIME() AS DATE)), 1);
 SET @War2 = SCOPE_IDENTITY();
 INSERT INTO dbo.WarrantyRequest (WarrantyId, CustomerId, IssueDescription, Status) VALUES (@War2, @Cus_Nhat, N'Chỗ nối rỉ một ít nước', 1);
 SET @WarReq1 = SCOPE_IDENTITY();
@@ -221,7 +229,8 @@ SET @Tpl1 = (SELECT TOP 1 NotificationTemplateId FROM dbo.NotificationTemplate W
 INSERT INTO dbo.Notification (TemplateId, Title, Body, RefType, RefId) VALUES (@Tpl1, N'Báo giá sửa nước', N'Mời bạn xem', 1, @Req2); SET @Notif1 = SCOPE_IDENTITY();
 INSERT INTO dbo.UserNotification (NotificationId, UserId) VALUES (@Notif1, @U_Nhat);
 
-INSERT INTO dbo.Conversation (RepairRequestId, ShopId, Status) VALUES (@Req1, @Shop1, 1), (@Req2, @Shop2, 1);
+-- Bỏ `ShopId` vì schema mới đã bỏ cột này khỏi Conversation
+INSERT INTO dbo.Conversation (RepairRequestId, Status) VALUES (@Req1, 1), (@Req2, 1);
 SET @Conv1 = (SELECT TOP 1 ConversationId FROM dbo.Conversation WHERE RepairRequestId=@Req1);
 INSERT INTO dbo.ConversationMember (ConversationId, UserId) VALUES (@Conv1, @U_Nhat), (@Conv1, @U_Tien);
 INSERT INTO dbo.Message (ConversationId, SenderUserId, Content) VALUES (@Conv1, @U_Nhat, N'Shop check màn hình IP15 cho mình nhé');
@@ -230,7 +239,7 @@ INSERT INTO dbo.MessageAttachment (MessageId, FileUrl) VALUES (@Msg1, N'man_hinh
 INSERT INTO dbo.Message (ConversationId, SenderUserId, Content) VALUES (@Conv1, @U_Tien, N'Dạ bên em còn hàng Zin ạ, giá 6 củ nhé bạn.');
 
 COMMIT TRANSACTION SeedFullData;
-PRINT N'==> TẠO DỮ LIỆU SEED (46 BẢNG) THÀNH CÔNG!';
+PRINT N'==> TẠO DỮ LIỆU SEED (MỚI) THÀNH CÔNG!';
 
 END TRY
 BEGIN CATCH
