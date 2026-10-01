@@ -1,5 +1,5 @@
-
 using FixNear.Models;
+using FixNear.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +10,7 @@ builder.Services.AddDbContext<FixNearDbContext>(options =>
     ));
 
 // Add services to the container.
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddEndpointsApiExplorer();
