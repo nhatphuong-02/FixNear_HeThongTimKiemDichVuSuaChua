@@ -1,6 +1,7 @@
 ﻿using FixNear.DTOs.Auth;
 using FixNear.Enums;
 using FixNear.Models;
+using FixNear.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,9 +10,11 @@ namespace FixNear.Services
     public class AuthService : IAuthService
     {
         private readonly FixNearDbContext _context;
-        public AuthService(FixNearDbContext context)
+        private readonly IJwtService _jwtService;
+        public AuthService(FixNearDbContext context, IJwtService jwtService)
         {
             _context = context;
+            _jwtService = jwtService;
         }
 
         public async Task RegisterAsync(RegisterRequestDto request)
@@ -32,7 +35,8 @@ namespace FixNear.Services
                 DateOfBirth = request.DateOfBirth,
                 Gender = request.Gender.HasValue? request.Gender.Value == Gender.Male : null,
                 RoleType = (int) RoleType.Customer,
-                Status = (int) UserStatus.Active
+                Status = (int)
+                UserStatus.Active
             };
 
             var passwordHasher = new PasswordHasher<User>();
@@ -72,11 +76,29 @@ namespace FixNear.Services
             if (result == PasswordVerificationResult.Failed)
                 throw new InvalidOperationException("Mật khẩu không chính xác");
 
+            var token = _jwtService.GenerateToken(existingUser.UserId, existingUser.FullName, existingUser.RoleType);
+
             return new LoginResponseDto
             {
                 UserId = existingUser.UserId,
                 FullName = existingUser.FullName,
                 RoleType = existingUser.RoleType,
+                Token = token,
+            };
+        }
+
+        public async Task<CurrentUserResponseDto> GetCurrentUserAsync(int userId)
+        {
+            var user = await _context.User.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                throw new InvalidOperationException("Người dùng không tồn tại");
+
+            return new CurrentUserResponseDto
+            {
+                UserId = user.UserId,
+                FullName = user.FullName,
+                RoleType = user.RoleType
             };
         }
     }
