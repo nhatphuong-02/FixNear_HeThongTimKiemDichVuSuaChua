@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using FixNear.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace FixNear.DTOs.Auth;
 
@@ -9,7 +10,10 @@ public class RegisterRequestDto
     [EmailAddress]
     public string? Email { get; set; }
     public string? Phone { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
+    public Gender? Gender { get; set; }
 
     [MinLength(8)]
     public string Password { get; set; } = null!;
+
 }

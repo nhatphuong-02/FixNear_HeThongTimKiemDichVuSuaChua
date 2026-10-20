@@ -29,8 +29,6 @@ public partial class Address
 
     public virtual CustomerProfile? Customer { get; set; }
 
-    public virtual ICollection<CustomerProfile> CustomerProfile { get; set; } = new List<CustomerProfile>();
-
     public virtual ICollection<Address> InverseSupersededByAddress { get; set; } = new List<Address>();
 
     public virtual Location? Location { get; set; }
