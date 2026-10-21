@@ -1,6 +1,6 @@
 package com.example.fixnear.data.model
 
-class LoginRespone (
+class LoginResponse (
     val userId : Int,
     val fullName : String,
     val roleType : Int,
