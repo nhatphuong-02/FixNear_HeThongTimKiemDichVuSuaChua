@@ -1,4 +1,6 @@
 package com.example.fixnear.data.model
 
-class ApiResponse {
-}
+class ApiResponse<T>(
+    val message : String,
+    val data: T? = null
+)

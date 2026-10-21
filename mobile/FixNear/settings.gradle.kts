@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "FixNear"
+rootProject.name = "fixnear"
 include(":app")
