@@ -1,17 +1,20 @@
-package com.example.fixnear
+package com.example.fixnear.ui.auth
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
+import com.example.fixnear.ui.home.HomeActivity
 import com.example.fixnear.data.model.LoginRequest
 import com.example.fixnear.data.remote.RetrofitClient
 import com.example.fixnear.databinding.ActivityLoginBinding
+import com.example.fixnear.helper.setupPasswordToggle
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 class LoginActivity : AppCompatActivity() {
-
     //Kiểm tra dữ liệu đăng nhập
     private fun login(){
         val account = binding.edtEmail.text.toString().trim()
@@ -84,7 +87,7 @@ class LoginActivity : AppCompatActivity() {
                     val errorJson = response.errorBody()?.string()
 
                     val message = try {
-                        org.json.JSONObject(errorJson ?: "")
+                        JSONObject(errorJson ?: "")
                             .optString("message", "Đăng nhập thất bại")
                     } catch (e: Exception) {
                         "Đăng nhập thất bại"
@@ -108,9 +111,12 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        setupPasswordToggle(binding.edtPassword,binding.btnTogglePassword)
 
         binding.btnLogin.setOnClickListener {
             login()
