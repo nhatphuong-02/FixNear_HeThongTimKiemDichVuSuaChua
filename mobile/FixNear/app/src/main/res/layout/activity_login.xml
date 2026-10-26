@@ -51,4 +51,13 @@
         android:layout_marginTop="20dp"
         android:text="Đăng nhập" />
 
+
+    <Button
+        android:id="@+id/btnGoRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Chưa có tài khoản? Đăng ký ngay"
+        android:textAllCaps="false" />
+
 </LinearLayout>
