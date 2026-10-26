@@ -1,4 +1,4 @@
-package com.example.fixnear
+package com.example.fixnear.ui.home
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

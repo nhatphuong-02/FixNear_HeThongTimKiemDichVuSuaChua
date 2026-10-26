@@ -1,4 +1,4 @@
-package com.example.fixnear
+package com.example.fixnear.ui.auth
 
 import android.app.DatePickerDialog
 import java.util.Calendar
@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.fixnear.data.model.RegisterRequest
 import com.example.fixnear.data.remote.RetrofitClient
 import com.example.fixnear.databinding.ActivityRegisterBinding
+import com.example.fixnear.helper.setupPasswordToggle
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.util.Locale
@@ -159,6 +160,8 @@ class RegisterActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupDatePicker()
+        setupPasswordToggle(binding.edtPassword,binding.ivTogglePassword)
+        setupPasswordToggle(binding.edtConfirmPassword,binding.ivToggleConfirmPassword)
         binding.btnRegister.setOnClickListener {
             register()
         }
