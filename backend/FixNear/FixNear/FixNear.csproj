@@ -19,4 +19,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTOs\Manager\" />
+    <Folder Include="Services\Manager\" />
+  </ItemGroup>
+
 </Project>
