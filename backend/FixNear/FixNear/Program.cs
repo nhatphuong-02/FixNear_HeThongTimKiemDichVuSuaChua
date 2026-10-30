@@ -17,6 +17,15 @@ builder.Services.AddDbContext<FixNearDbContext>(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<
+    ITechnicianAssignmentService,
+    TechnicianAssignmentService>();
+builder.Services.AddScoped<
+    ITechnicianSurveyService,
+    TechnicianSurveyService>();
+// X04 - Tao bao gia
+builder.Services.AddScoped<IQuoteService, QuoteService>();
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddEndpointsApiExplorer();
