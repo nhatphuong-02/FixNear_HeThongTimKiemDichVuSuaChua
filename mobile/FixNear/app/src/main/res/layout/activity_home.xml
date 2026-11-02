@@ -1,18 +1,288 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp">
+    android:background="#F7F9FC"
+    tools:context=".ui.home.HomeActivity">
 
-  <TextView
-      android:id="@+id/tvWelcome"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="Xin chào!"
-      android:textSize="24sp"
-      android:textStyle="bold" />
+  <!-- Nội dung chính -->
+  <ScrollView
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      android:fillViewport="true"
+      android:clipToPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp">
+
+      <!-- Header -->
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:gravity="center_vertical"
+          android:orientation="horizontal">
+
+        <!-- Logo FixNear -->
+        <TextView
+            android:id="@+id/imgLogo"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_register_card"
+            android:gravity="center"
+            android:text="FIX"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="12dp">
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="FixNear"
+              android:textColor="#172B4D"
+              android:textSize="20sp"
+              android:textStyle="bold" />
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Dịch vụ sửa chữa gần bạn"
+              android:textColor="#718096"
+              android:textSize="12sp" />
+
+        </LinearLayout>
+
+        <!-- Avatar -->
+        <ImageView
+            android:id="@+id/tvProfileAvatar"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_register_card"
+            android:contentDescription="Hồ sơ cá nhân"
+            android:padding="9dp"
+            android:src="@android:drawable/ic_menu_myplaces"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true"
+            tools:ignore="UseAppTint" />
+
+      </LinearLayout>
+
+      <!-- Greeting -->
+      <TextView
+          android:id="@+id/tvGreeting"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="28dp"
+          android:text="Xin chào!"
+          android:textColor="#172B4D"
+          android:textSize="23sp"
+          android:textStyle="bold" />
+
+      <!-- Address -->
+      <TextView
+          android:id="@+id/tvAddress"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:text="Khu vực của bạn"
+          android:textColor="#718096"
+          android:textSize="14sp" />
+
+      <!-- Search -->
+      <EditText
+          android:id="@+id/edtSearchService"
+          android:layout_width="match_parent"
+          android:layout_height="52dp"
+          android:layout_marginTop="22dp"
+          android:background="@drawable/bg_register_card"
+          android:drawableStart="@android:drawable/ic_menu_search"
+          android:drawablePadding="12dp"
+          android:hint="Bạn cần tìm dịch vụ gì?"
+          android:imeOptions="actionSearch"
+          android:inputType="text"
+          android:paddingStart="16dp"
+          android:paddingEnd="16dp"
+          android:singleLine="true"
+          android:textColor="#172B4D"
+          android:textColorHint="#9AA5B5"
+          android:textSize="14sp" />
+
+      <!-- Banner -->
+      <LinearLayout
+          android:id="@+id/layoutHomeBanner"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="24dp"
+          android:background="@drawable/bg_home_banner"
+          android:gravity="center_vertical"
+          android:orientation="vertical"
+          android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sửa chữa dễ dàng hơn"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Tìm kiếm và kết nối với dịch vụ sửa chữa phù hợp."
+            android:textColor="#EAF3FF"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnExploreServices"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#FFFFFF"
+            android:text="Khám phá dịch vụ"
+            android:textAllCaps="false"
+            android:textColor="#1976D2"
+            android:textSize="13sp" />
+
+      </LinearLayout>
+
+      <!-- Service categories -->
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="28dp"
+          android:text="Danh mục dịch vụ"
+          android:textColor="#172B4D"
+          android:textSize="18sp"
+          android:textStyle="bold" />
+
+      <LinearLayout
+          android:id="@+id/layoutServiceCategories"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="12dp"
+          android:background="@drawable/bg_register_card"
+          android:gravity="center"
+          android:minHeight="110dp"
+          android:orientation="vertical"
+          android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Các dịch vụ sẽ được cập nhật"
+            android:textColor="#718096"
+            android:textSize="14sp" />
+
+      </LinearLayout>
+
+      <!-- Support -->
+      <TextView
+          android:id="@+id/tvSupport"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="24dp"
+          android:gravity="center"
+          android:text="FixNear - Kết nối dịch vụ sửa chữa"
+          android:textColor="#9AA5B5"
+          android:textSize="12sp" />
+
+    </LinearLayout>
+
+  </ScrollView>
+
+  <!-- Bottom navigation -->
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="64dp"
+      android:background="#FFFFFF"
+      android:elevation="8dp"
+      android:gravity="center"
+      android:orientation="horizontal">
+
+    <!-- Home -->
+    <LinearLayout
+        android:id="@+id/navHome"
+        style="@style/HomeNavItem"
+        android:orientation="vertical">
+
+      <TextView
+          style="@style/HomeNavIcon"
+          android:text="⌂"
+          android:textColor="#1976D2" />
+
+      <TextView
+          style="@style/HomeNavLabel"
+          android:text="Trang chủ"
+          android:textColor="#1976D2" />
+
+    </LinearLayout>
+
+    <!-- Search -->
+    <LinearLayout
+        android:id="@+id/navSearch"
+        style="@style/HomeNavItem"
+        android:orientation="vertical">
+
+      <TextView
+          style="@style/HomeNavIcon"
+          android:text="⌕" />
+
+      <TextView
+          style="@style/HomeNavLabel"
+          android:text="Tìm kiếm" />
+
+    </LinearLayout>
+
+    <!-- Messages -->
+    <LinearLayout
+        android:id="@+id/navMessages"
+        style="@style/HomeNavItem"
+        android:orientation="vertical">
+
+      <TextView
+          style="@style/HomeNavIcon"
+          android:text="✉" />
+
+      <TextView
+          style="@style/HomeNavLabel"
+          android:text="Tin nhắn" />
+
+    </LinearLayout>
+
+    <!-- Account -->
+    <LinearLayout
+        android:id="@+id/navAccount"
+        style="@style/HomeNavItem"
+        android:orientation="vertical">
+
+      <TextView
+          style="@style/HomeNavIcon"
+          android:text="●" />
+
+      <TextView
+          style="@style/HomeNavLabel"
+          android:text="Tài khoản" />
+
+    </LinearLayout>
+
+  </LinearLayout>
 
 </LinearLayout>

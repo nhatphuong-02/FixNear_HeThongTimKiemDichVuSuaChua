@@ -121,15 +121,45 @@ class RegisterActivity : AppCompatActivity() {
 
                     finish()
                 }
-                else{
-                    val errorMessage = respone.errorBody()?.string()
+                else {
+                    val errorBody = respone.errorBody()?.string()
 
-                    val message = try{
-                        JSONObject(errorMessage?:"{}")
-                            .optString("message")
-                            .takeIf { it.isNotBlank() }
+                    Log.e(
+                        "REGISTER_ERROR",
+                        "HTTP ${respone.code()} - Body: $errorBody"
+                    )
+
+                    val message = try {
+                        val json = JSONObject(errorBody ?: "{}")
+                        val errors = json.optJSONObject("errors")
+
+                        if (errors != null) {
+                            val result = StringBuilder()
+                            val keys = errors.keys()
+
+                            while (keys.hasNext()) {
+                                val key = keys.next()
+                                val messages = errors.optJSONArray(key)
+
+                                if (messages != null) {
+                                    for (i in 0 until messages.length()) {
+                                        result.append("$key: ${messages.optString(i)}\n")
+                                    }
+                                }
+                            }
+
+                            result.toString().ifBlank {
+                                json.optString("title", "Dữ liệu không hợp lệ")
+                            }
+                        } else {
+                            json.optString(
+                                "message",
+                                json.optString("title", "Đăng ký thất bại")
+                            )
+                        }
+                    } catch (e: Exception) {
+                        "Đăng ký thất bại (${respone.code()})"
                     }
-                    catch (e: Exception){null} ?: "Đăng ký thất bại (${respone.code()})"
 
                     Toast.makeText(
                         this@RegisterActivity,
