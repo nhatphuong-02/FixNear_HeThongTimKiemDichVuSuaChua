@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7F9FC"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_media_previous"
+                android:contentDescription="Quay lại" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Hồ sơ cá nhân"
+                android:textColor="#172B4D"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+
+        </LinearLayout>
+
+        <!-- Avatar -->
+        <ImageView
+            android:id="@+id/tvProfileAvatar"
+            android:layout_width="112dp"
+            android:layout_height="112dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="28dp"
+            android:background="@drawable/bg_register_card"
+            android:contentDescription="Ảnh đại diện"
+            android:padding="18dp"
+            android:scaleType="centerCrop"
+            android:src="@android:drawable/ic_menu_myplaces" />
+
+        <!-- Full name -->
+        <TextView
+            android:id="@+id/tvProfileName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:gravity="center"
+            android:text="Đang tải..."
+            android:textColor="#172B4D"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <!-- Profile information -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/bg_register_card"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Email"
+                android:textColor="#718096"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tvProfileEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Đang tải..."
+                android:textColor="#172B4D"
+                android:textSize="16sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="18dp"
+                android:background="#E8EDF3" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Số điện thoại"
+                android:textColor="#718096"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tvProfilePhone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Đang tải..."
+                android:textColor="#172B4D"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <!-- Edit profile placeholder -->
+        <Button
+            android:id="@+id/btnEditProfile"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#1976D2"
+            android:text="Chỉnh sửa hồ sơ"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+
+        <!-- Logout -->
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="#FFFFFF"
+            android:text="Đăng xuất"
+            android:textAllCaps="false"
+            android:textColor="#D32F2F"
+            android:textSize="15sp" />
+
+        <!-- Bottom navigation -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="28dp"
+            android:background="#FFFFFF"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/navHome"
+                style="@style/HomeNavItem"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/HomeNavIcon"
+                    android:text="⌂"
+                    android:textColor="#1976D2" />
+
+                <TextView
+                    style="@style/HomeNavLabel"
+                    android:text="Trang chủ"
+                    android:textColor="#1976D2" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
     implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
