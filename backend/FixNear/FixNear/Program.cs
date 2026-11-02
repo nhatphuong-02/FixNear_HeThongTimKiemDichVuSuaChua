@@ -17,6 +17,7 @@ builder.Services.AddDbContext<FixNearDbContext>(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IManagerService, ManagerService>();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddEndpointsApiExplorer();

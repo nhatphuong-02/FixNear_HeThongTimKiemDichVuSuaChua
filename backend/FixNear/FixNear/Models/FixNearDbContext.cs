@@ -1631,8 +1631,8 @@ public partial class FixNearDbContext : DbContext
                 .HasMaxLength(500);
 
             entity.HasOne(d => d.Shop)
-                .WithOne(p => p.ShopImage)
-                .HasForeignKey<ShopImage>(d => d.ShopId)
+                .WithMany(p => p.ShopImage)
+                .HasForeignKey(d => d.ShopId)
                 .HasConstraintName("FK_ShopImage_Shop");
         });
 

@@ -43,7 +43,8 @@ public partial class Shop
 
     public virtual ICollection<Review> Review { get; set; } = new List<Review>();
 
-    public virtual ShopImage? ShopImage { get; set; }
+    public virtual ICollection<ShopImage> ShopImage { get; set; }
+    = new List<ShopImage>();
 
     public virtual ICollection<ShopService> ShopService { get; set; } = new List<ShopService>();
 
