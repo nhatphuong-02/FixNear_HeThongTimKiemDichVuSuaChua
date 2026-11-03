@@ -249,4 +249,161 @@ public class ManagerController : ControllerBase
     }
 
     #endregion
+
+    #region Quan ly dich vu cua hang
+
+    [HttpGet("services")]
+    public async Task<IActionResult> GetSystemServices()
+    {
+        var result = await _managerService.GetSystemServicesAsync();
+        return Ok(new
+        {
+            message = "Lấy danh mục dịch vụ thành công",
+            data = result
+        });
+    }
+
+    [HttpGet("shops/{shopId}/services")]
+    public async Task<IActionResult> GetShopServices(
+        int shopId, [FromQuery] int managerId)
+    {
+        var result = await _managerService
+            .GetShopServicesAsync(managerId, shopId);
+
+        if (result == null)
+            return NotFound(new
+            {
+                message = "Không tìm thấy cửa hàng thuộc Manager"
+            });
+
+        return Ok(new
+        {
+            message = "Lấy danh sách dịch vụ thành công",
+            data = result
+        });
+    }
+
+    [HttpGet("shops/{shopId}/services/{shopServiceId}")]
+    public async Task<IActionResult> GetShopServiceDetail(
+        int shopId, int shopServiceId,
+        [FromQuery] int managerId)
+    {
+        var result = await _managerService
+            .GetShopServiceDetailAsync(
+                managerId, shopId, shopServiceId);
+
+        if (result == null)
+            return NotFound(new
+            {
+                message = "Không tìm thấy dịch vụ của cửa hàng"
+            });
+
+        return Ok(new
+        {
+            message = "Lấy chi tiết dịch vụ thành công",
+            data = result
+        });
+    }
+
+    [HttpPost("shops/{shopId}/services")]
+    public async Task<IActionResult> AddShopService(
+        int shopId, [FromQuery] int managerId,
+        [FromBody] AddShopServiceDto dto)
+    {
+        try
+        {
+            var result = await _managerService
+                .AddShopServiceAsync(managerId, shopId, dto);
+
+            if (result == null)
+                return NotFound(new
+                {
+                    message = "Không tìm thấy cửa hàng thuộc Manager"
+                });
+
+            return Ok(new
+            {
+                message = "Thêm dịch vụ thành công",
+                data = result
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("shops/{shopId}/services/{shopServiceId}")]
+    public async Task<IActionResult> UpdateShopService(
+        int shopId, int shopServiceId,
+        [FromQuery] int managerId,
+        [FromBody] UpdateShopServiceDto dto)
+    {
+        var success = await _managerService
+            .UpdateShopServiceAsync(
+                managerId, shopId, shopServiceId, dto);
+
+        if (!success)
+            return NotFound(new
+            {
+                message = "Không tìm thấy dịch vụ của cửa hàng"
+            });
+
+        return Ok(new
+        {
+            message = "Cập nhật dịch vụ thành công"
+        });
+    }
+
+    [HttpPatch("shops/{shopId}/services/{shopServiceId}/deactivate")]
+    public async Task<IActionResult> DeactivateShopService(
+        int shopId, int shopServiceId,
+        [FromQuery] int managerId)
+    {
+        var success = await _managerService
+            .SetShopServiceStatusAsync(
+                managerId, shopId, shopServiceId, false);
+
+        if (!success)
+            return NotFound(new
+            {
+                message = "Không tìm thấy dịch vụ của cửa hàng"
+            });
+
+        return Ok(new
+        {
+            message = "Đã ngừng cung cấp dịch vụ"
+        });
+    }
+
+    [HttpPatch("shops/{shopId}/services/{shopServiceId}/activate")]
+    public async Task<IActionResult> ActivateShopService(
+        int shopId, int shopServiceId,
+        [FromQuery] int managerId)
+    {
+        try
+        {
+            var success = await _managerService
+                .SetShopServiceStatusAsync(
+                    managerId, shopId, shopServiceId, true);
+
+            if (!success)
+                return NotFound(new
+                {
+                    message = "Không tìm thấy dịch vụ của cửa hàng"
+                });
+
+            return Ok(new
+            {
+                message = "Đã kích hoạt lại dịch vụ"
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    #endregion
+
 }

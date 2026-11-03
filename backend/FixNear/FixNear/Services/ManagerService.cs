@@ -246,4 +246,200 @@ public class ManagerService : IManagerService
 
     #endregion
 
+    #region Quan ly dich vu cua hang
+
+    public async Task<object> GetSystemServicesAsync()
+    {
+        return await _db.Service
+            .AsNoTracking()
+            .Where(s => s.IsActive && s.Category.IsActive)
+            .OrderBy(s => s.CategoryId)
+            .ThenBy(s => s.ServiceName)
+            .Select(s => new
+            {
+                s.ServiceId,
+                s.ServiceName,
+                s.Description,
+                s.CategoryId,
+                s.Category.CategoryName
+            })
+            .ToListAsync();
+    }
+
+    public async Task<object?> GetShopServicesAsync(
+        int managerId, int shopId)
+    {
+        bool ownsShop = await _db.Shop
+            .AnyAsync(s => s.ShopId == shopId &&
+                           s.ManagerId == managerId);
+
+        if (!ownsShop)
+            return null;
+
+        return await _db.ShopService
+            .AsNoTracking()
+            .Where(ss => ss.ShopId == shopId)
+            .OrderBy(ss => ss.ShopServiceId)
+            .Select(ss => new
+            {
+                ss.ShopServiceId,
+                ss.ShopId,
+                ss.ServiceId,
+                ss.Service.ServiceName,
+                CategoryName = ss.Service.Category.CategoryName,
+                ss.Description,
+                ss.IsActive,
+                ss.CreatedAt
+            })
+            .ToListAsync();
+    }
+
+    public async Task<object?> GetShopServiceDetailAsync(
+        int managerId, int shopId, int shopServiceId)
+    {
+        return await _db.ShopService
+            .AsNoTracking()
+            .Where(ss =>
+                ss.ShopServiceId == shopServiceId &&
+                ss.ShopId == shopId &&
+                ss.Shop.ManagerId == managerId)
+            .Select(ss => new
+            {
+                ss.ShopServiceId,
+                ss.ShopId,
+                ss.ServiceId,
+                ss.Service.ServiceName,
+                ServiceDescription = ss.Service.Description,
+                CategoryName = ss.Service.Category.CategoryName,
+                ShopDescription = ss.Description,
+                ss.IsActive,
+                ss.CreatedAt
+            })
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<object?> AddShopServiceAsync(
+        int managerId, int shopId, AddShopServiceDto dto)
+    {
+        bool ownsShop = await _db.Shop
+            .AnyAsync(s => s.ShopId == shopId &&
+                           s.ManagerId == managerId);
+
+        if (!ownsShop)
+            return null;
+
+        bool serviceExists = await _db.Service
+            .AnyAsync(s =>
+                s.ServiceId == dto.ServiceId &&
+                s.IsActive &&
+                s.Category.IsActive);
+
+        if (!serviceExists)
+            throw new InvalidOperationException(
+                "Dịch vụ không tồn tại hoặc đã ngừng hoạt động.");
+
+        var existing = await _db.ShopService
+            .FirstOrDefaultAsync(ss =>
+                ss.ShopId == shopId &&
+                ss.ServiceId == dto.ServiceId);
+
+        if (existing != null)
+        {
+            if (existing.IsActive)
+                throw new InvalidOperationException(
+                    "Cửa hàng đã cung cấp dịch vụ này.");
+
+            existing.IsActive = true;
+            existing.Description = dto.Description?.Trim();
+
+            await _db.SaveChangesAsync();
+
+            return new
+            {
+                existing.ShopServiceId,
+                existing.ShopId,
+                existing.ServiceId,
+                existing.Description,
+                existing.IsActive,
+                Reactivated = true
+            };
+        }
+
+        var shopService = new ShopService
+        {
+            ShopId = shopId,
+            ServiceId = dto.ServiceId,
+            Description = dto.Description?.Trim(),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _db.ShopService.Add(shopService);
+        await _db.SaveChangesAsync();
+
+        return new
+        {
+            shopService.ShopServiceId,
+            shopService.ShopId,
+            shopService.ServiceId,
+            shopService.Description,
+            shopService.IsActive,
+            Reactivated = false
+        };
+    }
+
+    public async Task<bool> UpdateShopServiceAsync(
+        int managerId, int shopId, int shopServiceId,
+        UpdateShopServiceDto dto)
+    {
+        var shopService = await _db.ShopService
+            .FirstOrDefaultAsync(ss =>
+                ss.ShopServiceId == shopServiceId &&
+                ss.ShopId == shopId &&
+                ss.Shop.ManagerId == managerId);
+
+        if (shopService == null)
+            return false;
+
+        shopService.Description = dto.Description?.Trim();
+
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> SetShopServiceStatusAsync(
+        int managerId, int shopId, int shopServiceId,
+        bool isActive)
+    {
+        var shopService = await _db.ShopService
+            .FirstOrDefaultAsync(ss =>
+                ss.ShopServiceId == shopServiceId &&
+                ss.ShopId == shopId &&
+                ss.Shop.ManagerId == managerId);
+
+        if (shopService == null)
+            return false;
+
+        if (isActive)
+        {
+            bool serviceAvailable = await _db.Service
+                .AnyAsync(s =>
+                    s.ServiceId == shopService.ServiceId &&
+                    s.IsActive &&
+                    s.Category.IsActive);
+
+            if (!serviceAvailable)
+                throw new InvalidOperationException(
+                    "Dịch vụ hệ thống không còn hoạt động.");
+        }
+
+        shopService.IsActive = isActive;
+
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    #endregion
+
+
 }
