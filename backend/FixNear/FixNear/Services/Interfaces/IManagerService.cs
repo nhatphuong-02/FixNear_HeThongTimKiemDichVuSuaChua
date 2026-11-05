@@ -73,4 +73,42 @@ public interface IManagerService
 
     #endregion
 
+    #region Quan ly gia dich vu
+
+    Task<object?> GetServicePricesAsync(
+        int managerId, int shopId, bool includeHistory);
+
+    Task<object?> GetServicePriceAsync(
+        int managerId, int shopId, int servicePriceId);
+
+    Task<object?> AddServicePriceAsync(
+        int managerId, int shopId, ServicePriceDto dto);
+
+    Task<object?> UpdateServicePriceAsync(
+        int managerId, int shopId, int servicePriceId,
+        UpdateServicePriceDto dto);
+
+    #endregion
+
+    #region Quan ly ky thuat vien
+
+    Task<object?> GetTechniciansAsync(
+        int managerId, int shopId);
+
+    Task<object?> GetTechnicianAsync(
+        int managerId, int shopId, int technicianId);
+
+    Task<object?> AddTechnicianAsync(
+        int managerId, int shopId, AddTechnicianToShopDto dto);
+
+    Task<bool> UpdateTechnicianAsync(
+        int managerId, int shopId, int technicianId,
+        UpdateTechnicianShopDto dto);
+
+    Task<bool> RemoveTechnicianAsync(
+        int managerId, int shopId, int technicianId);
+
+    #endregion
+
+
 }

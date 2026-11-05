@@ -19,7 +19,8 @@ public partial class ShopService
 
     public virtual Service Service { get; set; } = null!;
 
-    public virtual ServicePrice? ServicePrice { get; set; }
+    public virtual ICollection<ServicePrice> ServicePrice { get; set; }
+    = new List<ServicePrice>();
 
     public virtual Shop Shop { get; set; } = null!;
 }

@@ -441,5 +441,394 @@ public class ManagerService : IManagerService
 
     #endregion
 
+    #region T05 - Quan ly gia dich vu
+
+    public async Task<object?> GetServicePricesAsync(
+        int managerId, int shopId, bool includeHistory)
+    {
+        bool ownsShop = await _db.Shop.AnyAsync(
+            s => s.ShopId == shopId && s.ManagerId == managerId);
+
+        if (!ownsShop)
+            return null;
+
+        return await _db.ServicePrice
+            .AsNoTracking()
+            .Where(p =>
+                p.ShopService.ShopId == shopId &&
+                (includeHistory || p.IsActive))
+            .OrderBy(p => p.ShopServiceId)
+            .ThenByDescending(p => p.EffectiveFrom)
+            .Select(p => new
+            {
+                p.ServicePriceId,
+                p.ShopServiceId,
+                p.ShopService.ServiceId,
+                p.ShopService.Service.ServiceName,
+                p.Price,
+                p.MinPrice,
+                p.MaxPrice,
+                p.PriceUnit,
+                p.EffectiveFrom,
+                p.EffectiveTo,
+                p.IsActive,
+                p.CreatedAt
+            })
+            .ToListAsync();
+    }
+
+    public async Task<object?> GetServicePriceAsync(
+        int managerId, int shopId, int servicePriceId)
+    {
+        return await _db.ServicePrice
+            .AsNoTracking()
+            .Where(p =>
+                p.ServicePriceId == servicePriceId &&
+                p.ShopService.ShopId == shopId &&
+                p.ShopService.Shop.ManagerId == managerId)
+            .Select(p => new
+            {
+                p.ServicePriceId,
+                p.ShopServiceId,
+                p.ShopService.ServiceId,
+                p.ShopService.Service.ServiceName,
+                p.Price,
+                p.MinPrice,
+                p.MaxPrice,
+                p.PriceUnit,
+                p.EffectiveFrom,
+                p.EffectiveTo,
+                p.IsActive,
+                p.CreatedAt
+            })
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<object?> AddServicePriceAsync(
+        int managerId, int shopId, ServicePriceDto dto)
+    {
+        var shopService = await _db.ShopService
+            .AsNoTracking()
+            .FirstOrDefaultAsync(ss =>
+                ss.ShopServiceId == dto.ShopServiceId &&
+                ss.ShopId == shopId &&
+                ss.Shop.ManagerId == managerId);
+
+        if (shopService == null)
+            return null;
+
+        bool available = await _db.Service.AnyAsync(s =>
+            s.ServiceId == shopService.ServiceId &&
+            s.IsActive &&
+            s.Category.IsActive);
+
+        if (!shopService.IsActive || !available)
+            throw new InvalidOperationException(
+                "Dịch vụ đã ngừng hoạt động, không thể thêm giá.");
+
+        bool hasActivePrice = await _db.ServicePrice
+            .AnyAsync(p =>
+                p.ShopServiceId == dto.ShopServiceId &&
+                p.IsActive);
+
+        if (hasActivePrice)
+            throw new InvalidOperationException(
+                "Dịch vụ đã có giá hiện hành. Hãy dùng PUT để cập nhật.");
+
+        var now = DateTime.UtcNow;
+
+        var price = new ServicePrice
+        {
+            ShopServiceId = dto.ShopServiceId,
+            Price = dto.Price,
+            MinPrice = dto.MinPrice,
+            MaxPrice = dto.MaxPrice,
+            PriceUnit = dto.PriceUnit?.Trim(),
+            EffectiveFrom = now,
+            EffectiveTo = null,
+            IsActive = true,
+            CreatedAt = now
+        };
+
+        _db.ServicePrice.Add(price);
+        await _db.SaveChangesAsync();
+
+        return new
+        {
+            price.ServicePriceId,
+            price.ShopServiceId,
+            price.Price,
+            price.MinPrice,
+            price.MaxPrice,
+            price.PriceUnit,
+            price.EffectiveFrom,
+            price.IsActive
+        };
+    }
+
+    public async Task<object?> UpdateServicePriceAsync(
+        int managerId,
+        int shopId,
+        int servicePriceId,
+        UpdateServicePriceDto dto)
+    {
+        var oldPrice = await _db.ServicePrice
+            .Include(p => p.ShopService)
+            .FirstOrDefaultAsync(p =>
+                p.ServicePriceId == servicePriceId &&
+                p.IsActive &&
+                p.ShopService.ShopId == shopId &&
+                p.ShopService.Shop.ManagerId == managerId);
+
+        if (oldPrice == null)
+            return null;
+
+        bool available = await _db.Service.AnyAsync(s =>
+            s.ServiceId == oldPrice.ShopService.ServiceId &&
+            s.IsActive &&
+            s.Category.IsActive);
+
+        if (!oldPrice.ShopService.IsActive || !available)
+            throw new InvalidOperationException(
+                "Dịch vụ đã ngừng hoạt động, không thể cập nhật giá.");
+
+        await using var transaction =
+            await _db.Database.BeginTransactionAsync();
+
+        var now = DateTime.UtcNow;
+
+        oldPrice.IsActive = false;
+        oldPrice.EffectiveTo = now;
+        await _db.SaveChangesAsync();
+
+        var newPrice = new ServicePrice
+        {
+            ShopServiceId = oldPrice.ShopServiceId,
+            Price = dto.Price,
+            MinPrice = dto.MinPrice,
+            MaxPrice = dto.MaxPrice,
+            PriceUnit = dto.PriceUnit?.Trim(),
+            EffectiveFrom = now,
+            EffectiveTo = null,
+            IsActive = true,
+            CreatedAt = now
+        };
+
+        _db.ServicePrice.Add(newPrice);
+        await _db.SaveChangesAsync();
+
+        await transaction.CommitAsync();
+
+        return new
+        {
+            OldServicePriceId = oldPrice.ServicePriceId,
+            NewServicePriceId = newPrice.ServicePriceId,
+            newPrice.ShopServiceId,
+            newPrice.Price,
+            newPrice.MinPrice,
+            newPrice.MaxPrice,
+            newPrice.PriceUnit,
+            newPrice.EffectiveFrom,
+            newPrice.IsActive
+        };
+    }
+
+    #endregion
+
+    #region Quan ly ky thuat vien
+
+    public async Task<object?> GetTechniciansAsync(
+        int managerId, int shopId)
+    {
+        bool ownsShop = await _db.Shop.AnyAsync(s =>
+            s.ShopId == shopId &&
+            s.ManagerId == managerId);
+
+        if (!ownsShop)
+            return null;
+
+        return await _db.TechnicianShop
+            .AsNoTracking()
+            .Where(ts =>
+                ts.ShopId == shopId &&
+                ts.LeftAt == null)
+            .OrderBy(ts => ts.TechnicianId)
+            .Select(ts => new
+            {
+                ts.TechnicianShopId,
+                ts.TechnicianId,
+                ts.ShopId,
+                ts.Technician.UserId,
+                ts.Technician.User.FullName,
+                ts.Technician.ExperienceYears,
+                ts.Technician.Introduction,
+                ts.Technician.TechnicianStatus,
+                ts.Status,
+                ts.IsPrimary,
+                ts.JoinedAt
+            })
+            .ToListAsync();
+    }
+
+    public async Task<object?> GetTechnicianAsync(
+        int managerId, int shopId, int technicianId)
+    {
+        return await _db.TechnicianShop
+            .AsNoTracking()
+            .Where(ts =>
+                ts.ShopId == shopId &&
+                ts.TechnicianId == technicianId &&
+                ts.LeftAt == null &&
+                ts.Shop.ManagerId == managerId)
+            .Select(ts => new
+            {
+                ts.TechnicianShopId,
+                ts.TechnicianId,
+                ts.ShopId,
+                ts.Technician.UserId,
+                ts.Technician.User.FullName,
+                ts.Technician.ExperienceYears,
+                ts.Technician.Introduction,
+                ts.Technician.TechnicianStatus,
+                ts.Status,
+                ts.IsPrimary,
+                ts.JoinedAt,
+                ts.LeftAt
+            })
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<object?> AddTechnicianAsync(
+        int managerId,
+        int shopId,
+        AddTechnicianToShopDto dto)
+    {
+        bool ownsShop = await _db.Shop.AnyAsync(s =>
+            s.ShopId == shopId &&
+            s.ManagerId == managerId);
+
+        if (!ownsShop)
+            return null;
+
+        bool technicianExists = await _db.TechnicianProfile
+            .AnyAsync(t => t.TechnicianId == dto.TechnicianId);
+
+        if (!technicianExists)
+            throw new InvalidOperationException(
+                "Không tìm thấy hồ sơ kỹ thuật viên.");
+
+        bool alreadyJoined = await _db.TechnicianShop
+            .AnyAsync(ts =>
+                ts.ShopId == shopId &&
+                ts.TechnicianId == dto.TechnicianId &&
+                ts.LeftAt == null);
+
+        if (alreadyJoined)
+            throw new InvalidOperationException(
+                "Kỹ thuật viên đã thuộc cửa hàng này.");
+
+        if (dto.IsPrimary)
+        {
+            bool hasPrimary = await _db.TechnicianShop
+                .AnyAsync(ts =>
+                    ts.TechnicianId == dto.TechnicianId &&
+                    ts.LeftAt == null &&
+                    ts.IsPrimary);
+
+            if (hasPrimary)
+                throw new InvalidOperationException(
+                    "Kỹ thuật viên đã có cửa hàng chính đang hoạt động.");
+        }
+
+        var now = DateTime.UtcNow;
+
+        var link = new TechnicianShop
+        {
+            ShopId = shopId,
+            TechnicianId = dto.TechnicianId,
+            Status = dto.Status,
+            IsPrimary = dto.IsPrimary,
+            JoinedAt = now,
+            LeftAt = null,
+            CreatedAt = now
+        };
+
+        _db.TechnicianShop.Add(link);
+        await _db.SaveChangesAsync();
+
+        return new
+        {
+            link.TechnicianShopId,
+            link.ShopId,
+            link.TechnicianId,
+            link.Status,
+            link.IsPrimary,
+            link.JoinedAt,
+            link.LeftAt
+        };
+    }
+
+    public async Task<bool> UpdateTechnicianAsync(
+        int managerId,
+        int shopId,
+        int technicianId,
+        UpdateTechnicianShopDto dto)
+    {
+        var link = await _db.TechnicianShop
+            .FirstOrDefaultAsync(ts =>
+                ts.ShopId == shopId &&
+                ts.TechnicianId == technicianId &&
+                ts.LeftAt == null &&
+                ts.Shop.ManagerId == managerId);
+
+        if (link == null)
+            return false;
+
+        if (dto.IsPrimary)
+        {
+            bool otherPrimary = await _db.TechnicianShop
+                .AnyAsync(ts =>
+                    ts.TechnicianId == technicianId &&
+                    ts.TechnicianShopId != link.TechnicianShopId &&
+                    ts.LeftAt == null &&
+                    ts.IsPrimary);
+
+            if (otherPrimary)
+                throw new InvalidOperationException(
+                    "Kỹ thuật viên đang có cửa hàng chính khác.");
+        }
+
+        link.Status = dto.Status;
+        link.IsPrimary = dto.IsPrimary;
+
+        await _db.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> RemoveTechnicianAsync(
+        int managerId, int shopId, int technicianId)
+    {
+        var link = await _db.TechnicianShop
+            .FirstOrDefaultAsync(ts =>
+                ts.ShopId == shopId &&
+                ts.TechnicianId == technicianId &&
+                ts.LeftAt == null &&
+                ts.Shop.ManagerId == managerId);
+
+        if (link == null)
+            return false;
+
+        link.LeftAt = DateTime.UtcNow;
+        link.IsPrimary = false;
+
+        await _db.SaveChangesAsync();
+
+        return true;
+    }
+
+    #endregion
+
+
 
 }

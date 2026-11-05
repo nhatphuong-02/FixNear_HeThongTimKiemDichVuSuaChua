@@ -406,4 +406,241 @@ public class ManagerController : ControllerBase
 
     #endregion
 
+    #region Quan ly gia dich vu
+
+    [HttpGet("service-prices")]
+    public async Task<IActionResult> GetServicePrices(
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromQuery] bool includeHistory = false)
+    {
+        var data = await _managerService
+            .GetServicePricesAsync(managerId, shopId, includeHistory);
+
+        if (data == null)
+            return NotFound(new
+            {
+                message = "Không tìm thấy cửa hàng thuộc Manager."
+            });
+
+        return Ok(new
+        {
+            message = "Lấy danh sách giá thành công",
+            data
+        });
+    }
+
+    [HttpGet("service-prices/{servicePriceId:int}")]
+    public async Task<IActionResult> GetServicePrice(
+        int servicePriceId,
+        [FromQuery] int managerId,
+        [FromQuery] int shopId)
+    {
+        var data = await _managerService
+            .GetServicePriceAsync(managerId, shopId, servicePriceId);
+
+        if (data == null)
+            return NotFound(new
+            {
+                message = "Không tìm thấy giá thuộc cửa hàng."
+            });
+
+        return Ok(new
+        {
+            message = "Lấy chi tiết giá thành công",
+            data
+        });
+    }
+
+    [HttpPost("service-prices")]
+    public async Task<IActionResult> AddServicePrice(
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromBody] ServicePriceDto dto)
+    {
+        try
+        {
+            var data = await _managerService
+                .AddServicePriceAsync(managerId, shopId, dto);
+
+            if (data == null)
+                return NotFound(new
+                {
+                    message = "Không tìm thấy dịch vụ thuộc cửa hàng của Manager."
+                });
+
+            return StatusCode(201, new
+            {
+                message = "Thêm giá dịch vụ thành công",
+                data
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("service-prices/{servicePriceId:int}")]
+    public async Task<IActionResult> UpdateServicePrice(
+        int servicePriceId,
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromBody] UpdateServicePriceDto dto)
+    {
+        try
+        {
+            var data = await _managerService
+                .UpdateServicePriceAsync(
+                    managerId, shopId, servicePriceId, dto);
+
+            if (data == null)
+                return NotFound(new
+                {
+                    message = "Không tìm thấy giá hiện hành thuộc cửa hàng."
+                });
+
+            return Ok(new
+            {
+                message = "Cập nhật giá và lưu lịch sử thành công",
+                data
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    #endregion
+
+    #region Quan ly ky thuat vien
+
+    [HttpGet("technicians")]
+    public async Task<IActionResult> GetTechnicians(
+        [FromQuery] int managerId,
+        [FromQuery] int shopId)
+    {
+        var data = await _managerService
+            .GetTechniciansAsync(managerId, shopId);
+
+        if (data == null)
+            return NotFound(new
+            {
+                message = "Không tìm thấy cửa hàng thuộc Manager."
+            });
+
+        return Ok(new
+        {
+            message = "Lấy danh sách kỹ thuật viên thành công",
+            data
+        });
+    }
+
+    [HttpGet("technicians/{technicianId:int}")]
+    public async Task<IActionResult> GetTechnician(
+        int technicianId,
+        [FromQuery] int managerId,
+        [FromQuery] int shopId)
+    {
+        var data = await _managerService
+            .GetTechnicianAsync(managerId, shopId, technicianId);
+
+        if (data == null)
+            return NotFound(new
+            {
+                message = "Không tìm thấy kỹ thuật viên đang thuộc cửa hàng."
+            });
+
+        return Ok(new
+        {
+            message = "Lấy chi tiết kỹ thuật viên thành công",
+            data
+        });
+    }
+
+    [HttpPost("technicians")]
+    public async Task<IActionResult> AddTechnician(
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromBody] AddTechnicianToShopDto dto)
+    {
+        try
+        {
+            var data = await _managerService
+                .AddTechnicianAsync(managerId, shopId, dto);
+
+            if (data == null)
+                return NotFound(new
+                {
+                    message = "Không tìm thấy cửa hàng thuộc Manager."
+                });
+
+            return StatusCode(201, new
+            {
+                message = "Thêm kỹ thuật viên vào cửa hàng thành công",
+                data
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("technicians/{technicianId:int}")]
+    public async Task<IActionResult> UpdateTechnician(
+        int technicianId,
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromBody] UpdateTechnicianShopDto dto)
+    {
+        try
+        {
+            bool success = await _managerService
+                .UpdateTechnicianAsync(
+                    managerId, shopId, technicianId, dto);
+
+            if (!success)
+                return NotFound(new
+                {
+                    message = "Không tìm thấy kỹ thuật viên đang thuộc cửa hàng."
+                });
+
+            return Ok(new
+            {
+                message = "Cập nhật liên kết kỹ thuật viên thành công"
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("technicians/{technicianId:int}")]
+    public async Task<IActionResult> RemoveTechnician(
+        int technicianId,
+        [FromQuery] int managerId,
+        [FromQuery] int shopId)
+    {
+        bool success = await _managerService
+            .RemoveTechnicianAsync(managerId, shopId, technicianId);
+
+        if (!success)
+            return NotFound(new
+            {
+                message = "Không tìm thấy kỹ thuật viên đang thuộc cửa hàng."
+            });
+
+        return Ok(new
+        {
+            message = "Đã cho kỹ thuật viên rời cửa hàng và lưu thời điểm LeftAt."
+        });
+    }
+
+    #endregion
+
+
+
 }

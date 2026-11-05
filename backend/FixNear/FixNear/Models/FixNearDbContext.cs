@@ -1541,9 +1541,8 @@ public partial class FixNearDbContext : DbContext
                 .HasMaxLength(50);
 
             entity.HasOne(d => d.ShopService)
-                .WithOne(p => p.ServicePrice)
-                .HasForeignKey<ServicePrice>(
-                    d => d.ShopServiceId)
+                .WithMany(p => p.ServicePrice)
+                .HasForeignKey(d => d.ShopServiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ServicePrice_ShopService");
         });
