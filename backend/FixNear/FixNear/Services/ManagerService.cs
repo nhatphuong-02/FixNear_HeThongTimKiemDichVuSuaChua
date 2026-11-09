@@ -1,4 +1,5 @@
 ﻿using FixNear.DTOs.Manager;
+using FixNear.Enums;
 using FixNear.Models;
 using FixNear.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,7 @@ public class ManagerService : IManagerService
         _db = db;
     }
 
-    #region Xem thông tin cửa hàng
+    #region T01 - Xem thông tin cửa hàng
 
     public async Task<object> GetShopsAsync(int managerId)
     {
@@ -65,7 +66,7 @@ public class ManagerService : IManagerService
 
     #endregion
 
-    #region Cập nhật thông tin cửa hàng
+    #region T02 - Cập nhật thông tin cửa hàng
 
     public async Task<bool> UpdateShopAsync(
         int managerId,
@@ -99,7 +100,7 @@ public class ManagerService : IManagerService
     #endregion
 
 
-    #region Quản lý nhiều ảnh cửa hàng
+    #region T03 - Quản lý nhiều ảnh cửa hàng
 
     public async Task<object> GetShopImagesAsync(
         int managerId, int shopId)
@@ -246,7 +247,7 @@ public class ManagerService : IManagerService
 
     #endregion
 
-    #region Quan ly dich vu cua hang
+    #region T04 - Quản lý dịch vụ của cửa hàng
 
     public async Task<object> GetSystemServicesAsync()
     {
@@ -635,7 +636,7 @@ public class ManagerService : IManagerService
 
     #endregion
 
-    #region Quan ly ky thuat vien
+    #region T06 - Quản lý kỹ thuật viên
 
     public async Task<object?> GetTechniciansAsync(
         int managerId, int shopId)
@@ -828,6 +829,667 @@ public class ManagerService : IManagerService
     }
 
     #endregion
+
+    #region T07 - Xem danh sach yeu cau sua chua
+
+    public async Task<object?> GetRepairRequestsAsync(
+        int managerId,
+        int shopId)
+    {
+        // Chi xem yeu cau cua cua hang do Manager quan ly
+        bool ownsShop = await _db.Shop
+            .AsNoTracking()
+            .AnyAsync(s =>
+                s.ShopId == shopId &&
+                s.ManagerId == managerId);
+
+        if (!ownsShop)
+            return null;
+
+        var requests = await _db.RepairRequest
+            .AsNoTracking()
+            .Where(r => r.ShopId == shopId)
+            .OrderByDescending(r => r.CreatedAt)
+            .Select(r => new
+            {
+                r.RepairRequestId,
+                r.CustomerId,
+                r.ShopId,
+                r.AddressId,
+                r.RepairMethod,
+                r.Description,
+                r.PreferredDate,
+                r.PreferredTimeFrom,
+                r.PreferredTimeTo,
+                r.Status,
+                r.Priority,
+                r.CreatedAt
+            })
+            .ToListAsync();
+
+        return requests;
+    }
+
+    #endregion
+
+    #region T08 - Tiep nhan yeu cau
+
+    public async Task<ManagerActionResult>
+        AcceptRepairRequestAsync(
+            int managerId,
+            int shopId,
+            int repairRequestId,
+            AcceptRepairRequestDto dto)
+    {
+        return await ChangePendingRequestAsync(
+            managerId,
+            shopId,
+            repairRequestId,
+            RepairRequestStatus.Accepted,
+            string.IsNullOrWhiteSpace(dto.Note)
+                ? "Shop tiếp nhận yêu cầu"
+                : dto.Note.Trim());
+    }
+
+    #endregion
+
+    #region T09 - Tu choi yeu cau
+
+    public async Task<ManagerActionResult>
+        RejectRepairRequestAsync(
+            int managerId,
+            int shopId,
+            int repairRequestId,
+            RejectRepairRequestDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Reason))
+        {
+            return new ManagerActionResult(
+                400,
+                "Vui lòng nhập lý do từ chối.");
+        }
+
+        return await ChangePendingRequestAsync(
+            managerId,
+            shopId,
+            repairRequestId,
+            RepairRequestStatus.Rejected,
+            dto.Reason.Trim());
+    }
+
+    private async Task<ManagerActionResult>
+        ChangePendingRequestAsync(
+            int managerId,
+            int shopId,
+            int repairRequestId,
+            RepairRequestStatus newStatus,
+            string reason)
+    {
+        var manager = await _db.Shop
+            .AsNoTracking()
+            .Where(s =>
+                s.ShopId == shopId &&
+                s.ManagerId == managerId)
+            .Select(s => new
+            {
+                UserId = s.Manager.UserId
+            })
+            .FirstOrDefaultAsync();
+
+        if (manager == null)
+        {
+            return new ManagerActionResult(
+                404,
+                "Không tìm thấy cửa hàng thuộc Manager.");
+        }
+
+        await using var transaction =
+            await _db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
+
+        int updated = await _db.RepairRequest
+            .Where(r =>
+                r.RepairRequestId == repairRequestId &&
+                r.ShopId == shopId &&
+                r.Status == (int)RepairRequestStatus.Pending)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(
+                    r => r.Status,
+                    (int)newStatus));
+
+        if (updated == 0)
+        {
+            await transaction.RollbackAsync();
+
+            bool exists = await _db.RepairRequest
+                .AsNoTracking()
+                .AnyAsync(r =>
+                    r.RepairRequestId == repairRequestId &&
+                    r.ShopId == shopId);
+
+            return new ManagerActionResult(
+                exists ? 409 : 404,
+                exists
+                    ? "Yêu cầu không còn ở trạng thái PENDING."
+                    : "Không tìm thấy yêu cầu sửa chữa.");
+        }
+
+        var history = await _db.RepairRequestStatusHistory
+            .Where(h =>
+                h.RepairRequestId == repairRequestId &&
+                h.OldStatus == (int)RepairRequestStatus.Pending &&
+                h.NewStatus == (int)newStatus)
+            .OrderByDescending(h => h.HistoryId)
+            .FirstOrDefaultAsync();
+
+        if (history != null)
+        {
+            history.ChangedByUserId = manager.UserId;
+            history.Reason = reason;
+
+            await _db.SaveChangesAsync();
+        }
+
+        await transaction.CommitAsync();
+
+        return new ManagerActionResult(
+            200,
+            newStatus == RepairRequestStatus.Accepted
+                ? "Tiếp nhận yêu cầu thành công."
+                : "Từ chối yêu cầu thành công.",
+            new
+            {
+                RepairRequestId = repairRequestId,
+                OldStatus = (int)RepairRequestStatus.Pending,
+                NewStatus = (int)newStatus,
+                Reason = reason
+            });
+    }
+
+    #endregion
+
+    #region T10 - Phan cong ky thuat vien
+
+    public async Task<ManagerActionResult>
+        AssignRepairTechnicianAsync(
+            int managerId,
+            int shopId,
+            AssignTechnicianDto dto)
+    {
+        var manager = await _db.Shop
+            .AsNoTracking()
+            .Where(s =>
+                s.ShopId == shopId &&
+                s.ManagerId == managerId)
+            .Select(s => new
+            {
+                UserId = s.Manager.UserId
+            })
+            .FirstOrDefaultAsync();
+
+        if (manager == null)
+        {
+            return new ManagerActionResult(
+                404,
+                "Không tìm thấy cửa hàng thuộc Manager.");
+        }
+
+        await using var transaction =
+            await _db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
+
+        var request = await _db.RepairRequest
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r =>
+                r.RepairRequestId == dto.RepairRequestId &&
+                r.ShopId == shopId);
+
+        if (request == null)
+        {
+            return new ManagerActionResult(
+                404,
+                "Không tìm thấy yêu cầu sửa chữa.");
+        }
+
+        if (request.Status !=
+            (int)RepairRequestStatus.Accepted)
+        {
+            return new ManagerActionResult(
+                409,
+                "Chỉ phân công yêu cầu đã được Shop tiếp nhận.");
+        }
+
+        bool isShopTechnician = await _db.TechnicianShop
+            .AnyAsync(ts =>
+                ts.ShopId == shopId &&
+                ts.TechnicianId == dto.TechnicianId &&
+                ts.LeftAt == null);
+
+        if (!isShopTechnician)
+        {
+            return new ManagerActionResult(
+                400,
+                "Kỹ thuật viên không thuộc cửa hàng.");
+        }
+
+        bool hasActiveAssignment = await _db.RepairAssignment
+            .AnyAsync(a =>
+                a.RepairRequestId == dto.RepairRequestId &&
+                (a.AssignmentStatus ==
+                    (int)RepairAssignmentStatus.Offered ||
+                 a.AssignmentStatus ==
+                    (int)RepairAssignmentStatus.Accepted));
+
+        if (hasActiveAssignment)
+        {
+            return new ManagerActionResult(
+                409,
+                "Yêu cầu đã có phân công đang hoạt động.");
+        }
+
+        var assignment = new RepairAssignment
+        {
+            RepairRequestId = dto.RepairRequestId,
+            TechnicianId = dto.TechnicianId,
+            AssignedByUserId = manager.UserId,
+            AssignmentStatus =
+                (int)RepairAssignmentStatus.Offered,
+            AssignedAt = DateTime.UtcNow,
+            Note = dto.Note?.Trim()
+        };
+
+        _db.RepairAssignment.Add(assignment);
+
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return new ManagerActionResult(
+            201,
+            "Phân công thành công, chờ kỹ thuật viên nhận việc.",
+            new
+            {
+                assignment.RepairAssignmentId,
+                assignment.RepairRequestId,
+                assignment.TechnicianId,
+                assignment.AssignmentStatus,
+                assignment.AssignedByUserId,
+                assignment.AssignedAt
+            });
+    }
+
+    #endregion
+
+    #region T11 - Doi ky thuat vien
+
+    public async Task<ManagerActionResult>
+        ReassignRepairTechnicianAsync(
+            int managerId,
+            int shopId,
+            int assignmentId,
+            ReassignTechnicianDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Reason))
+        {
+            return new ManagerActionResult(
+                400,
+                "Vui lòng nhập lý do đổi kỹ thuật viên.");
+        }
+
+        var manager = await _db.Shop
+            .AsNoTracking()
+            .Where(s =>
+                s.ShopId == shopId &&
+                s.ManagerId == managerId)
+            .Select(s => new
+            {
+                UserId = s.Manager.UserId
+            })
+            .FirstOrDefaultAsync();
+
+        if (manager == null)
+        {
+            return new ManagerActionResult(
+                404,
+                "Không tìm thấy cửa hàng thuộc Manager.");
+        }
+
+        await using var transaction =
+            await _db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
+
+        var oldAssignment = await _db.RepairAssignment
+            .Include(a => a.RepairRequest)
+            .FirstOrDefaultAsync(a =>
+                a.RepairAssignmentId == assignmentId &&
+                a.RepairRequest.ShopId == shopId);
+
+        if (oldAssignment == null)
+        {
+            return new ManagerActionResult(
+                404,
+                "Không tìm thấy phân công.");
+        }
+
+        int oldStatus = oldAssignment.AssignmentStatus;
+
+        if (oldStatus != (int)RepairAssignmentStatus.Offered &&
+            oldStatus != (int)RepairAssignmentStatus.Accepted &&
+            oldStatus != (int)RepairAssignmentStatus.Rejected)
+        {
+            return new ManagerActionResult(
+                409,
+                "Trạng thái phân công không cho phép đổi thợ.");
+        }
+
+        if (oldAssignment.TechnicianId == dto.TechnicianId)
+        {
+            return new ManagerActionResult(
+                400,
+                "Kỹ thuật viên mới phải khác kỹ thuật viên cũ.");
+        }
+
+        int requestStatus = oldAssignment.RepairRequest.Status;
+
+        if (requestStatus != (int)RepairRequestStatus.Accepted &&
+            requestStatus != (int)RepairRequestStatus.Assigned)
+        {
+            return new ManagerActionResult(
+                409,
+                "Yêu cầu hiện không cho phép đổi kỹ thuật viên.");
+        }
+
+        bool newTechnicianIsValid = await _db.TechnicianShop
+            .AnyAsync(ts =>
+                ts.ShopId == shopId &&
+                ts.TechnicianId == dto.TechnicianId &&
+                ts.LeftAt == null);
+
+        if (!newTechnicianIsValid)
+        {
+            return new ManagerActionResult(
+                400,
+                "Kỹ thuật viên mới không thuộc cửa hàng.");
+        }
+
+        bool hasOtherActiveAssignment =
+            await _db.RepairAssignment.AnyAsync(a =>
+                a.RepairRequestId == oldAssignment.RepairRequestId &&
+                a.RepairAssignmentId != assignmentId &&
+                (a.AssignmentStatus ==
+                    (int)RepairAssignmentStatus.Offered ||
+                 a.AssignmentStatus ==
+                    (int)RepairAssignmentStatus.Accepted));
+
+        if (hasOtherActiveAssignment)
+        {
+            return new ManagerActionResult(
+                409,
+                "Yêu cầu đang có phân công hoạt động khác.");
+        }
+
+        bool hasCurrentSchedule = await _db.RepairSchedule
+            .AnyAsync(s =>
+                s.RepairRequestId == oldAssignment.RepairRequestId &&
+                s.IsCurrent &&
+                s.Status != (int)RepairScheduleStatus.Cancelled);
+
+        if (hasCurrentSchedule)
+        {
+            return new ManagerActionResult(
+                409,
+                "Yêu cầu đã có lịch đang hiệu lực. Cần xử lý lịch trước khi đổi thợ.");
+        }
+
+        string reason = dto.Reason.Trim();
+
+        if (oldStatus != (int)RepairAssignmentStatus.Rejected)
+        {
+            oldAssignment.AssignmentStatus =
+                (int)RepairAssignmentStatus.Cancelled;
+
+            string note = string.IsNullOrWhiteSpace(
+                oldAssignment.Note)
+                ? "Manager thu hồi phân công: " + reason
+                : oldAssignment.Note +
+                  " | Manager thu hồi phân công: " + reason;
+
+            oldAssignment.Note = note.Length > 500
+                ? note[..500]
+                : note;
+        }
+
+        string newNote = "Phân công lại: " + reason;
+
+        var newAssignment = new RepairAssignment
+        {
+            RepairRequestId = oldAssignment.RepairRequestId,
+            TechnicianId = dto.TechnicianId,
+            AssignedByUserId = manager.UserId,
+            AssignmentStatus =
+                (int)RepairAssignmentStatus.Offered,
+            AssignedAt = DateTime.UtcNow,
+            Note = newNote.Length > 500
+                ? newNote[..500]
+                : newNote
+        };
+
+        _db.RepairAssignment.Add(newAssignment);
+
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return new ManagerActionResult(
+            201,
+            "Đổi kỹ thuật viên thành công.",
+            new
+            {
+                RepairRequestId = oldAssignment.RepairRequestId,
+                OldAssignmentId = oldAssignment.RepairAssignmentId,
+                OldTechnicianId = oldAssignment.TechnicianId,
+                OldAssignmentStatus = oldAssignment.AssignmentStatus,
+                NewAssignmentId = newAssignment.RepairAssignmentId,
+                NewTechnicianId = newAssignment.TechnicianId,
+                NewAssignmentStatus = newAssignment.AssignmentStatus,
+                Reason = reason
+            });
+    }
+
+    #endregion
+
+    #region T12 - Xem va tao lich sua chua
+
+    public async Task<object?> GetManagerRepairSchedulesAsync(
+        int managerId,
+        int shopId,
+        bool includeHistory)
+    {
+        bool ownsShop = await _db.Shop
+            .AsNoTracking()
+            .AnyAsync(s =>
+                s.ShopId == shopId &&
+                s.ManagerId == managerId);
+
+        if (!ownsShop)
+            return null;
+
+        var schedules = await _db.RepairSchedule
+            .AsNoTracking()
+            .Where(s =>
+                s.RepairRequest.ShopId == shopId &&
+                (includeHistory || s.IsCurrent))
+            .OrderByDescending(s => s.StartTime)
+            .Select(s => new
+            {
+                s.RepairScheduleId,
+                s.RepairRequestId,
+                s.TechnicianId,
+                s.StartTime,
+                s.EndTime,
+                s.Status,
+                s.IsCurrent,
+                s.CreatedByUserId,
+                s.CreatedAt,
+                s.CancelledAt,
+                s.CancelReason
+            })
+            .ToListAsync();
+
+        return schedules;
+    }
+
+    #endregion
+
+    public async Task<ManagerActionResult>
+        CreateManagerRepairScheduleAsync(
+            int managerId,
+            int shopId,
+            CreateRepairScheduleDto dto)
+    {
+        var manager = await _db.Shop
+            .AsNoTracking()
+            .Where(s =>
+                s.ShopId == shopId &&
+                s.ManagerId == managerId)
+            .Select(s => new
+            {
+                UserId = s.Manager.UserId
+            })
+            .FirstOrDefaultAsync();
+
+        if (manager == null)
+        {
+            return new ManagerActionResult(
+                404,
+                "Không tìm thấy cửa hàng thuộc Manager.");
+        }
+
+        if (dto.StartTime == default ||
+            dto.EndTime == default ||
+            dto.EndTime <= dto.StartTime)
+        {
+            return new ManagerActionResult(
+                400,
+                "Thời gian bắt đầu hoặc kết thúc không hợp lệ.");
+        }
+
+        DateTime startUtc = dto.StartTime.UtcDateTime;
+        DateTime endUtc = dto.EndTime.UtcDateTime;
+
+        if (startUtc <= DateTime.UtcNow)
+        {
+            return new ManagerActionResult(
+                400,
+                "Thời gian bắt đầu phải ở tương lai.");
+        }
+
+        await using var transaction =
+            await _db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
+
+        var request = await _db.RepairRequest
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r =>
+                r.RepairRequestId == dto.RepairRequestId &&
+                r.ShopId == shopId);
+
+        if (request == null)
+        {
+            return new ManagerActionResult(
+                404,
+                "Không tìm thấy yêu cầu sửa chữa.");
+        }
+
+        if (request.Status != (int)RepairRequestStatus.Assigned)
+        {
+            return new ManagerActionResult(
+                409,
+                "Yêu cầu phải ở trạng thái ASSIGNED để tạo lịch.");
+        }
+
+        bool belongsToShop = await _db.TechnicianShop
+            .AnyAsync(ts =>
+                ts.ShopId == shopId &&
+                ts.TechnicianId == dto.TechnicianId &&
+                ts.LeftAt == null);
+
+        if (!belongsToShop)
+        {
+            return new ManagerActionResult(
+                400,
+                "Kỹ thuật viên không thuộc cửa hàng.");
+        }
+
+        bool acceptedAssignment = await _db.RepairAssignment
+            .AnyAsync(a =>
+                a.RepairRequestId == dto.RepairRequestId &&
+                a.TechnicianId == dto.TechnicianId &&
+                a.AssignmentStatus ==
+                    (int)RepairAssignmentStatus.Accepted);
+
+        if (!acceptedAssignment)
+        {
+            return new ManagerActionResult(
+                409,
+                "Kỹ thuật viên chưa chấp nhận phân công.");
+        }
+
+        bool hasExistingSchedule = await _db.RepairSchedule
+            .AnyAsync(s =>
+                s.RepairRequestId == dto.RepairRequestId);
+
+        if (hasExistingSchedule)
+        {
+            return new ManagerActionResult(
+                409,
+                "Yêu cầu đã có lịch. API này không dùng để đổi lịch.");
+        }
+
+        bool overlaps = await _db.RepairSchedule
+            .AnyAsync(s =>
+                s.TechnicianId == dto.TechnicianId &&
+                s.IsCurrent &&
+                s.Status != (int)RepairScheduleStatus.Cancelled &&
+                s.StartTime < endUtc &&
+                s.EndTime > startUtc);
+
+        if (overlaps)
+        {
+            return new ManagerActionResult(
+                409,
+                "Kỹ thuật viên đã có lịch trùng thời gian.");
+        }
+
+        var schedule = new RepairSchedule
+        {
+            RepairRequestId = dto.RepairRequestId,
+            TechnicianId = dto.TechnicianId,
+            StartTime = startUtc,
+            EndTime = endUtc,
+            Status = (int)RepairScheduleStatus.Scheduled,
+            IsCurrent = true,
+            CreatedByUserId = manager.UserId,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _db.RepairSchedule.Add(schedule);
+
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return new ManagerActionResult(
+            201,
+            "Tạo lịch sửa chữa thành công.",
+            new
+            {
+                schedule.RepairScheduleId,
+                schedule.RepairRequestId,
+                schedule.TechnicianId,
+                schedule.StartTime,
+                schedule.EndTime,
+                schedule.Status,
+                schedule.IsCurrent
+            });
+    }
 
 
 

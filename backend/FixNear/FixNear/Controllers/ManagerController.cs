@@ -1,6 +1,7 @@
 ﻿using FixNear.DTOs.Manager;
 using FixNear.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FixNear.Controllers;
 
@@ -15,7 +16,7 @@ public class ManagerController : ControllerBase
         _managerService = managerService;
     }
 
-    #region Xem thông tin cửa hàng
+    #region T01 - Xem thông tin cửa hàng
 
     [HttpGet("shops")]
     public async Task<IActionResult> GetShops(
@@ -58,7 +59,7 @@ public class ManagerController : ControllerBase
 
     #endregion
 
-    #region Cập nhật thông tin cửa hàng
+    #region T02 - Cập nhật thông tin cửa hàng
 
     [HttpPut("shops/{shopId:int}")]
     public async Task<IActionResult> UpdateShop(
@@ -99,7 +100,7 @@ public class ManagerController : ControllerBase
 
     #endregion
 
-    #region Quản lý ảnh cửa hàng
+    #region T03 - Quản lý ảnh cửa hàng
 
     [HttpGet("shops/{shopId:int}/images")]
     public async Task<IActionResult> GetImages(
@@ -250,7 +251,7 @@ public class ManagerController : ControllerBase
 
     #endregion
 
-    #region Quan ly dich vu cua hang
+    #region T04 - Quan ly dich vu cua hang
 
     [HttpGet("services")]
     public async Task<IActionResult> GetSystemServices()
@@ -406,7 +407,7 @@ public class ManagerController : ControllerBase
 
     #endregion
 
-    #region Quan ly gia dich vu
+    #region T05 - Quan ly gia dich vu
 
     [HttpGet("service-prices")]
     public async Task<IActionResult> GetServicePrices(
@@ -514,7 +515,7 @@ public class ManagerController : ControllerBase
 
     #endregion
 
-    #region Quan ly ky thuat vien
+    #region T06 - Quan ly ky thuat vien
 
     [HttpGet("technicians")]
     public async Task<IActionResult> GetTechnicians(
@@ -640,6 +641,212 @@ public class ManagerController : ControllerBase
     }
 
     #endregion
+
+    #region T07 - Xem danh sach yeu cau sua chua
+
+    [HttpGet("repair-requests")]
+    public async Task<IActionResult> GetRepairRequests(
+        [FromQuery] int managerId,
+        [FromQuery] int shopId)
+    {
+        var result = await _managerService
+            .GetRepairRequestsAsync(managerId, shopId);
+
+        if (result == null)
+        {
+            return NotFound(new
+            {
+                message = "Không tìm thấy cửa hàng thuộc Manager."
+            });
+        }
+
+        return Ok(new
+        {
+            message = "Lấy danh sách yêu cầu thành công.",
+            data = result
+        });
+    }
+
+    #endregion
+
+    #region T08 - Tiep nhan yeu cau
+
+    [HttpPatch("repair-requests/{id:int}/accept")]
+    public async Task<IActionResult> AcceptRepairRequest(
+        int id,
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromBody] AcceptRepairRequestDto dto)
+    {
+        var result = await _managerService
+            .AcceptRepairRequestAsync(
+                managerId,
+                shopId,
+                id,
+                dto);
+
+        return StatusCode(result.StatusCode, new
+        {
+            message = result.Message,
+            data = result.Data
+        });
+    }
+
+    #endregion
+
+    #region T09 - Tu choi yeu cau
+
+    [HttpPatch("repair-requests/{id:int}/reject")]
+    public async Task<IActionResult> RejectRepairRequest(
+        int id,
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromBody] RejectRepairRequestDto dto)
+    {
+        var result = await _managerService
+            .RejectRepairRequestAsync(
+                managerId,
+                shopId,
+                id,
+                dto);
+
+        return StatusCode(result.StatusCode, new
+        {
+            message = result.Message,
+            data = result.Data
+        });
+    }
+
+    #endregion
+
+    #region T10 - Phan cong ky thuat vien
+
+    [HttpPost("repair-assignments")]
+    public async Task<IActionResult> AssignRepairTechnician(
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromBody] AssignTechnicianDto dto)
+    {
+        try
+        {
+            var result = await _managerService
+                .AssignRepairTechnicianAsync(
+                    managerId,
+                    shopId,
+                    dto);
+
+            return StatusCode(result.StatusCode, new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new
+            {
+                message = "Không thể tạo phân công do ràng buộc dữ liệu."
+            });
+        }
+    }
+
+    #endregion
+
+    #region T11 - Doi ky thuat vien
+
+    [HttpPatch("repair-assignments/{id:int}/reassign")]
+    public async Task<IActionResult> ReassignRepairTechnician(
+        int id,
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromBody] ReassignTechnicianDto dto)
+    {
+        try
+        {
+            var result = await _managerService
+                .ReassignRepairTechnicianAsync(
+                    managerId,
+                    shopId,
+                    id,
+                    dto);
+
+            return StatusCode(result.StatusCode, new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new
+            {
+                message = "Không thể đổi kỹ thuật viên do ràng buộc dữ liệu."
+            });
+        }
+    }
+
+    #endregion
+
+    #region T12 - Xem va tao lich sua chua
+
+    [HttpGet("repair-schedules")]
+    public async Task<IActionResult> GetManagerRepairSchedules(
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromQuery] bool includeHistory = false)
+    {
+        var result = await _managerService
+            .GetManagerRepairSchedulesAsync(
+                managerId,
+                shopId,
+                includeHistory);
+
+        if (result == null)
+        {
+            return NotFound(new
+            {
+                message = "Không tìm thấy cửa hàng thuộc Manager."
+            });
+        }
+
+        return Ok(new
+        {
+            message = "Lấy danh sách lịch sửa chữa thành công.",
+            data = result
+        });
+    }
+
+    [HttpPost("repair-schedules")]
+    public async Task<IActionResult> CreateManagerRepairSchedule(
+        [FromQuery] int managerId,
+        [FromQuery] int shopId,
+        [FromBody] CreateRepairScheduleDto dto)
+    {
+        try
+        {
+            var result = await _managerService
+                .CreateManagerRepairScheduleAsync(
+                    managerId,
+                    shopId,
+                    dto);
+
+            return StatusCode(result.StatusCode, new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new
+            {
+                message = "Không thể tạo lịch do trùng lịch hoặc ràng buộc dữ liệu."
+            });
+        }
+    }
+
+    #endregion
+
 
 
 

@@ -4,7 +4,7 @@ namespace FixNear.Services.Interfaces;
 
 public interface IManagerService
 {
-    #region Xem thông tin cửa hàng
+    #region T01 - Xem thông tin cửa hàng
 
     Task<object> GetShopsAsync(int managerId);
 
@@ -13,7 +13,7 @@ public interface IManagerService
 
     #endregion
 
-    #region Cập nhật thông tin cửa hàng
+    #region T02 - Cập nhật thông tin cửa hàng
 
     Task<bool> UpdateShopAsync(
         int managerId,
@@ -22,7 +22,7 @@ public interface IManagerService
 
     #endregion
 
-    #region Quản lý ảnh cửa hàng
+    #region T03 - Quản lý ảnh cửa hàng
 
     Task<object> GetShopImagesAsync(
         int managerId, int shopId);
@@ -50,7 +50,7 @@ public interface IManagerService
 
     #endregion
 
-    #region Quan ly dich vu cua hang
+    #region T04 - Quản lý dịch vụ của cửa hàng
 
     Task<object> GetSystemServicesAsync();
 
@@ -73,7 +73,7 @@ public interface IManagerService
 
     #endregion
 
-    #region Quan ly gia dich vu
+    #region T05 - Quản lý giá dịch vụ
 
     Task<object?> GetServicePricesAsync(
         int managerId, int shopId, bool includeHistory);
@@ -90,7 +90,7 @@ public interface IManagerService
 
     #endregion
 
-    #region Quan ly ky thuat vien
+    #region T06 - Quản lý kỹ thuật viên
 
     Task<object?> GetTechniciansAsync(
         int managerId, int shopId);
@@ -107,6 +107,67 @@ public interface IManagerService
 
     Task<bool> RemoveTechnicianAsync(
         int managerId, int shopId, int technicianId);
+
+    #endregion
+
+    #region T07 - Xem danh sach yeu cau sua chua
+
+    Task<object?> GetRepairRequestsAsync(
+        int managerId,
+        int shopId);
+
+    #endregion
+
+    #region T08 - Tiep nhan yeu cau
+
+    Task<ManagerActionResult> AcceptRepairRequestAsync(
+        int managerId,
+        int shopId,
+        int repairRequestId,
+        AcceptRepairRequestDto dto);
+
+    #endregion
+
+    #region T09 - Tu choi yeu cau
+
+    Task<ManagerActionResult> RejectRepairRequestAsync(
+        int managerId,
+        int shopId,
+        int repairRequestId,
+        RejectRepairRequestDto dto);
+
+    #endregion
+
+    #region T10 - Phan cong ky thuat vien
+
+    Task<ManagerActionResult> AssignRepairTechnicianAsync(
+        int managerId,
+        int shopId,
+        AssignTechnicianDto dto);
+
+    #endregion
+
+    #region T11 - Doi ky thuat vien
+
+    Task<ManagerActionResult> ReassignRepairTechnicianAsync(
+        int managerId,
+        int shopId,
+        int assignmentId,
+        ReassignTechnicianDto dto);
+
+    #endregion
+
+    #region T12 - Lich sua chua
+
+    Task<object?> GetManagerRepairSchedulesAsync(
+        int managerId,
+        int shopId,
+        bool includeHistory);
+
+    Task<ManagerActionResult> CreateManagerRepairScheduleAsync(
+        int managerId,
+        int shopId,
+        CreateRepairScheduleDto dto);
 
     #endregion
 
