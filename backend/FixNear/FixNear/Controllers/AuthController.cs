@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace FixNear.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -47,17 +47,6 @@ namespace FixNear.Controllers
                     message = e.Message
                 });
             }
-        }
-
-        [Authorize]
-        [HttpGet("me")]
-        public async Task<IActionResult> Me()
-        {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-
-            var result = await _authService.GetCurrentUserAsync(userId);
-
-            return Ok(result);
         }
     }
 }

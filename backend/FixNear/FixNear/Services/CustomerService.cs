@@ -19,10 +19,15 @@ namespace FixNear.Services
 
             var customer = await _context.CustomerProfile
                 .Include(c => c.User)
+                .Include(c => c.Address)
                 .FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (customer == null)
-                throw new InvalidOperationException("Không tìm thấy hồ sơ");
+                throw new KeyNotFoundException("Không tìm thấy hồ sơ");
+
+            //Tìm địa chỉ mặc định
+            var defaultAddress = customer.Address
+                .FirstOrDefault(a => a.AddressId == customer.DefaultAddressId);
 
             return new CustomerProfileResponseDto
             {
@@ -37,7 +42,12 @@ namespace FixNear.Services
                     ? (customer.User.Gender.Value ? Gender.Male : Gender.Female)
                     : null,
                 RoleType = (RoleType)customer.User.RoleType,
-                DefaultAddressId = customer.DefaultAddressId
+                DefaultAddressId = customer.DefaultAddressId,
+                ProvinceId = defaultAddress?.ProvinceId,
+                WardId = defaultAddress?.WardId,
+                AddressLine = defaultAddress?.AddressLine,
+                RecipientName = defaultAddress?.RecipientName,
+                RecipientPhone = defaultAddress?.RecipientPhone
             };
         }
 
@@ -50,15 +60,21 @@ namespace FixNear.Services
             if (customer == null)
                 throw new InvalidOperationException("Không tìm thấy hồ sơ");
 
-            customer.User.FullName = request.FullName;
-            customer.User.Phone = request.Phone;
-            customer.User.Email = request.Email;
+            // Kiểm tra ngày sinh không được ở tương lai
+            if (request.DateOfBirth.HasValue &&
+                request.DateOfBirth.Value > DateOnly.FromDateTime(DateTime.UtcNow))
+                throw new ArgumentException("Ngày sinh không hợp lệ");
+
+
+            //Cập nhật thông tin cá nhân
+
+            customer.User.FullName = request.FullName.Trim();
             customer.User.DateOfBirth = request.DateOfBirth;
-            if (request.Gender.HasValue)
-            {
-                customer.User.Gender =
-                    request.Gender.Value == Gender.Male;
-            }
+
+            customer.User.Gender = request.Gender.HasValue
+                ? request.Gender.Value == Gender.Male
+                : null;
+
             customer.User.AvatarUrl = request.AvatarUrl;
 
             await _context.SaveChangesAsync();
