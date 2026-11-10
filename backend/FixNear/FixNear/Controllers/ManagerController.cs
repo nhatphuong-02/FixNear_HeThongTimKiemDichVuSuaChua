@@ -1,5 +1,6 @@
 ﻿using FixNear.DTOs.Manager;
 using FixNear.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace FixNear.Controllers;
 
 [ApiController]
 [Route("api/manager")]
+[Authorize(Roles = "2")]
 public class ManagerController : ControllerBase
 {
     private readonly IManagerService _managerService;

@@ -1,5 +1,4 @@
-﻿
-using FixNear.DTOs.Quote;
+﻿using FixNear.DTOs.Quote;
 using FixNear.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
