@@ -1,0 +1,63 @@
+$kind: http-request
+name: /api/manager/services/:id
+description: ""
+url: "{{baseUrl}}/api/manager/services/:id?managerId=7775"
+method: PUT
+headers:
+  Content-Type: application/json
+queryParams:
+  - key: managerId
+    value: "7775"
+    disabled: false
+    description: ""
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+pathVariables:
+  - key: id
+    value: "7775"
+    disabled: false
+    description: ""
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: json
+  content: |-
+    {
+      "serviceId": 5408,
+      "description": "string"
+    }
+  $type: |-
+    {
+      "type": "object",
+      "properties": {
+        "serviceId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+settings: {}
+examples: ./.resources/-api-manager-services-id.resources/examples
+order: 1000

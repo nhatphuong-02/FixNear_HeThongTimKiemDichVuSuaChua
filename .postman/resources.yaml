@@ -1,7 +1,9 @@
-# Use this workspace to collaborate
 workspace:
   id: 2c84d244-5966-45e9-8083-be975ce171a0
-
 localResources:
   specs:
     - ../backend/FixNear/FixNear/obj/Debug/net10.0/EndpointInfo/FixNear.json
+    - ../postman/specs/FixNear/fixnear-openapi.json
+resourceNameMappings:
+  specs:
+    - ../postman/specs/FixNear/fixnear-openapi.json: FixNear

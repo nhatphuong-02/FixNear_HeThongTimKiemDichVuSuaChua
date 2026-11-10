@@ -1,0 +1,48 @@
+$kind: http-request
+name: /api/technician/assignments/:id/reject
+description: ""
+url: "{{baseUrl}}/api/technician/assignments/:id/reject"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  - key: id
+    value: "7775"
+    disabled: false
+    description: ""
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: json
+  content: |-
+    {
+      "reason": "string"
+    }
+  $type: |-
+    {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "reason"
+      ]
+    }
+settings: {}
+examples: ./.resources/-api-technician-assignments-id-reject.resources/examples
+order: 1000

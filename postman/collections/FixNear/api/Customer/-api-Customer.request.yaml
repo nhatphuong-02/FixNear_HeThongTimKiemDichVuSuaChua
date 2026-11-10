@@ -1,0 +1,58 @@
+$kind: http-request
+name: /api/Customer
+description: ""
+url: "{{baseUrl}}/api/Customer"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "fullName": "string",
+      "phone": "string",
+      "email": "v969xOBIYj3@VxApA.gc",
+      "dateOfBirth": "2020-04-26",
+      "gender": 1,
+      "avatarUrl": "https://t.paqaWrei-4wD,kt,ghGYoads-QDC5fGcvVV82hjn9l4BlEzDDjQ4YaBUK.A"
+    }
+  $type: |-
+    {
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "phone": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "format": "date"
+        },
+        "gender": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "format": "int32"
+        },
+        "avatarUrl": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "fullName"
+      ]
+    }
+settings: {}
+examples: ./.resources/-api-Customer.resources/examples
+order: 2000

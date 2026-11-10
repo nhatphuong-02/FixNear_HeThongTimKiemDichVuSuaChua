@@ -1,0 +1,28 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/manager/shop?managerId=7775"
+  method: PUT
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    managerId: "7775"
+  body:
+    type: json
+    content: |-
+      {
+        "shopName": "string",
+        "description": "string",
+        "phone": "string",
+        "email": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000
