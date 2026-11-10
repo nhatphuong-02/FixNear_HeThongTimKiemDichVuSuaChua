@@ -2,128 +2,210 @@ package com.example.fixnear.ui.auth
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.example.fixnear.ui.home.HomeActivity
+import com.example.fixnear.data.local.SessionManager
 import com.example.fixnear.data.model.LoginRequest
 import com.example.fixnear.data.remote.RetrofitClient
 import com.example.fixnear.databinding.ActivityLoginBinding
 import com.example.fixnear.helper.setupPasswordToggle
+import com.example.fixnear.ui.home.HomeActivity
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 class LoginActivity : AppCompatActivity() {
-    //Kiểm tra dữ liệu đăng nhập
-    private fun login(){
-        val account = binding.edtEmail.text.toString().trim()
-        val password = binding.edtPassword.text.toString().trim()
 
-        if(account.isEmpty()){
-            binding.edtEmail.error = "Vui lòng nhập tên đăng nhập"
+    private lateinit var binding: ActivityLoginBinding
+    private lateinit var sessionManager: SessionManager
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        sessionManager = SessionManager(this)
+
+        setupPasswordToggle(
+            binding.edtPassword,
+            binding.btnTogglePassword
+        )
+
+        setupEvents()
+    }
+
+    private fun setupEvents() {
+        binding.btnLogin.setOnClickListener {
+            login()
+        }
+
+        binding.btnGoRegister.setOnClickListener {
+            startActivity(
+                Intent(this, RegisterActivity::class.java)
+            )
+        }
+    }
+
+    private fun login() {
+        val account = binding.edtEmail.text.toString().trim()
+        val password = binding.edtPassword.text.toString()
+
+        if (account.isBlank()) {
+            binding.edtEmail.error = "Vui lòng nhập email hoặc số điện thoại"
+            binding.edtEmail.requestFocus()
             return
         }
-        if(password.isEmpty()){
+
+        if (password.isBlank()) {
             binding.edtPassword.error = "Vui lòng nhập mật khẩu"
+            binding.edtPassword.requestFocus()
             return
         }
 
         val request =
             if(account.contains("@"))
                 LoginRequest(
-                    email = account,
-                    phone = null,
-                    password = password
+                    null,
+                    account,
+                    password
                 )
             else
                 LoginRequest(
-                    phone = account,
-                    email = null,
-                    password = password
+                    account,
+                    null,
+                    password
                 )
 
-        callLoginApI(request)
+        callLoginApi(request)
     }
 
-    //Gọi api đăng nhập
-    private fun callLoginApI(request: LoginRequest){
+    private fun callLoginApi(request: LoginRequest) {
+
         lifecycleScope.launch {
+
+            binding.btnLogin.isEnabled = false
+
             try {
                 val response = RetrofitClient.authApi.login(request)
 
-                if(response.isSuccessful){
-                    val body = response.body()
-                    val user = body?.data
+                if (response.isSuccessful) {
 
-                    if(user != null){
+                    val loginData = response.body()?.data
+
+                    if (loginData == null) {
                         Toast.makeText(
                             this@LoginActivity,
-                            body.message,
-                            Toast.LENGTH_SHORT
+                            "Không nhận được dữ liệu đăng nhập",
+                            Toast.LENGTH_LONG
                         ).show()
-
-                        val intent = Intent(this@LoginActivity, HomeActivity::class.java)
-
-                        with(intent) {
-                            putExtra("USER_ID",user.userId)
-                            putExtra("FULL_NAME",user.fullName)
-                            putExtra("ROLE_TYPE",user.roleType)
-                            putExtra("TOKEN",user.token)
-                        }
-
-                        startActivity(intent)
-                        finish()
+                        return@launch
                     }
-                    else {
+
+                    val token = loginData.token
+
+                    if (token.isNullOrBlank()) {
+                        Log.e(
+                            "LOGIN_ERROR",
+                            "Đăng nhập thành công nhưng Token bị null hoặc rỗng"
+                        )
+
                         Toast.makeText(
                             this@LoginActivity,
-                            "Không nhận được dữ liệu người dùng",
-                            Toast.LENGTH_SHORT
+                            "Không nhận được Token từ máy chủ",
+                            Toast.LENGTH_LONG
                         ).show()
+
+                        return@launch
                     }
-                }
-                else{
-                    val errorJson = response.errorBody()?.string()
+
+                    // Lưu thông tin tài khoản và Token
+                    sessionManager.saveLogin(
+                        userId = loginData.userId,
+                        fullName = loginData.fullName,
+                        roleType = loginData.roleType,
+                        token = token
+                    )
+
+                    // Kiểm tra trạng thái lưu Token
+                    val savedToken = sessionManager.getToken()
+
+                    if (savedToken.isNullOrBlank()) {
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Không thể lưu phiên đăng nhập",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@launch
+                    }
+
+                    Log.d(
+                        "LOGIN_SUCCESS",
+                        "Đăng nhập thành công. Token đã được lưu."
+                    )
+
+                    Toast.makeText(
+                        this@LoginActivity,
+                        response.body()?.message ?: "Đăng nhập thành công",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // Chuyển sang màn hình Home
+                    val intent = Intent(
+                        this@LoginActivity,
+                        HomeActivity::class.java
+                    )
+
+                    intent.flags =
+                        Intent.FLAG_ACTIVITY_NEW_TASK or
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+                    startActivity(intent)
+
+                } else {
+
+                    val errorBody = response.errorBody()?.string()
+
+                    Log.e(
+                        "LOGIN_ERROR",
+                        "HTTP ${response.code()} - $errorBody"
+                    )
 
                     val message = try {
-                        JSONObject(errorJson ?: "")
-                            .optString("message", "Đăng nhập thất bại")
+                        JSONObject(errorBody ?: "{}")
+                            .optString(
+                                "message",
+                                "Đăng nhập thất bại (${response.code()})"
+                            )
                     } catch (e: Exception) {
-                        "Đăng nhập thất bại"
+                        "Đăng nhập thất bại (${response.code()})"
                     }
+
                     Toast.makeText(
                         this@LoginActivity,
                         message,
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_LONG
                     ).show()
                 }
-            }
-            catch (e : Exception){
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    "LOGIN_ERROR",
+                    "Lỗi gọi API đăng nhập",
+                    e
+                )
+
                 Toast.makeText(
                     this@LoginActivity,
-                    e.message,
-                    Toast.LENGTH_SHORT
+                    "Không thể kết nối máy chủ. Vui lòng thử lại.",
+                    Toast.LENGTH_LONG
                 ).show()
+
+            } finally {
+                binding.btnLogin.isEnabled = true
             }
-        }
-    }
-
-    private lateinit var binding: ActivityLoginBinding
-    override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
-        super.onCreate(savedInstanceState)
-        binding = ActivityLoginBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        setupPasswordToggle(binding.edtPassword,binding.btnTogglePassword)
-
-        binding.btnLogin.setOnClickListener {
-            login()
-        }
-        binding.btnGoRegister.setOnClickListener {
-            val intent = Intent(this@LoginActivity, RegisterActivity::class.java)
-            startActivity(intent)
         }
     }
 }
