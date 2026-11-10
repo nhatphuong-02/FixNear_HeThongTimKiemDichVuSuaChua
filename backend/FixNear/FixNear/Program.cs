@@ -16,7 +16,8 @@ builder.Services.AddDbContext<FixNearDbContext>(options =>
 // Add services to the container.
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<ICustomerService, CustomerService>();    
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IManagerService, ManagerService>();   
 // X04 - Tao bao gia
 builder.Services.AddScoped<IQuoteService, QuoteService>();
 
