@@ -75,7 +75,8 @@ namespace FixNear.Services
                     ProvinceId = request.ProvinceId,
                     WardId = request.WardId,
                     AddressLine = request.AddressLine,
-                    RecipientName = request.FullName,
+                    RecipientName = request.RecipientName,
+                    RecipientPhone = request.RecipientPhone,
                     IsLocked = false,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -126,21 +127,6 @@ namespace FixNear.Services
                 FullName = existingUser.FullName,
                 RoleType = existingUser.RoleType,
                 Token = token,
-            };
-        }
-
-        public async Task<CurrentUserResponseDto> GetCurrentUserAsync(int userId)
-        {
-            var user = await _context.User.FirstOrDefaultAsync(u => u.UserId == userId);
-
-            if (user == null)
-                throw new InvalidOperationException("Người dùng không tồn tại");
-
-            return new CurrentUserResponseDto
-            {
-                UserId = user.UserId,
-                FullName = user.FullName,
-                RoleType = user.RoleType
             };
         }
     }

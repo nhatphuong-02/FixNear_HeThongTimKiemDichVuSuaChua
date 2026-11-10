@@ -27,4 +27,8 @@ public class RegisterRequestDto
     [MaxLength(500)]
     public string AddressLine { get; set; } = null!;
 
+    public required string RecipientName { get; set; }
+    
+    public required string RecipientPhone { get; set; }
+
 }

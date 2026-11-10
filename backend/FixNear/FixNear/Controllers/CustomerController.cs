@@ -7,7 +7,8 @@ using System.Security.Claims;
 namespace FixNear.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/customers/me")]
+    [Authorize]
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;
@@ -17,26 +18,47 @@ namespace FixNear.Controllers
         }
 
         [Authorize]
-        [HttpGet("me")]
+        [HttpGet("profile")]
         public async Task<IActionResult> GetCustomerProfileAsync()
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            var result = await _customerService.GetCustomerProfileAsync(userId);
+            try
+            {
+                var result = await _customerService
+                    .GetCustomerProfileAsync(userId);
 
-            return Ok(result);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
         }
+
         [Authorize]
-        [HttpPut]
+        [HttpPut("profile")]
         public async Task<IActionResult> UpdateProfileAsync(UpdateProfileRequestDto request)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            await _customerService.UpdateProfileAsync(userId,request);
 
-            return Ok(new
+            try
             {
-                message = "Cập nhật thông tin cá nhân thành công"
-            });
+                await _customerService.UpdateProfileAsync(userId, request);
+
+                return Ok(new
+                {
+                    message = "Cập nhật thông tin cá nhân thành công"
+                });
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
         }
     }
 }

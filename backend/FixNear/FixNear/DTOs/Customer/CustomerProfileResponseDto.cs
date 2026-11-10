@@ -15,5 +15,10 @@ namespace FixNear.DTOs.Customer
         public Gender? Gender { get; set; }
         public RoleType RoleType { get; set; }
         public int? DefaultAddressId {  get; set; }
+        public int? ProvinceId { get; set; }
+        public int? WardId { get; set; }
+        public string? AddressLine { get; set; }
+        public string? RecipientName { get; set; }
+        public string? RecipientPhone { get; set; }
     }
 }
