@@ -19,6 +19,7 @@ namespace FixNear.Services
 
         public async Task RegisterAsync(RegisterRequestDto request)
         {
+            //Kiểm tra tài khoản đã tồn tại
             var existingUser = await _context.User
                 .FirstOrDefaultAsync(u =>
                         (request.Email != null && u.Email == request.Email) ||
@@ -26,33 +27,74 @@ namespace FixNear.Services
 
             if (existingUser != null)
                 throw new InvalidOperationException("Người dùng đã tồn tại");
+            // Kiểm tra phường/xã thuộc tỉnh/tp đã chọn
+            var validWard = await _context.Ward.AnyAsync(w=>
+               w.WardId == request.WardId && 
+               w.ProvinceId == request.ProvinceId);
 
-            var user = new User
-            {
-                FullName = request.FullName,
-                Email = request.Email,
-                Phone = request.Phone,
-                DateOfBirth = request.DateOfBirth,
-                Gender = request.Gender.HasValue? request.Gender.Value == Gender.Male : null,
-                RoleType = (int) RoleType.Customer,
-                Status = (int)
-                UserStatus.Active
-            };
+            if (!validWard)
+                throw new InvalidOperationException("Phường/Xã không thuộc Tỉnh/Thành phố đã chọn");
 
-            var passwordHasher = new PasswordHasher<User>();
-            user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
+            //Transaction để đảm bảo tính toàn vẹn dữ liệu
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            //Tạo user
+            try { 
+                var user = new User
+                {
+                    FullName = request.FullName,
+                    Email = request.Email,
+                    Phone = request.Phone,
+                    DateOfBirth = request.DateOfBirth,
+                    Gender = request.Gender.HasValue? request.Gender.Value == Gender.Male : null,
+                    RoleType = (int) RoleType.Customer,
+                    Status = (int)UserStatus.Active
+                };
+
+                var passwordHasher = new PasswordHasher<User>();
+                user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
             
-            _context.User.Add(user);       
-            await _context.SaveChangesAsync();
+                _context.User.Add(user);       
+                await _context.SaveChangesAsync();
 
-            var userProfile = new CustomerProfile
-            {
-                UserId = user.UserId,
-                CreatedAt = DateTime.UtcNow
-            };
+                //Tạo profile cho user
+                var userProfile = new CustomerProfile
+                {
+                    UserId = user.UserId,
+                    CreatedAt = DateTime.UtcNow
+                };
             
-            _context.CustomerProfile.Add(userProfile);
-            await _context.SaveChangesAsync();
+                _context.CustomerProfile.Add(userProfile);
+                await _context.SaveChangesAsync();
+
+                //Tạo địa chỉ cho user
+                var address = new Address
+                {
+                    OwnerType = (int)RoleType.Customer,
+                    CustomerId = userProfile.CustomerId,
+                    ProvinceId = request.ProvinceId,
+                    WardId = request.WardId,
+                    AddressLine = request.AddressLine,
+                    RecipientName = request.FullName,
+                    IsLocked = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.Address.Add(address);
+                await _context.SaveChangesAsync();
+
+                // Đặt địa chỉ vừa tạo làm địa chỉ mặc định
+                userProfile.DefaultAddressId = address.AddressId;
+
+                await _context.SaveChangesAsync();
+
+                // 8. Hoàn tất transaction
+                await transaction.CommitAsync();
+            }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
         }
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
