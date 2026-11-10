@@ -1,5 +1,4 @@
-﻿
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using FixNear.DTOs.Technician;
 using FixNear.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
