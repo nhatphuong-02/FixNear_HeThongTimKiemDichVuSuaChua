@@ -1,0 +1,55 @@
+$kind: http-request
+name: /api/reviews
+description: ""
+url: "{{baseUrl}}/api/reviews"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "repairRequestId": 126235878,
+      "rating": 4,
+      "comment": "string",
+      "technicianId": 8961,
+      "imageUrls": [
+        "string",
+        "string"
+      ]
+    }
+  $type: |-
+    {
+      "type": "object",
+      "properties": {
+        "repairRequestId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647,
+          "format": "int32"
+        },
+        "rating": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "format": "int32"
+        },
+        "comment": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "technicianId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "imageUrls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+settings: {}
+examples: ./.resources/-api-reviews.resources/examples
+order: 1000

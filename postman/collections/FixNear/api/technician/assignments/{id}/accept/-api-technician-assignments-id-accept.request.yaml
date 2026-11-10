@@ -1,0 +1,29 @@
+$kind: http-request
+name: /api/technician/assignments/:id/accept
+description: ""
+url: "{{baseUrl}}/api/technician/assignments/:id/accept"
+method: PATCH
+pathVariables:
+  - key: id
+    value: "7775"
+    disabled: false
+    description: ""
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+body:
+  type: text
+  content: ""
+settings: {}
+examples: ./.resources/-api-technician-assignments-id-accept.resources/examples
+order: 1000

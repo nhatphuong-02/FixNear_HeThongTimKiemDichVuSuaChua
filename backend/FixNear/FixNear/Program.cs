@@ -16,7 +16,10 @@ builder.Services.AddDbContext<FixNearDbContext>(options =>
 // Add services to the container.
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();    
+// X04 - Tao bao gia
+builder.Services.AddScoped<IQuoteService, QuoteService>();
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -60,9 +63,18 @@ builder.Services.AddAuthentication("Bearer")
             )
         };
     });
+// X09 - RepairItem
+builder.Services.AddScoped<IRepairItemService, RepairItemService>();
+// X10 - Technician Service va cac chuc nang tiep theo
+builder.Services.AddScoped<ITechnicianService, TechnicianService>();
+// X12, X13 - Invoice Service
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+// Phai Build sau khi da dang ky tat ca Services
+
 
 var app = builder.Build();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
