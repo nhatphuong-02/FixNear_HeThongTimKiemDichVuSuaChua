@@ -1,0 +1,11 @@
+$kind: http-request
+name: /api/Auth/me
+description: ""
+url: "{{baseUrl}}/api/Auth/me"
+method: GET
+body:
+  type: text
+  content: ""
+settings: {}
+examples: ./.resources/-api-Auth-me.resources/examples
+order: 1000

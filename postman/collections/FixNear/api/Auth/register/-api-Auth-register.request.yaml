@@ -1,0 +1,57 @@
+$kind: http-request
+name: /api/Auth/register
+description: ""
+url: "{{baseUrl}}/api/Auth/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "fullName": "string",
+      "email": "GCzuQd@IHElcyplojLV.bsoc",
+      "phone": "string",
+      "dateOfBirth": "1964-12-03",
+      "gender": 1,
+      "password": "stringstring"
+    }
+  $type: |-
+    {
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "format": "date"
+        },
+        "gender": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "format": "int32"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8
+        }
+      },
+      "required": [
+        "fullName"
+      ]
+    }
+settings: {}
+examples: ./.resources/-api-Auth-register.resources/examples
+order: 1000

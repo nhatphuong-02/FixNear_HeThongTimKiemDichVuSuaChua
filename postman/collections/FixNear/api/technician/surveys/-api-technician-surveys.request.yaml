@@ -1,0 +1,40 @@
+$kind: http-request
+name: /api/technician/surveys
+description: ""
+url: "{{baseUrl}}/api/technician/surveys"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "diagnosis": "string",
+      "repairRequestId": 1169206943,
+      "recommendation": "string"
+    }
+  $type: |-
+    {
+      "type": "object",
+      "properties": {
+        "repairRequestId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647,
+          "format": "int32"
+        },
+        "diagnosis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recommendation": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "diagnosis"
+      ]
+    }
+settings: {}
+examples: ./.resources/-api-technician-surveys.resources/examples
+order: 1000

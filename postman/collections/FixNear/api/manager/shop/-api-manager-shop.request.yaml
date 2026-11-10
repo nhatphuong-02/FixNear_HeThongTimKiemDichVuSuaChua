@@ -1,0 +1,26 @@
+$kind: http-request
+name: /api/manager/shop
+description: ""
+url: "{{baseUrl}}/api/manager/shop?managerId=7775"
+method: GET
+queryParams:
+  - key: managerId
+    value: "7775"
+    disabled: false
+    description: ""
+    $type: |-
+      {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+body:
+  type: text
+  content: ""
+settings: {}
+examples: ./.resources/-api-manager-shop.resources/examples
+order: 1000

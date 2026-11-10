@@ -1,0 +1,84 @@
+$kind: http-request
+name: /api/quotes
+description: ""
+url: "{{baseUrl}}/api/quotes"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "details": [
+        {
+          "itemType": 1846749448,
+          "serviceRefId": 124,
+          "repairItemRefId": 5358,
+          "repairPartRefId": 1425,
+          "description": "string",
+          "quantity": 8339.35703115798,
+          "unitPrice": 5155.993650415754
+        }
+      ],
+      "repairRequestId": 1589006858,
+      "validUntil": "2016-02-07T11:13:10.221Z"
+    }
+  $type: |-
+    {
+      "type": "object",
+      "properties": {
+        "repairRequestId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647,
+          "format": "int32"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "itemType": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647,
+                "format": "int32"
+              },
+              "serviceRefId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "repairItemRefId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "repairPartRefId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "description": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "number",
+                "format": "double"
+              },
+              "unitPrice": {
+                "type": "number",
+                "format": "double"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "details"
+      ]
+    }
+settings: {}
+examples: ./.resources/-api-quotes.resources/examples
+order: 1000
