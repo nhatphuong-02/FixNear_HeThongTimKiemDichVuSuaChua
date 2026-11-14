@@ -1,11 +1,10 @@
-﻿
-using FixNear.DTOs.Quote;
+﻿using FixNear.DTOs.Quote;
 using FixNear.Enums;
 using FixNear.Models;
 using FixNear.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace FixNear.Services;
+namespace FixNear.Services.Service;
 
 public class QuoteService : IQuoteService
 {
@@ -84,7 +83,7 @@ public class QuoteService : IQuoteService
                     }
 
                     if (await _context
-                        .Set<FixNear.Models.Service>()
+                        .Set<Models.Service>()
                         .FindAsync(item.ServiceRefId.Value) == null)
                     {
                         return Fail(CreateQuoteStatus.InvalidItem);
@@ -145,7 +144,7 @@ public class QuoteService : IQuoteService
         }
 
         // 6. Tao thong tin bao gia
-        var quote = new FixNear.Models.Quote
+        var quote = new Quote
         {
             RepairRequestId = request.RepairRequestId,
             TechnicianId = assignment.TechnicianId,

@@ -1,12 +1,11 @@
-﻿
-using FixNear.DTOs.Technician;
+﻿using FixNear.DTOs.Technician;
 using FixNear.Enums;
 using FixNear.Models;
 using FixNear.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 
-namespace FixNear.Services
+namespace FixNear.Services.Service
 {
     public class TechnicianService : ITechnicianService
     {

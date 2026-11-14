@@ -4,7 +4,7 @@ using FixNear.Models;
 using FixNear.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace FixNear.Services;
+namespace FixNear.Services.Service;
 
 public class ManagerService : IManagerService
 {

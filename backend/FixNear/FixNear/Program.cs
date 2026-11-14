@@ -1,6 +1,6 @@
 using FixNear.Models;
-using FixNear.Services;
 using FixNear.Services.Interfaces;
+using FixNear.Services.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;

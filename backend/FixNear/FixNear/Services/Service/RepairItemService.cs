@@ -1,10 +1,9 @@
-﻿
-using FixNear.DTOs.RepairItem;
+﻿using FixNear.DTOs.RepairItem;
 using FixNear.Models;
 using FixNear.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace FixNear.Services
+namespace FixNear.Services.Service
 {
     public class RepairItemService : IRepairItemService
     {

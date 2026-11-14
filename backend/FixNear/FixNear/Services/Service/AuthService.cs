@@ -5,7 +5,7 @@ using FixNear.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace FixNear.Services
+namespace FixNear.Services.Service
 {
     public class AuthService : IAuthService
     {
