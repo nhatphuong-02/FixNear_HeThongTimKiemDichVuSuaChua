@@ -1,0 +1,50 @@
+﻿using FixNear.Features.Auth.DTOs;
+using FixNear.Features.Auth.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+
+namespace FixNear.Features.Auth.Controller
+{
+    [ApiController]
+    [Route("api/auth")]
+    public class AuthController : ControllerBase
+    {
+        private readonly IAuthService _authService;
+        public AuthController(IAuthService authService)
+        { 
+            _authService = authService;
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterRequestDto request)
+        {
+            await _authService.RegisterAsync(request);
+            return Ok(new
+            {
+                message = "Đăng ký tài khoản thành công"
+            });
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginRequestDto request)
+        {
+            try
+            {
+                var result = await _authService.LoginAsync(request);
+
+                return Ok(new
+                {
+                    message = "Đăng nhập thành công",
+                    data = result
+                });
+                { }
+            }
+            catch (InvalidOperationException e)
+            {
+                return Unauthorized(new
+                {
+                    message = e.Message
+                });
+            }
+        }
+    }
+}

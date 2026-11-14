@@ -9,7 +9,6 @@
   <ItemGroup>
     <Compile Remove="Controllers\TechnicianAssignmentController.cs" />
     <Compile Remove="Controllers\TechnicianSurveyController.cs" />
-    <Compile Remove="Services\Interfaces\ITechnicianAssignmentService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +23,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\Shops\Controllers\" />
+    <Folder Include="Features\Shops\DTOs\" />
+    <Folder Include="Features\Shops\Interfaces\" />
+    <Folder Include="Features\Shops\Services\" />
   </ItemGroup>
 
 </Project>

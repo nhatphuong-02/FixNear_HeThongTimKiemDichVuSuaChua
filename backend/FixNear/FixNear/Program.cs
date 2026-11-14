@@ -1,6 +1,25 @@
-using FixNear.Models;
-using FixNear.Services;
-using FixNear.Services.Interfaces;
+using FixNear.Features.Auth.Interfaces;
+using FixNear.Features.Auth.Services;
+using FixNear.Features.Customers.Interfaces;
+using FixNear.Features.Customers.Services;
+using FixNear.Features.Invoices.Interfaces;
+using FixNear.Features.Invoices.Services;
+using FixNear.Features.Manager.Interfaces;
+using FixNear.Features.Manager.Services;
+using FixNear.Features.Payments.Interfaces;
+using FixNear.Features.Payments.Services;
+using FixNear.Features.Quotes.Interfaces;
+using FixNear.Features.Quotes.Services;
+using FixNear.Features.RepairRequest.Interfaces;
+using FixNear.Features.RepairRequest.Services;
+using FixNear.Features.Reviews.Interfaces;
+using FixNear.Features.Reviews.Services;
+using FixNear.Features.ServiceCatalog.Interfaces;
+using FixNear.Features.ServiceCatalog.Services;
+using FixNear.Features.Technicians.Interfaces;
+using FixNear.Features.Technicians.Services;
+using FixNear.Infrastructor.Persistence;
+using FixNear.Infrastructor.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -14,8 +33,9 @@ builder.Services.AddDbContext<FixNearDbContext>(options =>
     ));
 
 // Add services to the container.
-builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IServiceCategoryService, ServiceCategoryService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IManagerService, ManagerService>();   
 // X04 - Tao bao gia
