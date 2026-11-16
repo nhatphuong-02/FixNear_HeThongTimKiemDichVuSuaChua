@@ -1,10 +1,9 @@
 ﻿
 using System.Data;
 using FixNear.Domain.Models;
-using FixNear.DTOs.Invoice;
 using FixNear.Features.Invoices.DTOs;
 using FixNear.Features.Invoices.Interfaces;
-using FixNear.Infrastructor.Persistence;
+using FixNear.Infrastructure.Persistence;
 using FixNear.Models;
 using Microsoft.EntityFrameworkCore;
 

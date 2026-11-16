@@ -1,7 +1,6 @@
-﻿using FixNear.DTOs.Service;
-using FixNear.Features.ServiceCatalog.DTOs;
+﻿using FixNear.Features.ServiceCatalog.DTOs;
 using FixNear.Features.ServiceCatalog.Interfaces;
-using FixNear.Infrastructor.Persistence;
+using FixNear.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace FixNear.Features.ServiceCatalog.Services

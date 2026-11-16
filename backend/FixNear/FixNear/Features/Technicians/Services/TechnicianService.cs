@@ -2,7 +2,7 @@
 using FixNear.Domain.Models;
 using FixNear.Features.Technicians.DTOs;
 using FixNear.Features.Technicians.Interfaces;
-using FixNear.Infrastructor.Persistence;
+using FixNear.Infrastructure.Persistence;
 using FixNear.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
