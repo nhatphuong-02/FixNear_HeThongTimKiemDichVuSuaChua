@@ -1,8 +1,10 @@
 ﻿using FixNear.Domain.Enums;
-using FixNear.Domain.Models;
+using FixNear.Domain.Models.Quotes;
+using FixNear.Domain.Models.Repairs;
+using FixNear.Domain.Models.ServiceCatalog;
 using FixNear.Features.Quotes.DTOs;
 using FixNear.Features.Quotes.Interfaces;
-using FixNear.Infrastructor.Persistence;
+using FixNear.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace FixNear.Features.Quotes.Services;

@@ -2,7 +2,7 @@
 using FixNear.Domain.Models;
 using FixNear.Features.Manager.DTOs;
 using FixNear.Features.Manager.Interfaces;
-using FixNear.Infrastructor.Persistence;
+using FixNear.Infrastructure.Persistence;
 using FixNear.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -749,7 +749,7 @@ public class ManagerService : IManagerService
         {
             ShopId = shopId,
             TechnicianId = dto.TechnicianId,
-            Status = dto.Status,
+            Status = (TechnicianShopStatus) dto.Status,
             IsPrimary = dto.IsPrimary,
             JoinedAt = now,
             LeftAt = null,
@@ -801,7 +801,7 @@ public class ManagerService : IManagerService
                     "Kỹ thuật viên đang có cửa hàng chính khác.");
         }
 
-        link.Status = dto.Status;
+        link.Status = (TechnicianShopStatus) dto.Status;
         link.IsPrimary = dto.IsPrimary;
 
         await _db.SaveChangesAsync();

@@ -1,7 +1,7 @@
 ﻿using FixNear.Domain.Models;
 using FixNear.Features.RepairRequest.DTOs;
 using FixNear.Features.RepairRequest.Interfaces;
-using FixNear.Infrastructor.Persistence;
+using FixNear.Infrastructure.Persistence;
 using FixNear.Models;
 using Microsoft.EntityFrameworkCore;
 

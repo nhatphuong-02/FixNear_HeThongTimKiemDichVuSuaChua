@@ -1,9 +1,9 @@
 ﻿using FixNear.Domain.Enums;
-using FixNear.Domain.Models;
+using FixNear.Domain.Models.Identity;
 using FixNear.Features.Auth.DTOs;
 using FixNear.Features.Auth.Interfaces;
-using FixNear.Infrastructor.Persistence;
-using FixNear.Infrastructor.Security;
+using FixNear.Infrastructure.Persistence;
+using FixNear.Infrastructure.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
