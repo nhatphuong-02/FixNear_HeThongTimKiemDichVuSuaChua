@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace FixNear.Domain.Models.Review;
+﻿namespace FixNear.Domain.Models.Reviews;
 
 public partial class ReviewImage
 {

@@ -1,10 +1,9 @@
 ﻿
 using System.Data;
-using FixNear.Domain.Models;
+using FixNear.Domain.Models.Reviews;
 using FixNear.Features.Reviews.DTOs;
 using FixNear.Features.Reviews.Interfaces;
 using FixNear.Infrastructure.Persistence;
-using FixNear.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FixNear.Features.Reviews.Services

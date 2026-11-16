@@ -2,10 +2,9 @@
 using FixNear.Domain.Models.Customers;
 using FixNear.Domain.Models.Messaging;
 using FixNear.Domain.Models.Quotes;
+using FixNear.Domain.Models.Reviews;
 using FixNear.Domain.Models.Shops;
 using FixNear.Domain.Models.Warranties;
-using System;
-using System.Collections.Generic;
 
 namespace FixNear.Domain.Models.Repairs;
 
@@ -65,7 +64,7 @@ public partial class RepairRequest
 
     public virtual ICollection<RepairRequestStatusHistory> RepairRequestStatusHistory { get; set; } = new List<RepairRequestStatusHistory>();
 
-    public virtual RepairSchedule? RepairSchedule { get; set; }
+    public virtual ICollection<RepairSchedule> RepairSchedule { get; set; } = new List<RepairSchedule>();
 
     public virtual Review? ReviewRepairRequest { get; set; }
 

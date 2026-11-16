@@ -1,4 +1,5 @@
 ﻿using FixNear.Domain.Enums;
+using FixNear.Domain.Models.Customers;
 using FixNear.Domain.Models.Identity;
 using FixNear.Features.Auth.DTOs;
 using FixNear.Features.Auth.Interfaces;

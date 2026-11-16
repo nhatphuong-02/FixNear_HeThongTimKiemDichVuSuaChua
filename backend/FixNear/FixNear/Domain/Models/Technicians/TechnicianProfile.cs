@@ -1,6 +1,7 @@
 ﻿using FixNear.Domain.Models.Identity;
 using FixNear.Domain.Models.Quotes;
 using FixNear.Domain.Models.Repairs;
+using FixNear.Domain.Models.Reviews;
 using System;
 using System.Collections.Generic;
 

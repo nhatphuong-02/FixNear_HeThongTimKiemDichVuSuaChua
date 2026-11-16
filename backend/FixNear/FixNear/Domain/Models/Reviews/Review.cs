@@ -2,10 +2,8 @@
 using FixNear.Domain.Models.Repairs;
 using FixNear.Domain.Models.Shops;
 using FixNear.Domain.Models.Technicians;
-using System;
-using System.Collections.Generic;
 
-namespace FixNear.Domain.Models.Review;
+namespace FixNear.Domain.Models.Reviews;
 
 public partial class Review
 {

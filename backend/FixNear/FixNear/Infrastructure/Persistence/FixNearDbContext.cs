@@ -8,7 +8,7 @@ using FixNear.Domain.Models.Messaging;
 using FixNear.Domain.Models.Notifications;
 using FixNear.Domain.Models.Quotes;
 using FixNear.Domain.Models.Repairs;
-using FixNear.Domain.Models.Review;
+using FixNear.Domain.Models.Reviews;
 using FixNear.Domain.Models.ServiceCatalog;
 using FixNear.Domain.Models.Shops;
 using FixNear.Domain.Models.Technicians;
@@ -1356,9 +1356,8 @@ public partial class FixNearDbContext : DbContext
                 .HasConstraintName("FK_RepairSchedule_CreatedBy");
 
             entity.HasOne(d => d.RepairRequest)
-                .WithOne(p => p.RepairSchedule)
-                .HasForeignKey<RepairSchedule>(
-                    d => d.RepairRequestId)
+                .WithMany(p => p.RepairSchedule)
+                .HasForeignKey(d => d.RepairRequestId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_RepairSchedule_Request");
 
