@@ -1,11 +1,10 @@
 ﻿using FixNear.Domain.Enums;
-using FixNear.Domain.Models;
+using FixNear.Domain.Models.Customers;
 using FixNear.Features.Customers.DTOs;
 using FixNear.Features.Customers.Interfaces;
 using FixNear.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using System.Net;
 
 namespace FixNear.Features.Customers.Services
 {
@@ -226,7 +225,8 @@ namespace FixNear.Features.Customers.Services
                     throw new KeyNotFoundException("Không tìm thấy địa chỉ");
                 if(oldAddress.IsLocked)
                     throw new InvalidOperationException("Địa chỉ đã bị khóa, không thể thay thế");
-
+                if(oldAddress.SupersededByAddressId != null)
+                    throw new InvalidOperationException("Địa chỉ đã bị thay thế, không thể thay thế");
                 //Kiểm tra tỉnh/thành phố
                 var province = await _context.Province
                     .FirstOrDefaultAsync(p => p.ProvinceId == request.ProvinceId);

@@ -33,7 +33,7 @@ GO
 -- 3. User
 CREATE TABLE dbo.[User] (
     UserId          INT IDENTITY(1,1) NOT NULL,
-    RoleType        INT             NOT NULL,       -- 1: ADMIN, 2: MANAGER, 3: TECHNICIAN, 4: CUSTOMER
+    RoleType        INT             NOT NULL,       -- 1: CUSTOMER, 2: MANAGER, 3: TECHNICIAN, 4: ADMIN
     FullName        NVARCHAR(200)   NOT NULL,
     Phone           NVARCHAR(20)    NULL,
     Email           NVARCHAR(200)   NULL,
@@ -47,6 +47,36 @@ CREATE TABLE dbo.[User] (
     LastLoginAt     DATETIME2       NULL,
     CONSTRAINT PK_User PRIMARY KEY (UserId)
 );
+GO
+
+-- 3A. EmailVerification (bảng bổ sung cho xác thực email)
+-- Lưu OTP xác thực đăng ký và đổi email.
+-- Register: UserId = NULL, RegistrationData chứa dữ liệu đăng ký đã được bảo vệ (không lưu mật khẩu thô).
+-- ChangeEmail: UserId có giá trị, RegistrationData = NULL.
+CREATE TABLE dbo.EmailVerification (
+    EmailVerificationId INT IDENTITY(1,1) NOT NULL,
+    UserId              INT             NULL,
+    Email               NVARCHAR(255)   NOT NULL,
+    OtpHash             NVARCHAR(255)   NOT NULL,
+    Purpose             INT             NOT NULL CONSTRAINT DF_EmailVerification_Purpose DEFAULT (1), -- 1: Register, 2: ChangeEmail
+    RegistrationData    NVARCHAR(MAX)   NULL,
+    ExpiresAt           DATETIME2       NOT NULL,
+    FailedAttempts      INT             NOT NULL CONSTRAINT DF_EmailVerification_FailedAttempts DEFAULT (0),
+    CreatedAt           DATETIME2       NOT NULL CONSTRAINT DF_EmailVerification_CreatedAt DEFAULT SYSUTCDATETIME(),
+    VerifiedAt          DATETIME2       NULL,
+    IsUsed              BIT             NOT NULL CONSTRAINT DF_EmailVerification_IsUsed DEFAULT (0),
+    CONSTRAINT PK_EmailVerification PRIMARY KEY (EmailVerificationId),
+    CONSTRAINT FK_EmailVerification_User FOREIGN KEY (UserId)
+        REFERENCES dbo.[User](UserId) ON DELETE NO ACTION,
+    CONSTRAINT CK_EmailVerification_Purpose CHECK (Purpose IN (1, 2)),
+    CONSTRAINT CK_EmailVerification_FailedAttempts CHECK (FailedAttempts >= 0),
+    CONSTRAINT CK_EmailVerification_ExpiresAt CHECK (ExpiresAt > CreatedAt)
+);
+GO
+
+CREATE INDEX IX_EmailVerification_Email ON dbo.EmailVerification(Email);
+CREATE INDEX IX_EmailVerification_ExpiresAt ON dbo.EmailVerification(ExpiresAt);
+CREATE INDEX IX_EmailVerification_UserId ON dbo.EmailVerification(UserId);
 GO
 
 -- 4. CustomerProfile
@@ -143,7 +173,29 @@ CREATE TABLE dbo.Shop (
 );
 GO
 
--- 10. ShopImage
+-- 11. ShopImage
+-- 10. ShopMember
+-- Owner / Manager / Staff của Shop. Shop.ManagerId vẫn được giữ làm legacy
+-- trong giai đoạn chuyển đổi; ManagerId trong ShopMember là nguồn quản lý thành viên.
+CREATE TABLE dbo.ShopMember (
+    ShopMemberId    INT IDENTITY(1,1) NOT NULL,
+    ShopId          INT             NOT NULL,
+    ManagerId       INT             NOT NULL,
+    ShopRole        INT             NOT NULL, -- 1: Owner, 2: Manager, 3: Staff
+    JoinedAt        DATETIME2       NOT NULL CONSTRAINT DF_ShopMember_JoinedAt DEFAULT SYSUTCDATETIME(),
+    LeftAt          DATETIME2       NULL,
+    Status          INT             NOT NULL CONSTRAINT DF_ShopMember_Status DEFAULT (1), -- 1: Active, 2: Inactive, 3: Suspended
+    CreatedAt       DATETIME2       NOT NULL CONSTRAINT DF_ShopMember_CreatedAt DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_ShopMember PRIMARY KEY (ShopMemberId),
+    CONSTRAINT FK_ShopMember_Shop FOREIGN KEY (ShopId) REFERENCES dbo.Shop(ShopId),
+    CONSTRAINT FK_ShopMember_ManagerProfile FOREIGN KEY (ManagerId) REFERENCES dbo.ManagerProfile(ManagerId),
+    CONSTRAINT CK_ShopMember_ShopRole CHECK (ShopRole IN (1, 2, 3)),
+    CONSTRAINT CK_ShopMember_Status CHECK (Status IN (1, 2, 3)),
+    CONSTRAINT CK_ShopMember_Date CHECK (LeftAt IS NULL OR LeftAt >= JoinedAt)
+);
+GO
+
+-- 11. ShopImage
 CREATE TABLE dbo.ShopImage (
     ShopImageId     INT IDENTITY(1,1) NOT NULL,
     ShopId          INT             NOT NULL,
@@ -157,7 +209,7 @@ CREATE TABLE dbo.ShopImage (
 );
 GO
 
--- 11. ServiceCategory
+-- 12. ServiceCategory
 CREATE TABLE dbo.ServiceCategory (
     ServiceCategoryId INT IDENTITY(1,1) NOT NULL,
     CategoryName    NVARCHAR(200)   NOT NULL,
@@ -168,7 +220,7 @@ CREATE TABLE dbo.ServiceCategory (
 );
 GO
 
--- 12. Service
+-- 13. Service
 CREATE TABLE dbo.Service (
     ServiceId       INT IDENTITY(1,1) NOT NULL,
     CategoryId      INT             NOT NULL,
@@ -182,7 +234,7 @@ CREATE TABLE dbo.Service (
 );
 GO
 
--- 13. ShopService
+-- 14. ShopService
 CREATE TABLE dbo.ShopService (
     ShopServiceId   INT IDENTITY(1,1) NOT NULL,
     ShopId          INT             NOT NULL,
@@ -196,7 +248,7 @@ CREATE TABLE dbo.ShopService (
 );
 GO
 
--- 14. ServicePrice
+-- 15. ServicePrice
 CREATE TABLE dbo.ServicePrice (
     ServicePriceId  INT IDENTITY(1,1) NOT NULL,
     ShopServiceId   INT             NOT NULL,
@@ -213,7 +265,7 @@ CREATE TABLE dbo.ServicePrice (
 );
 GO
 
--- 15. TechnicianSpecialization
+-- 16. TechnicianSpecialization
 CREATE TABLE dbo.TechnicianSpecialization (
     TechnicianSpecializationId INT IDENTITY(1,1) NOT NULL,
     TechnicianId    INT             NOT NULL,
@@ -226,7 +278,7 @@ CREATE TABLE dbo.TechnicianSpecialization (
 );
 GO
 
--- 16. TechnicianShop
+-- 17. TechnicianShop
 CREATE TABLE dbo.TechnicianShop (
     TechnicianShopId INT IDENTITY(1,1) NOT NULL,
     TechnicianId    INT             NOT NULL,
@@ -238,11 +290,13 @@ CREATE TABLE dbo.TechnicianShop (
     CreatedAt       DATETIME2       NOT NULL CONSTRAINT DF_TechnicianShop_CreatedAt DEFAULT SYSUTCDATETIME(),
     CONSTRAINT PK_TechnicianShop PRIMARY KEY (TechnicianShopId),
     CONSTRAINT FK_TechnicianShop_Technician FOREIGN KEY (TechnicianId) REFERENCES dbo.TechnicianProfile(TechnicianId),
-    CONSTRAINT FK_TechnicianShop_Shop FOREIGN KEY (ShopId) REFERENCES dbo.Shop(ShopId)
+    CONSTRAINT FK_TechnicianShop_Shop FOREIGN KEY (ShopId) REFERENCES dbo.Shop(ShopId),
+    CONSTRAINT CK_TechnicianShop_Status CHECK (Status IN (1, 2)), -- 1: Active, 2: Inactive
+    CONSTRAINT CK_TechnicianShop_Date CHECK (LeftAt IS NULL OR LeftAt >= JoinedAt)
 );
 GO
 
--- 17. RepairItem
+-- 18. RepairItem
 CREATE TABLE dbo.RepairItem (
     RepairItemId    INT IDENTITY(1,1) NOT NULL,
     ItemCode        NVARCHAR(50)    NOT NULL,
@@ -256,7 +310,7 @@ CREATE TABLE dbo.RepairItem (
 );
 GO
 
--- 18. RepairPart
+-- 19. RepairPart
 CREATE TABLE dbo.RepairPart (
     RepairPartId    INT IDENTITY(1,1) NOT NULL,
     PartCode        NVARCHAR(50)    NOT NULL,
@@ -271,7 +325,7 @@ CREATE TABLE dbo.RepairPart (
 );
 GO
 
--- 19. RepairRequest
+-- 20. RepairRequest
 CREATE TABLE dbo.RepairRequest (
     RepairRequestId INT IDENTITY(1,1) NOT NULL,
     CustomerId      INT             NOT NULL,
@@ -294,7 +348,7 @@ CREATE TABLE dbo.RepairRequest (
 );
 GO
 
--- 20. RepairRequestImage
+-- 21. RepairRequestImage
 CREATE TABLE dbo.RepairRequestImage (
     RepairRequestImageId INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -307,7 +361,7 @@ CREATE TABLE dbo.RepairRequestImage (
 );
 GO
 
--- 21. RepairRequestService
+-- 22. RepairRequestService
 CREATE TABLE dbo.RepairRequestService (
     RepairRequestServiceId INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -321,7 +375,7 @@ CREATE TABLE dbo.RepairRequestService (
 );
 GO
 
--- 22. RepairRequestStatusHistory
+-- 23. RepairRequestStatusHistory
 CREATE TABLE dbo.RepairRequestStatusHistory (
     HistoryId       INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -336,7 +390,7 @@ CREATE TABLE dbo.RepairRequestStatusHistory (
 );
 GO
 
--- 23. RepairAssignment
+-- 24. RepairAssignment
 CREATE TABLE dbo.RepairAssignment (
     RepairAssignmentId INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -354,7 +408,7 @@ CREATE TABLE dbo.RepairAssignment (
 );
 GO
 
--- 24. RepairSchedule
+-- 25. RepairSchedule
 CREATE TABLE dbo.RepairSchedule (
     RepairScheduleId INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -374,7 +428,7 @@ CREATE TABLE dbo.RepairSchedule (
 );
 GO
 
--- 25. Quote
+-- 26. Quote
 CREATE TABLE dbo.Quote (
     QuoteId         INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -393,7 +447,7 @@ CREATE TABLE dbo.Quote (
 );
 GO
 
--- 26. QuoteDetail
+-- 27. QuoteDetail
 CREATE TABLE dbo.QuoteDetail (
     QuoteDetailId   INT IDENTITY(1,1) NOT NULL,
     QuoteId         INT             NOT NULL,
@@ -414,7 +468,7 @@ CREATE TABLE dbo.QuoteDetail (
 );
 GO
 
--- 27. QuoteHistory
+-- 28. QuoteHistory
 CREATE TABLE dbo.QuoteHistory (
     QuoteHistoryId  INT IDENTITY(1,1) NOT NULL,
     QuoteId         INT             NOT NULL,
@@ -430,7 +484,7 @@ CREATE TABLE dbo.QuoteHistory (
 );
 GO
 
--- 28. RepairPartUsage
+-- 29. RepairPartUsage
 CREATE TABLE dbo.RepairPartUsage (
     RepairPartUsageId INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -446,7 +500,7 @@ CREATE TABLE dbo.RepairPartUsage (
 );
 GO
 
--- 29. RepairReport
+-- 30. RepairReport
 CREATE TABLE dbo.RepairReport (
     RepairReportId  INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -463,7 +517,7 @@ CREATE TABLE dbo.RepairReport (
 );
 GO
 
--- 30. Invoice
+-- 31. Invoice
 CREATE TABLE dbo.Invoice (
     InvoiceId       INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -481,7 +535,7 @@ CREATE TABLE dbo.Invoice (
 );
 GO
 
--- 31. InvoiceDetail
+-- 32. InvoiceDetail
 CREATE TABLE dbo.InvoiceDetail (
     InvoiceDetailId INT IDENTITY(1,1) NOT NULL,
     InvoiceId       INT             NOT NULL,
@@ -495,7 +549,7 @@ CREATE TABLE dbo.InvoiceDetail (
 );
 GO
 
--- 32. Payment
+-- 33. Payment
 CREATE TABLE dbo.Payment (
     PaymentId       INT IDENTITY(1,1) NOT NULL,
     InvoiceId       INT             NOT NULL,
@@ -510,7 +564,7 @@ CREATE TABLE dbo.Payment (
 );
 GO
 
--- 33. PaymentTransaction
+-- 34. PaymentTransaction
 CREATE TABLE dbo.PaymentTransaction (
     PaymentTransactionId INT IDENTITY(1,1) NOT NULL,
     PaymentId       INT             NOT NULL,
@@ -523,7 +577,7 @@ CREATE TABLE dbo.PaymentTransaction (
 );
 GO
 
--- 34. Review
+-- 35. Review
 CREATE TABLE dbo.Review (
     ReviewId        INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -543,7 +597,7 @@ CREATE TABLE dbo.Review (
 );
 GO
 
--- 35. ReviewImage
+-- 36. ReviewImage
 CREATE TABLE dbo.ReviewImage (
     ReviewImageId   INT IDENTITY(1,1) NOT NULL,
     ReviewId        INT             NOT NULL,
@@ -555,7 +609,7 @@ CREATE TABLE dbo.ReviewImage (
 );
 GO
 
--- 36. ReviewReply
+-- 37. ReviewReply
 CREATE TABLE dbo.ReviewReply (
     ReviewReplyId   INT IDENTITY(1,1) NOT NULL,
     ReviewId        INT             NOT NULL,
@@ -568,7 +622,7 @@ CREATE TABLE dbo.ReviewReply (
 );
 GO
 
--- 37. NotificationTemplate
+-- 38. NotificationTemplate
 CREATE TABLE dbo.NotificationTemplate (
     NotificationTemplateId INT IDENTITY(1,1) NOT NULL,
     TemplateCode    NVARCHAR(50)    NOT NULL,
@@ -579,7 +633,7 @@ CREATE TABLE dbo.NotificationTemplate (
 );
 GO
 
--- 38. Notification
+-- 39. Notification
 CREATE TABLE dbo.Notification (
     NotificationId  INT IDENTITY(1,1) NOT NULL,
     TemplateId      INT             NULL,
@@ -593,7 +647,7 @@ CREATE TABLE dbo.Notification (
 );
 GO
 
--- 39. UserNotification
+-- 40. UserNotification
 CREATE TABLE dbo.UserNotification (
     UserNotificationId INT IDENTITY(1,1) NOT NULL,
     NotificationId  INT             NOT NULL,
@@ -607,7 +661,7 @@ CREATE TABLE dbo.UserNotification (
 );
 GO
 
--- 40. Warranty
+-- 41. Warranty
 CREATE TABLE dbo.Warranty (
     WarrantyId      INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NOT NULL,
@@ -624,7 +678,7 @@ CREATE TABLE dbo.Warranty (
 );
 GO
 
--- 41. WarrantyRequest
+-- 42. WarrantyRequest
 CREATE TABLE dbo.WarrantyRequest (
     WarrantyRequestId INT IDENTITY(1,1) NOT NULL,
     WarrantyId      INT             NOT NULL,
@@ -639,7 +693,7 @@ CREATE TABLE dbo.WarrantyRequest (
 );
 GO
 
--- 42. WarrantyHistory
+-- 43. WarrantyHistory
 CREATE TABLE dbo.WarrantyHistory (
     WarrantyHistoryId INT IDENTITY(1,1) NOT NULL,
     WarrantyRequestId INT           NOT NULL,
@@ -654,7 +708,7 @@ CREATE TABLE dbo.WarrantyHistory (
 );
 GO
 
--- 43. Conversation
+-- 44. Conversation
 CREATE TABLE dbo.Conversation (
     ConversationId  INT IDENTITY(1,1) NOT NULL,
     RepairRequestId INT             NULL,
@@ -668,7 +722,7 @@ CREATE TABLE dbo.Conversation (
 );
 GO
 
--- 44. ConversationMember
+-- 45. ConversationMember
 CREATE TABLE dbo.ConversationMember (
     ConversationMemberId INT IDENTITY(1,1) NOT NULL,
     ConversationId  INT             NOT NULL,
@@ -683,7 +737,7 @@ CREATE TABLE dbo.ConversationMember (
 );
 GO
 
--- 45. Message
+-- 46. Message
 CREATE TABLE dbo.Message (
     MessageId       INT IDENTITY(1,1) NOT NULL,
     ConversationId  INT             NOT NULL,
@@ -698,7 +752,7 @@ CREATE TABLE dbo.Message (
 );
 GO
 
--- 46. MessageAttachment
+-- 47. MessageAttachment
 CREATE TABLE dbo.MessageAttachment (
     MessageAttachmentId INT IDENTITY(1,1) NOT NULL,
     MessageId       INT             NOT NULL,
@@ -795,7 +849,9 @@ CREATE UNIQUE INDEX UX_Location_Address          ON dbo.Location(AddressId);
 CREATE UNIQUE INDEX UX_ShopService               ON dbo.ShopService(ShopId, ServiceId);
 CREATE UNIQUE INDEX UX_ServicePrice_Active       ON dbo.ServicePrice(ShopServiceId) WHERE IsActive = 1;
 CREATE UNIQUE INDEX UX_TechSpec                  ON dbo.TechnicianSpecialization(TechnicianId, ServiceId);
-CREATE UNIQUE INDEX UX_TechnicianShop_Active     ON dbo.TechnicianShop(TechnicianId, ShopId) WHERE LeftAt IS NULL;
+CREATE UNIQUE INDEX UX_ShopMember_Shop_Manager_Active ON dbo.ShopMember(ShopId, ManagerId) WHERE LeftAt IS NULL;
+CREATE UNIQUE INDEX UX_ShopMember_Shop_Owner_Active   ON dbo.ShopMember(ShopId) WHERE ShopRole = 1 AND LeftAt IS NULL;
+CREATE UNIQUE INDEX UX_TechnicianShop_Active     ON dbo.TechnicianShop(TechnicianId) WHERE LeftAt IS NULL;
 CREATE UNIQUE INDEX UX_TechnicianShop_Primary    ON dbo.TechnicianShop(TechnicianId) WHERE IsPrimary = 1 AND LeftAt IS NULL;
 CREATE UNIQUE INDEX UX_ShopImage_Primary         ON dbo.ShopImage(ShopId) WHERE IsPrimary = 1;
 CREATE UNIQUE INDEX UX_RepairItem_Code           ON dbo.RepairItem(ItemCode);

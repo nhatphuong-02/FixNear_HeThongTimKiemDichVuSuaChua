@@ -5,6 +5,6 @@
         public int UserId { get; set; }
         public string FullName { get; set; }
         public int RoleType { get; set; }
-        public string Token { get; set; } = null;
+        public string Token { get; set; } = null!;
     }
 }

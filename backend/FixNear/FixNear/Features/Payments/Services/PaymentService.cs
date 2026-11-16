@@ -1,10 +1,9 @@
 ﻿
 using System.Data;
-using FixNear.Domain.Models;
+using FixNear.Domain.Models.Billing;
 using FixNear.Features.Payments.DTOs;
 using FixNear.Features.Payments.Interfaces;
 using FixNear.Infrastructure.Persistence;
-using FixNear.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FixNear.Features.Payments.Services

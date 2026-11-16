@@ -1,9 +1,8 @@
 ﻿using FixNear.Domain.Models.Billing;
 using FixNear.Domain.Models.Identity;
 using FixNear.Domain.Models.Repairs;
+using FixNear.Domain.Models.Reviews;
 using FixNear.Domain.Models.Warranties;
-using System;
-using System.Collections.Generic;
 
 namespace FixNear.Domain.Models.Customers;
 

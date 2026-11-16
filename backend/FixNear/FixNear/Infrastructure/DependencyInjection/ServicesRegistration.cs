@@ -48,6 +48,7 @@ public static class ServicesRegistration
         // Authentication
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
         // Customer & Manager

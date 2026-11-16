@@ -1,9 +1,8 @@
 ﻿using FixNear.Domain.Enums;
-using FixNear.Domain.Models;
+using FixNear.Domain.Models.Repairs;
 using FixNear.Features.Technicians.DTOs;
 using FixNear.Features.Technicians.Interfaces;
 using FixNear.Infrastructure.Persistence;
-using FixNear.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 

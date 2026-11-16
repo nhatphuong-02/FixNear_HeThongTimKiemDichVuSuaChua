@@ -1,8 +1,7 @@
-﻿using FixNear.Domain.Models;
+﻿using FixNear.Domain.Models.Repairs;
 using FixNear.Features.RepairRequest.DTOs;
 using FixNear.Features.RepairRequest.Interfaces;
 using FixNear.Infrastructure.Persistence;
-using FixNear.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FixNear.Features.RepairRequest.Services

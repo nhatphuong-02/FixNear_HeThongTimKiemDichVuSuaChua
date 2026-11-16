@@ -4,7 +4,7 @@ using FixNear.Domain.Models.Messaging;
 using FixNear.Domain.Models.Notifications;
 using FixNear.Domain.Models.Quotes;
 using FixNear.Domain.Models.Repairs;
-using FixNear.Domain.Models.Review;
+using FixNear.Domain.Models.Reviews;
 using FixNear.Domain.Models.Technicians;
 using FixNear.Domain.Models.Warranties;
 using System;

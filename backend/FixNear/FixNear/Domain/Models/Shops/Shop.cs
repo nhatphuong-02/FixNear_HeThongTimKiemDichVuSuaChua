@@ -2,6 +2,7 @@
 using FixNear.Domain.Models.Customers;
 using FixNear.Domain.Models.Managers;
 using FixNear.Domain.Models.Repairs;
+using FixNear.Domain.Models.Reviews;
 using FixNear.Domain.Models.Technicians;
 using System;
 using System.Collections.Generic;
