@@ -44,14 +44,58 @@ namespace FixNear.Features.Auth.Controller
             }
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequestDto request)
+        [HttpPost("register/customer")]
+        public async Task<IActionResult> Register([FromBody] RegisterCustomerRequestDto request)
         {
-            await _authService.RegisterAsync(request);
-            return Ok(new
+            try
             {
-                message = "Yêu cầu đăng ký đã được tiếp nhận. Vui lòng kiểm tra email để xác thực tài khoản."
-            });
+                await _authService.RegisterAsync(request);
+
+                return Ok(new
+                {
+                    message = "Yêu cầu đăng ký đã được tiếp nhận. Vui lòng kiểm tra email để xác thực tài khoản."
+                });
+            }
+            catch (InvalidOperationException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpPost("register/shop")]
+        public async Task<IActionResult> RegisterShop([FromBody] RegisterShopRequestDto request)
+        {
+            try
+            {
+                await _authService.RegisterAsync(request);
+
+                return Ok(new
+                {
+                    message = "Vui lòng kiểm tra email để xác thực tài khoản Shop"
+                });
+            }
+            catch (InvalidOperationException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpPost("register/technician")]
+        public async Task<IActionResult> RegisterTechnician([FromBody] RegisterTechnicianRequestDto request)
+        {
+            try
+            {
+                await _authService.RegisterAsync(request);
+
+                return Ok(new
+                {
+                    message = "Vui lòng kiểm tra email để xác thực tài khoản kỹ thuật viên"
+                });
+            }
+            catch (InvalidOperationException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
         }
 
         [HttpPost("login")]
@@ -66,7 +110,6 @@ namespace FixNear.Features.Auth.Controller
                     message = "Đăng nhập thành công",
                     data = result
                 });
-                { }
             }
             catch (InvalidOperationException e)
             {

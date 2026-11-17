@@ -1,6 +1,9 @@
 ﻿using FixNear.Domain.Enums;
 using FixNear.Domain.Models.Customers;
 using FixNear.Domain.Models.Identity;
+using FixNear.Domain.Models.Managers;
+using FixNear.Domain.Models.Shops;
+using FixNear.Domain.Models.Technicians;
 using FixNear.Features.Auth.DTOs;
 using FixNear.Features.Auth.Interfaces;
 using FixNear.Infrastructure.Persistence;
@@ -25,8 +28,14 @@ namespace FixNear.Features.Auth.Services
             _jwtService = jwtService;
             _emailService = emailService;
         }
+
+        //Thông tin đăng ký
         private class RegistrationData
         {
+            // Loại tài khoản
+            public AccountRegistrationType RegistrationType { get; set; }
+
+            // Thông tin User chung
             public string FullName { get; set; } = null!;
             public string Email { get; set; } = null!;
             public string? Phone { get; set; }
@@ -34,42 +43,63 @@ namespace FixNear.Features.Auth.Services
             public bool? Gender { get; set; }
             public string PasswordHash { get; set; } = null!;
 
-            public int ProvinceId { get; set; }
-            public int WardId { get; set; }
-            public string AddressLine { get; set; } = null!;
-            public string RecipientName { get; set; } = null!;
-            public string RecipientPhone { get; set; } = null!;
+            // Thông tin địa chỉ - Customer và Shop
+            public int? ProvinceId { get; set; }
+            public int? WardId { get; set; }
+            public string? AddressLine { get; set; }
+            public string? RecipientName { get; set; }
+            public string? RecipientPhone { get; set; }
+
+            // Thông tin Shop
+            public string? ShopName { get; set; }
+            public string? Description { get; set; }
+            public string? ShopPhone { get; set; }
+            public string? ShopEmail { get; set; }
+            public string? TaxCode { get; set; }
+
+            // Thông tin Technician
+            public int? ExperienceYears { get; set; }
+            public string? Introduction { get; set; }
         }
 
-        public async Task RegisterAsync(RegisterRequestDto request)
+        //Phương thức dùng chung khi đăng ký
+        private async Task RegisterAsyncCore(RegisterAccountRequestDto request, AccountRegistrationType registrationType, RegistrationData registrationData)
         {
-            // Kiểm tra dữ liệu đầu vào
-            var email = request.Email?.Trim().ToLowerInvariant();
+            // Chuẩn hóa email và số điện thoại
+            var email = request.Email.Trim().ToLowerInvariant();
 
-            if (string.IsNullOrWhiteSpace(email))
-                throw new InvalidOperationException("Email không hợp lệ");
+            var phone = string.IsNullOrWhiteSpace(request.Phone)
+                ? null
+                : request.Phone.Trim();
 
-            var phone = string.IsNullOrWhiteSpace(request.Phone) ? null: request.Phone.Trim();
+            // Kiểm tra email và số điện thoại đã tồn tại
+            var existingUser = await _context.User.AnyAsync(u =>
+                (u.Email != null && u.Email.ToLower() == email) ||
+                (phone != null && u.Phone == phone));
 
-            //Kiểm tra tài khoản đã tồn tại
-            var existingUser = await _context.User
-                .FirstOrDefaultAsync(u =>
-                        (request.Email != null && u.Email == request.Email) ||
-                        (request.Phone != null && u.Phone == request.Phone));
+            if (existingUser)
+                throw new InvalidOperationException("Email hoặc số điện thoại đã được sử dụng");
 
-            if (existingUser != null)
-                throw new InvalidOperationException("Người dùng đã tồn tại");
+            // Kiểm tra địa chỉ đối với Customer và Shop
+            if (registrationType == AccountRegistrationType.Customer || registrationType == AccountRegistrationType.Shop)
+            {
+                if (!registrationData.ProvinceId.HasValue || !registrationData.WardId.HasValue ||
+                    string.IsNullOrWhiteSpace(registrationData.AddressLine) ||
+                    string.IsNullOrWhiteSpace(registrationData.RecipientName) ||
+                    string.IsNullOrWhiteSpace(registrationData.RecipientPhone))
+                        throw new InvalidOperationException("Thông tin địa chỉ không hợp lệ");
 
-            // Kiểm tra phường/xã thuộc tỉnh/tp đã chọn
-            var validWard = await _context.Ward.AnyAsync(w=>
-               w.WardId == request.WardId && 
-               w.ProvinceId == request.ProvinceId);
+                var validWard = await _context.Ward.AnyAsync(w =>
+                    w.WardId == registrationData.WardId.Value &&
+                    w.ProvinceId == registrationData.ProvinceId.Value);
 
-            if (!validWard)
-                throw new InvalidOperationException("Phường/Xã không thuộc Tỉnh/Thành phố đã chọn");
+                if (!validWard)
+                    throw new InvalidOperationException("Phường/Xã không thuộc Tỉnh/Thành phố đã chọn");
+            }
 
             var now = DateTime.UtcNow;
-            //Tìm yêu cầu đăng ký Otp gần nhất
+
+            // Tìm những yêu cầu đăng ký OTP chưa sử dụng
             var oldVerifications = await _context.EmailVerifications
                 .Where(e =>
                     e.Email == email &&
@@ -77,50 +107,50 @@ namespace FixNear.Features.Auth.Services
                     !e.IsUsed)
                 .ToListAsync();
 
-            //Kiểm tra thời gian chờ 60s
-            var lastestVerification = oldVerifications.OrderByDescending(e => e.CreatedAt).FirstOrDefault();
+            // Kiểm tra thời gian chờ 60 giây
+            var latestVerification = oldVerifications
+                .OrderByDescending(e => e.CreatedAt)
+                .FirstOrDefault();
 
-            if (lastestVerification != null && lastestVerification.CreatedAt.AddSeconds(60) > now)
-                throw new InvalidOperationException($"Vui lòng chờ 60 giây trước khi yêu cầu gửi lại OTP");
+            if (latestVerification != null &&
+                latestVerification.CreatedAt.AddSeconds(60) > now)
+            {
+                throw new InvalidOperationException(
+                    "Vui lòng chờ 60 giây trước khi yêu cầu gửi lại OTP");
+            }
 
             //Hash mật khẩu
             var passwordHasher = new PasswordHasher<User>();
             var temporaryUser = new User();
 
-            var passwordHash = passwordHasher.HashPassword(temporaryUser, request.Password);
+            var passwordHash = passwordHasher.HashPassword( temporaryUser, request.Password);
 
-            //Lưu thông tin đăng ký dưới dạng Json - Chuẩn bị dữ liệu đăng ký
-            var registrationData = new RegistrationData
-            {
-                FullName = request.FullName,
-                Email = email,
-                Phone = phone,
-                DateOfBirth = request.DateOfBirth,
-                Gender = request.Gender.HasValue
-                    ? request.Gender.Value == Gender.Male
-                    : null,
-                PasswordHash = passwordHash,
-                ProvinceId = request.ProvinceId,
-                WardId = request.WardId,
-                AddressLine = request.AddressLine,
-                RecipientName = request.RecipientName,
-                RecipientPhone = request.RecipientPhone
-            };
+            //Bổ sung thông tin chung vào RegistrationData
+            registrationData.RegistrationType = registrationType;
+            registrationData.FullName = request.FullName;
+            registrationData.Email = email;
+            registrationData.Phone = phone;
+            registrationData.DateOfBirth = request.DateOfBirth;
 
-            var registrationJson = JsonSerializer.Serialize(registrationData);
+            registrationData.Gender = request.Gender.HasValue
+                ? request.Gender.Value == Gender.Male
+                : null;
 
-           //Vô hiệu hóa OTP cũ
+            registrationData.PasswordHash = passwordHash;
+
+            //Vô hiệu hóa OTP cũ
             foreach (var verification in oldVerifications)
                 verification.IsUsed = true;
 
             //Tạo OTP mới
             var otp = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
 
-            //Tạo bản ghi xác thực email
-            var vertification = new EmailVerification
+            // Tạo bản ghi EmailVerification
+            var verificationRequest = new EmailVerification
             {
                 Email = email,
                 Purpose = EmailVerificationPurpose.Register,
+                RegistrationType = registrationType,
                 RegistrationData = JsonSerializer.Serialize(registrationData),
                 ExpiresAt = now.AddMinutes(5),
                 CreatedAt = now,
@@ -131,15 +161,67 @@ namespace FixNear.Features.Auth.Services
             //Hash OTP
             var otpHasher = new PasswordHasher<EmailVerification>();
 
-            vertification.OtpHash = otpHasher.HashPassword(vertification, otp);
+            verificationRequest.OtpHash = otpHasher.HashPassword( verificationRequest, otp);
 
-            _context.EmailVerifications.Add(vertification);
+            //Lưu yêu cầu xác thực
+            _context.EmailVerifications.Add(verificationRequest);
+
             await _context.SaveChangesAsync();
 
-            //Gửi email sau khi lưu yêu cầu đăng ký
-            await _emailService.SendVerificationCodeAsync(email,otp);
+            // Gửi OTP qua email
+            await _emailService.SendVerificationCodeAsync(email, otp);
         }
 
+        //Đăng ký Customer
+        public Task RegisterAsync(RegisterCustomerRequestDto request)
+        {
+            var registrationData = new RegistrationData
+            {
+                ProvinceId = request.ProvinceId,
+                WardId = request.WardId,
+                AddressLine = request.AddressLine,
+                RecipientName = request.RecipientName,
+                RecipientPhone = request.RecipientPhone
+            };
+
+            return RegisterAsyncCore(request, AccountRegistrationType.Customer, registrationData);
+        }
+
+        //Đăng ký Shop
+        public Task RegisterAsync(RegisterShopRequestDto request)
+        {
+            var registrationData = new RegistrationData
+            {
+                ProvinceId = request.ProvinceId,
+                WardId = request.WardId,
+                AddressLine = request.AddressLine,
+                RecipientName = request.RecipientName ?? request.FullName,
+                RecipientPhone = request.RecipientPhone
+                    ?? request.ShopPhone
+                    ?? request.Phone,
+                ShopName = request.ShopName,
+                Description = request.Description,
+                ShopPhone = request.ShopPhone,
+                ShopEmail = request.ShopEmail,
+                TaxCode = request.TaxCode
+            };
+
+            return RegisterAsyncCore( request, AccountRegistrationType.Shop, registrationData);
+        }
+
+        //Đăng ký Technician
+        public Task RegisterAsync(RegisterTechnicianRequestDto request)
+        {
+            var registrationData = new RegistrationData
+            {
+                ExperienceYears = request.ExperienceYears,
+                Introduction = request.Introduction
+            };
+
+            return RegisterAsyncCore(request, AccountRegistrationType.Technician, registrationData);
+        }
+
+        //Xác thực email
         public async Task VerifyEmailAsync(VerifyEmailRequestDto request)
         {
             var email = request.Email.Trim().ToLowerInvariant();
@@ -186,9 +268,14 @@ namespace FixNear.Features.Auth.Services
             if (otpResult == PasswordVerificationResult.Failed)
             {
                 verification.FailedAttempts++;
+
+                if (verification.FailedAttempts >= 5)
+                    verification.IsUsed = true;
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-                throw new InvalidOperationException("Mã OTP không chính xác");
+
+                throw new InvalidOperationException( verification.FailedAttempts >= 5 ? "Bạn đã nhập sai OTP quá số lần cho phép" : "Mã OTP không chính xác");
             }
 
             //Lấy thông tin đăng ký đã lưu tạm
@@ -200,6 +287,15 @@ namespace FixNear.Features.Auth.Services
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 throw new InvalidOperationException("Dữ liệu đăng ký không hợp lệ");
+            }
+
+            //Kiểm tra loại tài khoản
+            if(registrationData.RegistrationType != verification.RegistrationType)
+            {
+                verification.IsUsed = true;
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                throw new InvalidOperationException("Loại tài khoản đăng ký không hợp lệ");
             }
 
             //Kiểm tra lại email và số điện thoại trước khi tạo người dùng mới
@@ -214,6 +310,15 @@ namespace FixNear.Features.Auth.Services
                 await transaction.CommitAsync();
                 throw new InvalidOperationException("Email hoặc số điện thoại đã được sử dụng");
             }
+
+            //Xác định RoleType
+            var roleType = registrationData.RegistrationType switch
+            {
+                AccountRegistrationType.Customer => RoleType.Customer,
+                AccountRegistrationType.Shop => RoleType.Manager,
+                AccountRegistrationType.Technician => RoleType.Technician,
+                _ => throw new InvalidOperationException("Loại tài khoản không được hỗ trợ")
+            };
 
             //Tạo user
             var user = new User
@@ -231,35 +336,133 @@ namespace FixNear.Features.Auth.Services
             _context.User.Add(user);
             await _context.SaveChangesAsync();
 
-            // Tạo CustomerProfile
-            var customerProfile = new CustomerProfile
+            // Tạo hồ sơ và dữ liệu theo loại tài khoản
+            switch (registrationData.RegistrationType)
             {
-                UserId = user.UserId,
-                CreatedAt = now
-            };
+                case AccountRegistrationType.Customer:
+                    {
+                        // Tạo CustomerProfile
+                        var customerProfile = new CustomerProfile
+                        {
+                            UserId = user.UserId,
+                            CreatedAt = now
+                        };
 
-            _context.CustomerProfile.Add(customerProfile);
-            await _context.SaveChangesAsync();
+                        _context.CustomerProfile.Add(customerProfile);
+                        await _context.SaveChangesAsync();
 
-            // Tạo địa chỉ cho Customer
-            var address = new Address
-            {
-                OwnerType = (int)RoleType.Customer,
-                CustomerId = customerProfile.CustomerId,
-                ProvinceId = registrationData.ProvinceId,
-                WardId = registrationData.WardId,
-                AddressLine = registrationData.AddressLine,
-                RecipientName = registrationData.RecipientName,
-                RecipientPhone = registrationData.RecipientPhone,
-                IsLocked = false,
-                CreatedAt = now
-            };
+                        // Tạo địa chỉ Customer
+                        var address = new Address
+                        {
+                            OwnerType = 1,
+                            CustomerId = customerProfile.CustomerId,
+                            ProvinceId = registrationData.ProvinceId!.Value,
+                            WardId = registrationData.WardId!.Value,
+                            AddressLine = registrationData.AddressLine!,
+                            RecipientName = registrationData.RecipientName,
+                            RecipientPhone = registrationData.RecipientPhone,
+                            IsLocked = false,
+                            CreatedAt = now
+                        };
 
-            _context.Address.Add(address);
-            await _context.SaveChangesAsync();
+                        _context.Address.Add(address);
+                        await _context.SaveChangesAsync();
 
-            // Đặt địa chỉ vừa tạo làm mặc định
-            customerProfile.DefaultAddressId = address.AddressId;
+                        // Đặt địa chỉ mặc định
+                        customerProfile.DefaultAddressId = address.AddressId;
+
+                        await _context.SaveChangesAsync();
+                        break;
+                    }
+
+                case AccountRegistrationType.Shop:
+                    {
+                        // Tạo ManagerProfile
+                        var managerProfile = new ManagerProfile
+                        {
+                            UserId = user.UserId,
+                            CreatedAt = now
+                        };
+
+                        _context.ManagerProfile.Add(managerProfile);
+                        await _context.SaveChangesAsync();
+
+                        // Tạo địa chỉ Shop
+                        var address = new Address
+                        {
+                            OwnerType = 2,
+                            CustomerId = null,
+                            ProvinceId = registrationData.ProvinceId!.Value,
+                            WardId = registrationData.WardId!.Value,
+                            AddressLine = registrationData.AddressLine!,
+                            RecipientName = registrationData.RecipientName,
+                            RecipientPhone = registrationData.RecipientPhone,
+                            IsLocked = false,
+                            CreatedAt = now
+                        };
+
+                        _context.Address.Add(address);
+                        await _context.SaveChangesAsync();
+
+                        // Tạo Shop
+                        var shop = new Shop
+                        {
+                            ManagerId = managerProfile.ManagerId,
+                            AddressId = address.AddressId,
+                            ShopName = registrationData.ShopName!,
+                            Description = registrationData.Description,
+                            Phone = registrationData.ShopPhone,
+                            Email = registrationData.ShopEmail,
+                            TaxCode = registrationData.TaxCode,
+                            RatingAverage = 0,
+                            Status = 1,
+                            IsVerified = false,
+                            CreatedAt = now
+                        };
+
+                        _context.Shop.Add(shop);
+                        await _context.SaveChangesAsync();
+
+                        // Tạo thành viên Owner cho Shop
+                        var shopMember = new ShopMember
+                        {
+                            ShopId = shop.ShopId,
+                            ManagerId = managerProfile.ManagerId,
+                            ShopRole = Enums.ShopRole.Owner,
+                            JoinedAt = now,
+                            LeftAt = null,
+                            Status = Enums.ShopMemberStatus.Active,
+                            CreatedAt = now
+                        };
+
+                        _context.ShopMember.Add(shopMember);
+                        await _context.SaveChangesAsync();
+
+                        break;
+                    }
+
+                case AccountRegistrationType.Technician:
+                    {
+                        // Tạo TechnicianProfile
+                        var technicianProfile = new TechnicianProfile
+                        {
+                            UserId = user.UserId,
+                            ExperienceYears = registrationData.ExperienceYears,
+                            Introduction = registrationData.Introduction,
+                            TechnicianStatus = 1,
+                            RatingAverage = 0,
+                            CreatedAt = now
+                        };
+
+                        _context.TechnicianProfile.Add(technicianProfile);
+                        await _context.SaveChangesAsync();
+
+                        break;
+                    }
+
+                default:
+                    throw new InvalidOperationException("Loại tài khoản không được hỗ trợ");
+            }
 
             // Đánh dấu email đã xác thực và OTP đã sử dụng
             verification.VerifiedAt = now;
