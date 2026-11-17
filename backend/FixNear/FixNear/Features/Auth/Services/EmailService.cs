@@ -87,8 +87,4 @@ public class EmailService : IEmailService
         }
     }
 
-    public Task SendVertificationCodeAsync(string toEmail, string otp, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
 }

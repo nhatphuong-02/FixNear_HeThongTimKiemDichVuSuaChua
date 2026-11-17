@@ -14,13 +14,43 @@ namespace FixNear.Features.Auth.Controller
             _authService = authService;
         }
 
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequestDto request)
+        {
+            try
+            {
+                await _authService.VerifyEmailAsync(request);
+
+                return Ok(new { message = "Xác thực email thành công" });
+            }
+            catch(InvalidOperationException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpPost("resend-otp")]
+        public async Task<IActionResult> ResendOtp([FromBody] ResendOtpRequestDto request)
+        {
+            try
+            {
+                await _authService.ResendOtpAsync(request);
+
+                return Ok(new {message = "Mã OTP mới đã được gửi đến email của bạn."});
+            }
+            catch (InvalidOperationException e)
+            {
+                return BadRequest(new {message = e.Message});
+            }
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequestDto request)
         {
             await _authService.RegisterAsync(request);
             return Ok(new
             {
-                message = "Đăng ký tài khoản thành công"
+                message = "Yêu cầu đăng ký đã được tiếp nhận. Vui lòng kiểm tra email để xác thực tài khoản."
             });
         }
 

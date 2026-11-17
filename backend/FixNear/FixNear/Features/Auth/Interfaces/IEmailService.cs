@@ -2,6 +2,6 @@
 {
     public interface IEmailService
     {
-        Task SendVertificationCodeAsync(string toEmail, string otp, CancellationToken cancellationToken = default);
+        Task SendVerificationCodeAsync(string toEmail, string otp, CancellationToken cancellationToken = default);
     }
 }
