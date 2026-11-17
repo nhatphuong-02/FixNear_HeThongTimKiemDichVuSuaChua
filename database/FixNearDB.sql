@@ -50,15 +50,24 @@ CREATE TABLE dbo.[User] (
 GO
 
 -- 3A. EmailVerification (bảng bổ sung cho xác thực email)
--- Lưu OTP xác thực đăng ký và đổi email.
--- Register: UserId = NULL, RegistrationData chứa dữ liệu đăng ký đã được bảo vệ (không lưu mật khẩu thô).
--- ChangeEmail: UserId có giá trị, RegistrationData = NULL.
+-- 3 = Technician
+--
+-- Register:
+-- UserId = NULL
+-- RegistrationData chứa dữ liệu đăng ký đã được bảo vệ
+-- Không lưu mật khẩu thô.
+--
+-- ChangeEmail:
+-- UserId có giá trị
+-- RegistrationData = NULL
+-- RegistrationType = NULL
 CREATE TABLE dbo.EmailVerification (
     EmailVerificationId INT IDENTITY(1,1) NOT NULL,
     UserId              INT             NULL,
     Email               NVARCHAR(255)   NOT NULL,
     OtpHash             NVARCHAR(255)   NOT NULL,
     Purpose             INT             NOT NULL CONSTRAINT DF_EmailVerification_Purpose DEFAULT (1), -- 1: Register, 2: ChangeEmail
+    RegistrationType    INT NULL, --1: Customer, 2: Shop, 3: Technician
     RegistrationData    NVARCHAR(MAX)   NULL,
     ExpiresAt           DATETIME2       NOT NULL,
     FailedAttempts      INT             NOT NULL CONSTRAINT DF_EmailVerification_FailedAttempts DEFAULT (0),
@@ -173,7 +182,6 @@ CREATE TABLE dbo.Shop (
 );
 GO
 
--- 11. ShopImage
 -- 10. ShopMember
 -- Owner / Manager / Staff của Shop. Shop.ManagerId vẫn được giữ làm legacy
 -- trong giai đoạn chuyển đổi; ManagerId trong ShopMember là nguồn quản lý thành viên.
