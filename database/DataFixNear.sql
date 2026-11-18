@@ -3641,9 +3641,9 @@ SET @WardLK  = (SELECT WardId FROM dbo.Ward WHERE ProvinceId = @ProvDN  AND Ward
 SET @WardQ1  = (SELECT WardId FROM dbo.Ward WHERE ProvinceId = @ProvHCM AND WardCode = N'26740');  -- Phường Sài Gòn (gồm Bến Nghé cũ)
 
 PRINT N'2. Tạo Users...';
--- RoleType: 1=ADMIN, 2=MANAGER, 3=TECHNICIAN, 4=CUSTOMER | Gender: 1=Nam, 0=Nữ | Status: 1=Active
+-- RoleType: 1=CUSTOMER, 2=MANAGER, 3=TECHNICIAN, 4=ADMIN | Gender: 1=Nam, 0=Nữ | Status: 1=Active
 INSERT INTO dbo.[User] (RoleType, FullName, Phone, Email, PasswordHash, Gender, Status) 
-VALUES (1, N'Lê Văn Thịnh', N'0901111111', N'thinh@fixnear.vn', N'HASH_ADMIN', 1, 1); SET @U_Thinh = SCOPE_IDENTITY();
+VALUES (4, N'Lê Văn Thịnh', N'0901111111', N'thinh@fixnear.vn', N'HASH_ADMIN', 1, 1); SET @U_Thinh = SCOPE_IDENTITY();
 INSERT INTO dbo.[User] (RoleType, FullName, Phone, Email, PasswordHash, Gender, Status) 
 VALUES (2, N'Phạm Thanh Tiến', N'0902222222', N'tien@fixnear.vn', N'HASH_MGR', 1, 1); SET @U_Tien = SCOPE_IDENTITY();
 INSERT INTO dbo.[User] (RoleType, FullName, Phone, Email, PasswordHash, Gender, Status) 
@@ -3651,7 +3651,7 @@ VALUES (3, N'Hồ Văn Hoàng', N'0903333333', N'hoang@fixnear.vn', N'HASH_TECH1
 INSERT INTO dbo.[User] (RoleType, FullName, Phone, Email, PasswordHash, Gender, Status) 
 VALUES (3, N'Quách Nhật Phương', N'0904444444', N'phuong@fixnear.vn', N'HASH_TECH2', 0, 1); SET @U_Phuong = SCOPE_IDENTITY();
 INSERT INTO dbo.[User] (RoleType, FullName, Phone, Email, PasswordHash, Gender, Status) 
-VALUES (4, N'Hoàng Văn Quốc Nhật', N'0905555555', N'nhat@fixnear.vn', N'HASH_CUS', 1, 1); SET @U_Nhat = SCOPE_IDENTITY();
+VALUES (1, N'Hoàng Văn Quốc Nhật', N'0905555555', N'nhat@fixnear.vn', N'HASH_CUS', 1, 1); SET @U_Nhat = SCOPE_IDENTITY();
 
 PRINT N'3. Tạo Profiles...';
 INSERT INTO dbo.ManagerProfile (UserId) VALUES (@U_Tien); SET @Mgr_Tien = SCOPE_IDENTITY();
@@ -3687,6 +3687,13 @@ INSERT INTO dbo.Shop (ManagerId, AddressId, ShopName, Status, IsVerified) VALUES
     (@Mgr_Tien, @AddrShop2, N'FixNear Điện Nước Pro', 1, 1);
 SET @Shop1 = (SELECT TOP 1 ShopId FROM dbo.Shop WHERE ShopName LIKE N'%Điện Thoại%');
 SET @Shop2 = (SELECT TOP 1 ShopId FROM dbo.Shop WHERE ShopName LIKE N'%Điện Nước%');
+
+-- Người tạo/quản lý ban đầu được chuyển thành Owner trong ShopMember.
+-- Giữ Shop.ManagerId để tương thích với các nghiệp vụ cũ trong giai đoạn migration.
+INSERT INTO dbo.ShopMember (ShopId, ManagerId, ShopRole, Status)
+VALUES
+    (@Shop1, @Mgr_Tien, 1, 1),
+    (@Shop2, @Mgr_Tien, 1, 1);
 
 INSERT INTO dbo.ShopImage (ShopId, ImageUrl, IsPrimary) VALUES 
     (@Shop1, N'img_shop1.jpg', 1), (@Shop1, N'img_shop1_in.jpg', 0),

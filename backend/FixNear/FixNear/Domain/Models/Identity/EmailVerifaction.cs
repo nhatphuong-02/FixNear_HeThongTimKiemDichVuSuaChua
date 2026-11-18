@@ -14,6 +14,8 @@ public class EmailVerification
 
     public EmailVerificationPurpose Purpose { get; set; }
 
+    public AccountRegistrationType? RegistrationType { get; set; }
+
     public string? RegistrationData { get; set; }
 
     public DateTime ExpiresAt { get; set; }
