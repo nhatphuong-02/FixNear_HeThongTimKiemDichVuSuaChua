@@ -14,13 +14,13 @@ namespace FixNear.Features.ServiceCatalog.Services
         }
 
         //Lấy danh mục dịch vụ hoạt động
-        public async Task<List<ServiceCategoryResponeDto>> GetCategoriesAsync()
+        public async Task<List<ServiceCategoryResponseDto>> GetCategoriesAsync()
         {
             return await _context.ServiceCategory
                 .AsNoTracking()
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.CategoryName)
-                .Select(c => new ServiceCategoryResponeDto
+                .Select(c => new ServiceCategoryResponseDto
                 {
                     ServiceCategoryId = c.ServiceCategoryId,
                     CategoryName = c.CategoryName,

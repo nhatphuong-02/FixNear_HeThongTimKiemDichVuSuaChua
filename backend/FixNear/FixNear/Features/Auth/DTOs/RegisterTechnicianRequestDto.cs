@@ -9,4 +9,6 @@ public class RegisterTechnicianRequestDto : RegisterAccountRequestDto
 
     [MaxLength(1000)]
     public string? Introduction { get; set; }
+
+    public List<int> ServiceIds { get; set; } = new();
 }

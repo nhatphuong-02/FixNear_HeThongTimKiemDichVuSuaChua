@@ -4,47 +4,30 @@ namespace FixNear.Features.Manager.Interfaces;
 
 public interface IManagerService
 {
-    #region T01 - Xem thông tin cửa hàng
-
-    Task<object> GetShopsAsync(int managerId);
-
-    Task<object?> GetShopAsync(
-        int managerId, int shopId);
-
-    #endregion
-
-    #region T02 - Cập nhật thông tin cửa hàng
-
-    Task<bool> UpdateShopAsync(
-        int managerId,
-        int shopId,
-        UpdateShopDto dto);
-
-    #endregion
-
     #region T03 - Quản lý ảnh cửa hàng
 
     Task<object> GetShopImagesAsync(
-        int managerId, int shopId);
+        int userId,
+        int shopId);
 
     Task<object?> AddShopImageAsync(
-        int managerId,
+        int userId,
         int shopId,
         ShopImageDto dto);
 
     Task<bool> UpdateShopImageAsync(
-        int managerId,
+        int userId,
         int shopId,
         int imageId,
         ShopImageDto dto);
 
     Task<bool> DeleteShopImageAsync(
-        int managerId,
+        int userId,
         int shopId,
         int imageId);
 
     Task<bool> SetPrimaryImageAsync(
-        int managerId,
+        int userId,
         int shopId,
         int imageId);
 
@@ -55,20 +38,29 @@ public interface IManagerService
     Task<object> GetSystemServicesAsync();
 
     Task<object?> GetShopServicesAsync(
-        int managerId, int shopId);
+        int userId,
+        int shopId);
 
     Task<object?> GetShopServiceDetailAsync(
-        int managerId, int shopId, int shopServiceId);
+        int userId,
+        int shopId,
+        int shopServiceId);
 
     Task<object?> AddShopServiceAsync(
-        int managerId, int shopId, AddShopServiceDto dto);
+        int userId,
+        int shopId,
+        AddShopServiceDto dto);
 
     Task<bool> UpdateShopServiceAsync(
-        int managerId, int shopId, int shopServiceId,
+        int userId,
+        int shopId,
+        int shopServiceId,
         UpdateShopServiceDto dto);
 
     Task<bool> SetShopServiceStatusAsync(
-        int managerId, int shopId, int shopServiceId,
+        int userId,
+        int shopId,
+        int shopServiceId,
         bool isActive);
 
     #endregion
@@ -76,41 +68,29 @@ public interface IManagerService
     #region T05 - Quản lý giá dịch vụ
 
     Task<object?> GetServicePricesAsync(
-        int managerId, int shopId, bool includeHistory);
+        int userId,
+        int shopId,
+        bool includeHistory);
 
     Task<object?> GetServicePriceAsync(
-        int managerId, int shopId, int servicePriceId);
+        int userId,
+        int shopId,
+        int servicePriceId);
 
     Task<object?> AddServicePriceAsync(
-        int managerId, int shopId, ServicePriceDto dto);
+        int userId,
+        int shopId,
+        ServicePriceDto dto);
 
     Task<object?> UpdateServicePriceAsync(
-        int managerId, int shopId, int servicePriceId,
+        int userId,
+        int shopId,
+        int servicePriceId,
         UpdateServicePriceDto dto);
 
     #endregion
 
-    #region T06 - Quản lý kỹ thuật viên
-
-    Task<object?> GetTechniciansAsync(
-        int managerId, int shopId);
-
-    Task<object?> GetTechnicianAsync(
-        int managerId, int shopId, int technicianId);
-
-    Task<object?> AddTechnicianAsync(
-        int managerId, int shopId, AddTechnicianToShopDto dto);
-
-    Task<bool> UpdateTechnicianAsync(
-        int managerId, int shopId, int technicianId,
-        UpdateTechnicianShopDto dto);
-
-    Task<bool> RemoveTechnicianAsync(
-        int managerId, int shopId, int technicianId);
-
-    #endregion
-
-    #region T07 - Xem danh sach yeu cau sua chua
+    #region T07 - Xem danh sách yêu cầu sửa chữa
 
     Task<object?> GetRepairRequestsAsync(
         int managerId,
@@ -118,7 +98,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T08 - Tiep nhan yeu cau
+    #region T08 - Tiếp nhận yêu cầu
 
     Task<ManagerActionResult> AcceptRepairRequestAsync(
         int managerId,
@@ -128,7 +108,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T09 - Tu choi yeu cau
+    #region T09 - Từ chối yêu cầu
 
     Task<ManagerActionResult> RejectRepairRequestAsync(
         int managerId,
@@ -138,7 +118,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T10 - Phan cong ky thuat vien
+    #region T10 - Phân công kỹ thuật viên
 
     Task<ManagerActionResult> AssignRepairTechnicianAsync(
         int managerId,
@@ -147,7 +127,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T11 - Doi ky thuat vien
+    #region T11 - Đổi kỹ thuật viên
 
     Task<ManagerActionResult> ReassignRepairTechnicianAsync(
         int managerId,
@@ -157,7 +137,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T12 - Lich sua chua
+    #region T12 - Lịch sửa chữa
 
     Task<object?> GetManagerRepairSchedulesAsync(
         int managerId,
@@ -170,6 +150,4 @@ public interface IManagerService
         CreateRepairScheduleDto dto);
 
     #endregion
-
-
 }

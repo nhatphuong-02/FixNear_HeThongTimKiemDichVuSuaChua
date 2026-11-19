@@ -12,6 +12,9 @@
 
         public string AddressLine { get; set; } = null!;
 
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
+
         public string? RecipientName { get; set; }
         public string? RecipientPhone { get; set; }
 

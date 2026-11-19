@@ -11,10 +11,6 @@ namespace FixNear.Features.Technicians.Controllers
     [Route("api/technician")]
     public class TechnicianController : ControllerBase
     {
-
-
-
-
         private readonly ITechnicianService _technicianService;
 
         public TechnicianController(
@@ -23,8 +19,91 @@ namespace FixNear.Features.Technicians.Controllers
             _technicianService = technicianService;
         }
 
+        // Lấy thông tin cá nhân
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized(new { message = "Token không hợp lệ." });
+
+            var result = await _technicianService.GetMyProfileAsync(userId);
+
+            return Ok(result);
+        }
+
+        // Cập nhật thông tin cá nhân
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateTechnicianProfileRequestDto request)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized(new { message = "Token không hợp lệ." });
+
+            await _technicianService.UpdateMyProfileAsync(userId, request);
+
+            return Ok(new
+            {
+                message = "Cập nhật hồ sơ kỹ thuật viên thành công."
+            });
+        }
+
+        // Chấp nhận lời mời tham gia Shop
+        [HttpPost("invitations/{invitationId:int}/accept")]
+        public async Task<IActionResult> AcceptInvitation(int invitationId)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized(new { message = "Token không hợp lệ." });
+
+            await _technicianService.AcceptTechnicianInvitationAsync(
+                userId, invitationId);
+
+            return Ok(new
+            {
+                message = "Chấp nhận lời mời tham gia cửa hàng thành công."
+            });
+        }
+
+        // Từ chối lời mời tham gia Shop
+        [HttpPost("invitations/{invitationId:int}/reject")]
+        public async Task<IActionResult> RejectInvitation(int invitationId)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized(new { message = "Token không hợp lệ." });
+
+            await _technicianService.RejectTechnicianInvitationAsync(
+                userId, invitationId);
+
+            return Ok(new
+            {
+                message = "Đã từ chối lời mời tham gia cửa hàng."
+            });
+        }
 
 
+        // Lấy danh sách lời mời tham gia Shop
+        [HttpGet("invitations")]
+        public async Task<IActionResult> GetMyInvitations()
+        {
+            var userIdClaim = User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized(new
+                {
+                    message = "Token không hợp lệ."
+                });
+
+            var result = await _technicianService.GetMyInvitationsAsync(userId);
+
+            return Ok(result);
+        }
 
 
         // ============================================

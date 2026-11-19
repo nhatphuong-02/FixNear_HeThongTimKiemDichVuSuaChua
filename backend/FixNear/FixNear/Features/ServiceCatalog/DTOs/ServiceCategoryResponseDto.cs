@@ -1,6 +1,6 @@
 ﻿namespace FixNear.Features.ServiceCatalog.DTOs
 {
-    public class ServiceCategoryResponeDto
+    public class ServiceCategoryResponseDto
     {
         public int ServiceCategoryId { get; set; }
         public string CategoryName { get; set; } = null!;

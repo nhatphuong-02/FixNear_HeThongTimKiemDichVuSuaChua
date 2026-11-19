@@ -1,5 +1,6 @@
 ﻿using FixNear.Domain.Models.Billing;
 using FixNear.Domain.Models.Identity;
+using FixNear.Domain.Models.Locations;
 using FixNear.Domain.Models.Repairs;
 using FixNear.Domain.Models.Reviews;
 using FixNear.Domain.Models.Warranties;

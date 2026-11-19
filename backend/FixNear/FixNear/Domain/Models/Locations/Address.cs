@@ -1,10 +1,8 @@
-﻿using FixNear.Domain.Models.Locations;
+﻿using FixNear.Domain.Models.Customers;
 using FixNear.Domain.Models.Repairs;
 using FixNear.Domain.Models.Shops;
-using System;
-using System.Collections.Generic;
 
-namespace FixNear.Domain.Models.Customers;
+namespace FixNear.Domain.Models.Locations;
 
 public partial class Address
 {

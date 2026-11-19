@@ -1,5 +1,6 @@
 ﻿using FixNear.Domain.Models.Billing;
 using FixNear.Domain.Models.Customers;
+using FixNear.Domain.Models.Locations;
 using FixNear.Domain.Models.Messaging;
 using FixNear.Domain.Models.Quotes;
 using FixNear.Domain.Models.Reviews;

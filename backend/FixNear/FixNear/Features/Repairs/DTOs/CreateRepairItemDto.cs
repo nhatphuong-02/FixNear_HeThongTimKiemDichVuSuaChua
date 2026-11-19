@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace FixNear.Features.RepairRequest.DTOs
+namespace FixNear.Features.Repairs.DTOs
 {
     public class CreateRepairItemDto
     {
