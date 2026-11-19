@@ -13,8 +13,8 @@ using FixNear.Features.Payments.Interfaces;
 using FixNear.Features.Payments.Services;
 using FixNear.Features.Quotes.Interfaces;
 using FixNear.Features.Quotes.Services;
-using FixNear.Features.RepairRequest.Interfaces;
-using FixNear.Features.RepairRequest.Services;
+using FixNear.Features.Repairs.Interfaces;
+using FixNear.Features.Repairs.Services;
 using FixNear.Features.Reviews.Interfaces;
 using FixNear.Features.Reviews.Services;
 using FixNear.Features.ServiceCatalog.Interfaces;
@@ -65,6 +65,10 @@ public static class ServicesRegistration
 
         // Technician
         services.AddScoped<ITechnicianService, TechnicianService>();
+        services.AddScoped<ITechnicianAssignmentService, TechnicianAssignmentService>();
+        services.AddScoped<ITechnicianRepairService, TechnicianRepairService>();
+
+
 
         // Quote
         services.AddScoped<IQuoteService, QuoteService>();

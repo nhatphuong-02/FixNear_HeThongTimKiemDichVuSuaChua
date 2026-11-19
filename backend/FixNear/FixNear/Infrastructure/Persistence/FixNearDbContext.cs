@@ -99,6 +99,10 @@ public partial class FixNearDbContext : DbContext
 
     public virtual DbSet<Shop> Shop { get; set; }
 
+    public virtual DbSet<ShopRepairItem> ShopRepairItem { get; set; }
+
+    public virtual DbSet<ShopRepairPart> ShopRepairPart { get; set; }
+
     public virtual DbSet<ShopImage> ShopImage { get; set; }
 
     public virtual DbSet<ShopService> ShopService { get; set; }
@@ -766,6 +770,7 @@ public partial class FixNearDbContext : DbContext
 
         modelBuilder.Entity<Quote>(entity =>
         {
+            entity.Property(e => e.IsSupplemental).HasDefaultValue(false);
             entity.ToTable(tb =>
                 tb.HasTrigger("trg_Quote_SetUpdatedAt"));
 
@@ -985,6 +990,9 @@ public partial class FixNearDbContext : DbContext
 
             entity.Property(e => e.DefaultPrice)
                 .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.Unit)
+                .HasMaxLength(50);
 
             entity.Property(e => e.Description)
                 .HasMaxLength(1000);
@@ -1770,6 +1778,87 @@ public partial class FixNearDbContext : DbContext
                  .IsUnique()
                  .HasFilter("[ShopRole] = 1 AND [Status] = 1 AND [LeftAt] IS NULL");
         });
+
+
+        // ============================================================
+        // SHOP REPAIR ITEM
+        // ============================================================
+        modelBuilder.Entity<ShopRepairItem>(entity =>
+        {
+            entity.ToTable("ShopRepairItem");
+
+            entity.HasKey(e => e.ShopRepairItemId);
+
+            entity.HasIndex(e => new
+            {
+                e.ShopId,
+                e.RepairItemId
+            })
+            .IsUnique()
+            .HasDatabaseName("UQ_ShopRepairItem_Shop_Item");
+
+            entity.Property(e => e.Price)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true);
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("SYSUTCDATETIME()");
+
+            entity.HasOne(e => e.Shop)
+                .WithMany(s => s.ShopRepairItems)
+                .HasForeignKey(e => e.ShopId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_ShopRepairItem_Shop");
+
+            entity.HasOne(e => e.RepairItem)
+                .WithMany(i => i.ShopRepairItems)
+                .HasForeignKey(e => e.RepairItemId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_ShopRepairItem_RepairItem");
+        });
+
+        // ============================================================
+        // SHOP REPAIR PART
+        // ============================================================
+
+        modelBuilder.Entity<ShopRepairPart>(entity =>
+        {
+            entity.ToTable("ShopRepairPart");
+
+            entity.HasKey(e => e.ShopRepairPartId);
+
+            entity.HasIndex(e => new
+            {
+                e.ShopId,
+                e.RepairPartId
+            })
+            .IsUnique()
+            .HasDatabaseName("UQ_ShopRepairPart_Shop_Part");
+
+            entity.Property(e => e.Price)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true);
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("SYSUTCDATETIME()");
+
+            entity.HasOne(e => e.Shop)
+                .WithMany(s => s.ShopRepairParts)
+                .HasForeignKey(e => e.ShopId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_ShopRepairPart_Shop");
+
+            entity.HasOne(e => e.RepairPart)
+                .WithMany(p => p.ShopRepairParts)
+                .HasForeignKey(e => e.RepairPartId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_ShopRepairPart_RepairPart");
+        });
+
 
         // ============================================================
         // TECHNICIAN PROFILE

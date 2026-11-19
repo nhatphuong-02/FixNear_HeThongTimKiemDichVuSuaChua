@@ -39,6 +39,10 @@ public partial class RepairRequest
 
     public DateTime? CompletedAt { get; set; }
 
+    public DateTime? ManagerAcceptedAt { get; set; }
+
+    public int? ManagerAcceptedByUserId { get; set; }
+
     public DateTime? CancelledAt { get; set; }
 
     public virtual Address? Address { get; set; }

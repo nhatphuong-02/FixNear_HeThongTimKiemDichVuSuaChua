@@ -1,4 +1,5 @@
 ﻿using FixNear.Domain.Models.Quotes;
+using FixNear.Domain.Models.Shops;
 using System;
 using System.Collections.Generic;
 
@@ -27,4 +28,5 @@ public partial class RepairPart
     public virtual ICollection<QuoteDetail> QuoteDetail { get; set; } = new List<QuoteDetail>();
 
     public virtual ICollection<RepairPartUsage> RepairPartUsage { get; set; } = new List<RepairPartUsage>();
+    public virtual ICollection<ShopRepairPart> ShopRepairParts { get; set; } = new List<ShopRepairPart>();
 }

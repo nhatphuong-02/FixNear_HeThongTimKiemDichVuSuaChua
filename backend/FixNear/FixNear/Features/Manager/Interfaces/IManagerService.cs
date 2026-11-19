@@ -4,7 +4,7 @@ namespace FixNear.Features.Manager.Interfaces;
 
 public interface IManagerService
 {
-    #region T03 - Quản lý ảnh cửa hàng
+    #region Quản lý ảnh cửa hàng
 
     Task<object> GetShopImagesAsync(
         int userId,
@@ -33,7 +33,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T04 - Quản lý dịch vụ của cửa hàng
+    #region Quản lý dịch vụ của cửa hàng
 
     Task<object> GetSystemServicesAsync();
 
@@ -65,7 +65,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T05 - Quản lý giá dịch vụ
+    #region Quản lý giá dịch vụ
 
     Task<object?> GetServicePricesAsync(
         int userId,
@@ -90,7 +90,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T07 - Xem danh sách yêu cầu sửa chữa
+    #region Xem danh sách yêu cầu sửa chữa
 
     Task<object?> GetRepairRequestsAsync(
         int managerId,
@@ -98,7 +98,11 @@ public interface IManagerService
 
     #endregion
 
-    #region T08 - Tiếp nhận yêu cầu
+    // Chi tiết Repair cho Manager đã được cấp quyền Shop.
+    Task<object?> GetRepairRequestDetailAsync(
+        int userId, int shopId, int repairRequestId);
+
+    #region Tiếp nhận yêu cầu
 
     Task<ManagerActionResult> AcceptRepairRequestAsync(
         int managerId,
@@ -108,7 +112,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T09 - Từ chối yêu cầu
+    #region Từ chối yêu cầu
 
     Task<ManagerActionResult> RejectRepairRequestAsync(
         int managerId,
@@ -118,7 +122,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T10 - Phân công kỹ thuật viên
+    #region Phân công kỹ thuật viên
 
     Task<ManagerActionResult> AssignRepairTechnicianAsync(
         int managerId,
@@ -127,7 +131,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T11 - Đổi kỹ thuật viên
+    #region Đổi kỹ thuật viên
 
     Task<ManagerActionResult> ReassignRepairTechnicianAsync(
         int managerId,
@@ -137,7 +141,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T12 - Lịch sửa chữa
+    #region Lịch sửa chữa
 
     Task<object?> GetManagerRepairSchedulesAsync(
         int managerId,

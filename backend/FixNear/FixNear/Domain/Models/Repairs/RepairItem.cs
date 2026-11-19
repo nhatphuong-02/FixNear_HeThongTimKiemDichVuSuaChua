@@ -1,4 +1,5 @@
 ﻿using FixNear.Domain.Models.Quotes;
+using FixNear.Domain.Models.Shops;
 using System;
 using System.Collections.Generic;
 
@@ -15,12 +16,16 @@ public partial class RepairItem
     public string? Description { get; set; }
 
     public decimal DefaultPrice { get; set; }
+    public string? Unit { get; set; }
 
     public bool IsActive { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
+
+    public virtual ICollection<ShopRepairItem> ShopRepairItems
+    { get; set; } = new List<ShopRepairItem>();
 
     public virtual ICollection<QuoteDetail> QuoteDetail { get; set; } = new List<QuoteDetail>();
 }

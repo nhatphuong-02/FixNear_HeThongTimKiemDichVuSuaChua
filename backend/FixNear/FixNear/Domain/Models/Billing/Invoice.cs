@@ -2,8 +2,6 @@
 using FixNear.Domain.Models.Repairs;
 using FixNear.Domain.Models.Shops;
 using FixNear.Domain.Models.Warranties;
-using System;
-using System.Collections.Generic;
 
 namespace FixNear.Domain.Models.Billing;
 
@@ -26,6 +24,11 @@ public partial class Invoice
     public DateTime IssuedAt { get; set; }
 
     public DateTime? PaidAt { get; set; }
+
+    public string? BankBin { get; set; }
+    public string? BankAccountNo { get; set; }
+    public string? BankAccountName { get; set; }
+    public string? PaymentReference { get; set; }
 
     public virtual CustomerProfile Customer { get; set; } = null!;
 

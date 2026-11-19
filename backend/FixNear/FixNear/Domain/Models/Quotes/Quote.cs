@@ -19,6 +19,9 @@ public partial class Quote
 
     public int Status { get; set; }
 
+    // False: báo giá gốc; True: phát sinh khi đang sửa chữa
+    public bool IsSupplemental { get; set; }
+
     public int? CustomerResponse { get; set; }
 
     public DateTime? CustomerResponseAt { get; set; }
