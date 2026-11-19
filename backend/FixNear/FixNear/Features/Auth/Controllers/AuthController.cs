@@ -95,8 +95,7 @@ namespace FixNear.Features.Auth.Controller
             catch (InvalidOperationException e)
             {
                 return BadRequest(new { message = e.Message });
-            }
-        }
+            }        }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequestDto request)

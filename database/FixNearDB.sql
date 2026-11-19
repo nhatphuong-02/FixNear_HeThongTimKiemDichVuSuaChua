@@ -41,7 +41,7 @@ CREATE TABLE dbo.[User] (
     AvatarUrl       NVARCHAR(500)   NULL,
     DateOfBirth     DATE            NULL,
     Gender          BIT             NULL,           -- 1: NAM, 0: NỮ
-    Status          INT             NOT NULL CONSTRAINT DF_User_Status DEFAULT (1), -- 1: ACTIVE, 2: INACTIVE... (thay cho cột IsActive cũ)
+    Status          INT             NOT NULL CONSTRAINT DF_User_Status DEFAULT (1), -- 1: ACTIVE, 2: INACTIVE
     CreatedAt       DATETIME2       NOT NULL CONSTRAINT DF_User_CreatedAt DEFAULT SYSUTCDATETIME(),
     UpdatedAt       DATETIME2       NULL,
     LastLoginAt     DATETIME2       NULL,
@@ -50,8 +50,6 @@ CREATE TABLE dbo.[User] (
 GO
 
 -- 3A. EmailVerification (bảng bổ sung cho xác thực email)
--- 3 = Technician
---
 -- Register:
 -- UserId = NULL
 -- RegistrationData chứa dữ liệu đăng ký đã được bảo vệ
@@ -172,7 +170,7 @@ CREATE TABLE dbo.Shop (
     LogoUrl         NVARCHAR(500)   NULL,
     TaxCode         NVARCHAR(50)    NULL,
     RatingAverage   DECIMAL(3,2)    NOT NULL CONSTRAINT DF_Shop_Rating DEFAULT (0),
-    Status          INT             NOT NULL CONSTRAINT DF_Shop_Status DEFAULT (1), -- 1: ACTIVE
+    Status          INT             NOT NULL CONSTRAINT DF_Shop_Status DEFAULT (1), -- 4: PENDING
     IsVerified      BIT             NOT NULL CONSTRAINT DF_Shop_IsVerified DEFAULT (0),
     CreatedAt       DATETIME2       NOT NULL CONSTRAINT DF_Shop_CreatedAt DEFAULT SYSUTCDATETIME(),
     UpdatedAt       DATETIME2       NULL,
@@ -304,6 +302,38 @@ CREATE TABLE dbo.TechnicianShop (
 );
 GO
 
+CREATE TABLE dbo.TechnicianShopInvitation
+(
+    InvitationId INT IDENTITY(1,1) NOT NULL,
+    ShopId INT NOT NULL,
+    TechnicianId INT NULL,
+    Email NVARCHAR(256) NOT NULL,
+    InvitedBy INT NOT NULL,
+    TokenHash NVARCHAR(256) NULL,
+    Status INT NOT NULL  CONSTRAINT DF_TechnicianShopInvitation_Status DEFAULT (1),
+    ExpiresAt DATETIME2 NOT NULL,
+    RespondedAt DATETIME2 NULL,
+    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_TechnicianShopInvitation_CreatedAt DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_TechnicianShopInvitation PRIMARY KEY (InvitationId),
+    CONSTRAINT FK_TechnicianShopInvitation_Shop FOREIGN KEY (ShopId) REFERENCES dbo.Shop(ShopId),
+    CONSTRAINT FK_TechnicianShopInvitation_Technician FOREIGN KEY (TechnicianId) REFERENCES dbo.TechnicianProfile(TechnicianId),
+    CONSTRAINT FK_TechnicianShopInvitation_Manager FOREIGN KEY (InvitedBy) REFERENCES dbo.ManagerProfile(ManagerId),
+    CONSTRAINT CK_TechnicianShopInvitation_Status CHECK (Status IN (1, 2, 3, 4, 5)),
+    CONSTRAINT CK_TechnicianShopInvitation_ExpiresAt CHECK (ExpiresAt > CreatedAt)
+);
+GO
+
+CREATE INDEX IX_TechnicianShopInvitation_ShopId
+ON dbo.TechnicianShopInvitation(ShopId);
+GO
+
+CREATE INDEX IX_TechnicianShopInvitation_TechnicianId
+ON dbo.TechnicianShopInvitation(TechnicianId);
+GO
+
+CREATE INDEX IX_TechnicianShopInvitation_Email
+ON dbo.TechnicianShopInvitation(Email);
+GO
 -- 18. RepairItem
 CREATE TABLE dbo.RepairItem (
     RepairItemId    INT IDENTITY(1,1) NOT NULL,
@@ -655,18 +685,35 @@ CREATE TABLE dbo.Notification (
 );
 GO
 
--- 40. UserNotification
+-- 40. UserNotification (người nhận thông báo)
 CREATE TABLE dbo.UserNotification (
     UserNotificationId INT IDENTITY(1,1) NOT NULL,
-    NotificationId  INT             NOT NULL,
-    UserId          INT             NOT NULL,
-    IsRead          BIT             NOT NULL CONSTRAINT DF_UserNotification_IsRead DEFAULT (0),
-    ReadAt          DATETIME2       NULL,
-    CreatedAt       DATETIME2       NOT NULL CONSTRAINT DF_UserNotification_CreatedAt DEFAULT SYSUTCDATETIME(),
-    CONSTRAINT PK_UserNotification PRIMARY KEY (UserNotificationId),
-    CONSTRAINT FK_UserNotification_Notification FOREIGN KEY (NotificationId) REFERENCES dbo.Notification(NotificationId) ON DELETE CASCADE,
-    CONSTRAINT FK_UserNotification_User FOREIGN KEY (UserId) REFERENCES dbo.[User](UserId)
+    NotificationId    INT NOT NULL,
+    UserId            INT NOT NULL,
+    IsRead            BIT NOT NULL
+        CONSTRAINT DF_UserNotification_IsRead DEFAULT 0,
+    ReadAt            DATETIME2 NULL,
+    CreatedAt         DATETIME2 NOT NULL
+        CONSTRAINT DF_UserNotification_CreatedAt DEFAULT SYSUTCDATETIME(),
+
+    CONSTRAINT PK_UserNotification
+        PRIMARY KEY (UserNotificationId),
+
+    CONSTRAINT FK_UserNotification_Notification
+        FOREIGN KEY (NotificationId)
+        REFERENCES dbo.Notification(NotificationId),
+
+    CONSTRAINT FK_UserNotification_User
+        FOREIGN KEY (UserId)
+        REFERENCES dbo.[User](UserId),
+
+    CONSTRAINT UQ_UserNotification
+        UNIQUE (NotificationId, UserId)
 );
+GO
+
+CREATE INDEX IX_UserNotification_UserId_CreatedAt
+ON dbo.UserNotification(UserId, CreatedAt DESC);
 GO
 
 -- 41. Warranty
@@ -859,7 +906,7 @@ CREATE UNIQUE INDEX UX_ServicePrice_Active       ON dbo.ServicePrice(ShopService
 CREATE UNIQUE INDEX UX_TechSpec                  ON dbo.TechnicianSpecialization(TechnicianId, ServiceId);
 CREATE UNIQUE INDEX UX_ShopMember_Shop_Manager_Active ON dbo.ShopMember(ShopId, ManagerId) WHERE LeftAt IS NULL;
 CREATE UNIQUE INDEX UX_ShopMember_Shop_Owner_Active   ON dbo.ShopMember(ShopId) WHERE ShopRole = 1 AND LeftAt IS NULL;
-CREATE UNIQUE INDEX UX_TechnicianShop_Active     ON dbo.TechnicianShop(TechnicianId) WHERE LeftAt IS NULL;
+CREATE UNIQUE INDEX UX_TechnicianShop_Active    ON dbo.TechnicianShop(TechnicianId, ShopId) WHERE LeftAt IS NULL;
 CREATE UNIQUE INDEX UX_TechnicianShop_Primary    ON dbo.TechnicianShop(TechnicianId) WHERE IsPrimary = 1 AND LeftAt IS NULL;
 CREATE UNIQUE INDEX UX_ShopImage_Primary         ON dbo.ShopImage(ShopId) WHERE IsPrimary = 1;
 CREATE UNIQUE INDEX UX_RepairItem_Code           ON dbo.RepairItem(ItemCode);
@@ -871,7 +918,6 @@ CREATE UNIQUE INDEX UX_Invoice_Number            ON dbo.Invoice(InvoiceNumber);
 CREATE UNIQUE INDEX UX_Warranty_Code             ON dbo.Warranty(WarrantyCode);
 CREATE UNIQUE INDEX UX_Review_Request            ON dbo.Review(RepairRequestId);
 CREATE UNIQUE INDEX UX_NotificationTemplate_Code ON dbo.NotificationTemplate(TemplateCode);
-CREATE UNIQUE INDEX UX_UserNotification          ON dbo.UserNotification(NotificationId, UserId);
 CREATE UNIQUE INDEX UX_PaymentTransaction_Code   ON dbo.PaymentTransaction(TransactionCode) WHERE TransactionCode IS NOT NULL;
 GO
 

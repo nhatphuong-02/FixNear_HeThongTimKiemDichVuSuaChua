@@ -4,6 +4,15 @@ namespace FixNear.Features.Technicians.Interfaces
 {
     public interface ITechnicianService
     {
+        Task<TechnicianProfileResponseDto> GetMyProfileAsync(int userId);
+
+        Task UpdateMyProfileAsync(int userId, UpdateTechnicianProfileRequestDto request);
+        Task AcceptTechnicianInvitationAsync(int userId, int invitationId);
+
+        Task RejectTechnicianInvitationAsync(int userId, int invitationId);
+
+        Task<List<TechnicianInvitationResponseDto>> GetMyInvitationsAsync(int userId);
+
         // X10 - Ghi nhan linh kien su dung
         Task<RecordPartUsageResult> RecordPartUsageAsync(
             CreateRepairPartUsageDto dto,

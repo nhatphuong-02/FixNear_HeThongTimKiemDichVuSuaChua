@@ -1,19 +1,27 @@
 ﻿using FixNear.Domain.Enums;
 using FixNear.Domain.Models.Customers;
+using FixNear.Domain.Models.Locations;
 using FixNear.Features.Customers.DTOs;
 using FixNear.Features.Customers.Interfaces;
+using FixNear.Infrastructure.Geocoding;
 using FixNear.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Net;
 
 namespace FixNear.Features.Customers.Services
 {
     public class CustomerService : ICustomerService
     {
         private readonly FixNearDbContext _context;
-        public CustomerService(FixNearDbContext context)
+        private readonly IAddressLocationService _addressLocationService;
+        private readonly ILogger<CustomerService> _logger;
+
+        public CustomerService(FixNearDbContext context, IAddressLocationService addressLocationService, ILogger<CustomerService> logger)
         {
             _context = context;
+            _addressLocationService = addressLocationService;
+            _logger = logger;
         }
 
         public async Task<CustomerProfileResponseDto> GetCustomerProfileAsync(int userId)
@@ -105,6 +113,13 @@ namespace FixNear.Features.Customers.Services
                     WardId = a.WardId,
                     WardName = a.Ward.WardName,
                     AddressLine = a.AddressLine,
+                    Latitude = a.Location != null
+                        ? a.Location.Latitude
+                        : null,
+
+                    Longitude = a.Location != null
+                        ? a.Location.Longitude
+                        : null,
                     RecipientName = a.RecipientName,
                     RecipientPhone = a.RecipientPhone,
                     IsDefault = a.AddressId == customer.DefaultAddressId,
@@ -169,6 +184,9 @@ namespace FixNear.Features.Customers.Services
                 //Hoàn tất transaction
                 await transaction.CommitAsync();
 
+                // Lấy tọa độ địa chỉ
+                var coordinates =  await _addressLocationService.SaveLocationAsync(address.AddressId);
+
                 //Trả thông tin địa chỉ mới
                 return new AddressResponseDto
                 {
@@ -178,6 +196,8 @@ namespace FixNear.Features.Customers.Services
                     WardId = address.WardId,
                     WardName = ward.WardName,
                     AddressLine = address.AddressLine,
+                    Latitude = coordinates?.Latitude,
+                    Longitude = coordinates?.Longitude,
                     RecipientName = address.RecipientName,
                     RecipientPhone = address.RecipientPhone,
                     IsDefault = isDefault,
@@ -269,6 +289,9 @@ namespace FixNear.Features.Customers.Services
                 //Hoàn tất transaction
                 await transaction.CommitAsync();
 
+                // Lấy tọa độ địa chỉ
+                var coordinates = await _addressLocationService.SaveLocationAsync(newAddress.AddressId);
+
                 return new AddressResponseDto
                 {
                     AddressId = newAddress.AddressId,
@@ -277,6 +300,8 @@ namespace FixNear.Features.Customers.Services
                     WardId = newAddress.WardId,
                     WardName = ward.WardName,
                     AddressLine = newAddress.AddressLine,
+                    Latitude = coordinates?.Latitude,
+                    Longitude = coordinates?.Longitude,
                     RecipientName = newAddress.RecipientName,
                     RecipientPhone = newAddress.RecipientPhone,
                     IsDefault = isDefault,

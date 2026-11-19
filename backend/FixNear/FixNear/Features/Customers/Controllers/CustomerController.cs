@@ -8,7 +8,7 @@ namespace FixNear.Features.Customers.Controllers
 {
     [ApiController]
     [Route("api/customers/me")]
-    [Authorize]
+    [Authorize (Roles = "1") ]
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;

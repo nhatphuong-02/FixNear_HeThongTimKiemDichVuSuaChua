@@ -109,6 +109,8 @@ public partial class FixNearDbContext : DbContext
 
     public virtual DbSet<TechnicianShop> TechnicianShop { get; set; }
 
+    public virtual DbSet<TechnicianShopInvitation> TechnicianShopInvitation { get; set; }
+
     public virtual DbSet<TechnicianSpecialization> TechnicianSpecialization { get; set; }
 
     public virtual DbSet<User> User { get; set; }
@@ -1762,11 +1764,11 @@ public partial class FixNearDbContext : DbContext
 
             entity.HasIndex(e => new { e.ShopId, e.ManagerId })
                 .IsUnique()
-                .HasFilter("[LeftAt] IS NULL");
+                .HasFilter("[Status] = 1 AND [LeftAt] IS NULL");
 
             entity.HasIndex(e => e.ShopId)
-                .IsUnique()
-                .HasFilter("[ShopRole] = 1 AND [LeftAt] IS NULL");
+                 .IsUnique()
+                 .HasFilter("[ShopRole] = 1 AND [Status] = 1 AND [LeftAt] IS NULL");
         });
 
         // ============================================================
@@ -1820,7 +1822,8 @@ public partial class FixNearDbContext : DbContext
                 "IX_TechnicianShop_ShopId");
 
             entity.HasIndex(
-                e => e.TechnicianId,"UX_TechnicianShop_Active")
+                e => new { e.TechnicianId, e.ShopId },
+                "UX_TechnicianShop_Active")
                 .IsUnique()
                 .HasFilter("([LeftAt] IS NULL)");
 
@@ -1862,6 +1865,67 @@ public partial class FixNearDbContext : DbContext
                 .HasForeignKey(d => d.TechnicianId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_TechnicianShop_Technician");
+        });
+
+        // ============================================================
+        // TECHNICIAN SHOP Invitation
+        // ============================================================
+
+        modelBuilder.Entity<TechnicianShopInvitation>(entity =>
+        {
+            entity.HasKey(e => e.InvitationId)
+                .HasName("PK_TechnicianShopInvitation");
+
+            entity.Property(e => e.Email)
+                .HasMaxLength(256)
+                .IsRequired();
+
+            entity.Property(e => e.TokenHash)
+                .HasMaxLength(256);
+
+            entity.Property(e => e.Status)
+                .HasDefaultValue(TechnicianShopInvitationStatus.Pending);
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("SYSUTCDATETIME()");
+
+            entity.ToTable(tb =>
+            {
+                tb.HasCheckConstraint(
+                    "CK_TechnicianShopInvitation_Status",
+                    "[Status] IN (1, 2, 3, 4, 5)");
+
+                tb.HasCheckConstraint(
+                    "CK_TechnicianShopInvitation_ExpiresAt",
+                    "[ExpiresAt] > [CreatedAt]");
+            });
+
+            entity.HasIndex(e => e.ShopId);
+
+            entity.HasIndex(e => e.TechnicianId);
+
+            entity.HasIndex(e => e.Email);
+
+            entity.HasOne(e => e.Shop)
+                .WithMany()
+                .HasForeignKey(e => e.ShopId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName(
+                    "FK_TechnicianShopInvitation_Shop");
+
+            entity.HasOne(e => e.Technician)
+                .WithMany()
+                .HasForeignKey(e => e.TechnicianId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName(
+                    "FK_TechnicianShopInvitation_Technician");
+
+            entity.HasOne(e => e.InvitedByNavigation)
+                .WithMany()
+                .HasForeignKey(e => e.InvitedBy)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName(
+                    "FK_TechnicianShopInvitation_Manager");
         });
 
         // ============================================================

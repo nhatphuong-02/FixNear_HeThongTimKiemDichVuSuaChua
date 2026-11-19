@@ -3,6 +3,7 @@ using FixNear.Domain.Models.Repairs;
 using FixNear.Domain.Models.ServiceCatalog;
 using FixNear.Domain.Models.Shops;
 using FixNear.Domain.Models.Technicians;
+using FixNear.Enums;
 using FixNear.Features.Manager.DTOs;
 using FixNear.Features.Manager.Interfaces;
 using FixNear.Infrastructure.Persistence;
@@ -19,90 +20,24 @@ public class ManagerService : IManagerService
         _db = db;
     }
 
-    #region T01 - Xem thông tin cửa hàng
-
-    public async Task<object> GetShopsAsync(int managerId)
+    //Kiểm tra quyền
+    private async Task EnsureShopAccessAsync(
+    int userId,
+    int shopId)
     {
-        return await _db.Shop
-            .AsNoTracking()
-            .Where(x => x.ManagerId == managerId)
-            .OrderBy(x => x.ShopName)
-            .Select(x => new
-            {
-                x.ShopId,
-                x.ShopName,
-                x.Phone,
-                x.Email,
-                x.LogoUrl,
-                x.Status,
-                x.IsVerified
-            })
-            .ToListAsync();
+        bool hasPermission = await _db.ShopMember
+            .AnyAsync(sm =>
+                sm.ShopId == shopId &&
+                sm.Manager.UserId == userId &&
+                sm.Status == ShopMemberStatus.Active &&
+                sm.LeftAt == null &&
+                (sm.ShopRole == ShopRole.Owner ||
+                 sm.ShopRole == ShopRole.Manager));
+
+        if (!hasPermission)
+            throw new UnauthorizedAccessException(
+                "Bạn không có quyền quản lý cửa hàng này.");
     }
-
-    public async Task<object?> GetShopAsync(
-        int managerId, int shopId)
-    {
-        return await _db.Shop
-            .AsNoTracking()
-            .Where(x =>
-                x.ManagerId == managerId &&
-                x.ShopId == shopId)
-            .Select(x => new
-            {
-                x.ShopId,
-                x.ManagerId,
-                x.ShopName,
-                x.Description,
-                x.Phone,
-                x.Email,
-                x.LogoUrl,
-                x.TaxCode,
-                x.AddressId,
-                x.RatingAverage,
-                x.Status,
-                x.IsVerified,
-                x.CreatedAt,
-                x.UpdatedAt
-            })
-            .FirstOrDefaultAsync();
-    }
-
-    #endregion
-
-    #region T02 - Cập nhật thông tin cửa hàng
-
-    public async Task<bool> UpdateShopAsync(
-        int managerId,
-        int shopId,
-        UpdateShopDto dto)
-    {
-        var shop = await _db.Shop
-            .FirstOrDefaultAsync(x =>
-                x.ShopId == shopId &&
-                x.ManagerId == managerId);
-
-        if (shop == null)
-            return false;
-
-        if (string.IsNullOrWhiteSpace(dto.ShopName))
-            throw new ArgumentException(
-                "Tên cửa hàng không được để trống");
-
-        shop.ShopName = dto.ShopName.Trim();
-        shop.Description = dto.Description?.Trim();
-        shop.Phone = dto.Phone?.Trim();
-        shop.Email = dto.Email?.Trim();
-        shop.LogoUrl = dto.LogoUrl?.Trim();
-        shop.UpdatedAt = DateTime.UtcNow;
-
-        await _db.SaveChangesAsync();
-
-        return true;
-    }
-
-    #endregion
-
 
     #region T03 - Quản lý nhiều ảnh cửa hàng
 

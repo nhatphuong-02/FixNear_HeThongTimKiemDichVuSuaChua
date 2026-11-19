@@ -1,11 +1,13 @@
 ﻿using FixNear.Domain.Enums;
 using FixNear.Domain.Models.Customers;
 using FixNear.Domain.Models.Identity;
+using FixNear.Domain.Models.Locations;
 using FixNear.Domain.Models.Managers;
 using FixNear.Domain.Models.Shops;
 using FixNear.Domain.Models.Technicians;
 using FixNear.Features.Auth.DTOs;
 using FixNear.Features.Auth.Interfaces;
+using FixNear.Infrastructure.Geocoding;
 using FixNear.Infrastructure.Persistence;
 using FixNear.Infrastructure.Security;
 using Microsoft.AspNetCore.Identity;
@@ -21,12 +23,14 @@ namespace FixNear.Features.Auth.Services
         private readonly FixNearDbContext _context;
         private readonly IJwtService _jwtService;
         private readonly IEmailService _emailService;
+        private readonly IAddressLocationService _addressLocationService;
 
-        public AuthService(FixNearDbContext context, IJwtService jwtService, IEmailService emailService)
+        public AuthService(FixNearDbContext context, IJwtService jwtService, IEmailService emailService, IAddressLocationService addressLocationService)
         {
             _context = context;
             _jwtService = jwtService;
             _emailService = emailService;
+            _addressLocationService = addressLocationService;
         }
 
         //Thông tin đăng ký
@@ -60,6 +64,7 @@ namespace FixNear.Features.Auth.Services
             // Thông tin Technician
             public int? ExperienceYears { get; set; }
             public string? Introduction { get; set; }
+            public List<int> ServiceIds { get; set; } = new List<int>();
         }
 
         //Phương thức dùng chung khi đăng ký
@@ -215,7 +220,8 @@ namespace FixNear.Features.Auth.Services
             var registrationData = new RegistrationData
             {
                 ExperienceYears = request.ExperienceYears,
-                Introduction = request.Introduction
+                Introduction = request.Introduction,
+                ServiceIds = request.ServiceIds
             };
 
             return RegisterAsyncCore(request, AccountRegistrationType.Technician, registrationData);
@@ -226,6 +232,7 @@ namespace FixNear.Features.Auth.Services
         {
             var email = request.Email.Trim().ToLowerInvariant();
             var now = DateTime.UtcNow;
+            int? createdAddressId = null;
 
             //Mở transaction để bảo vệ quá trình xác thực
             await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -247,6 +254,8 @@ namespace FixNear.Features.Auth.Services
             {
                 verification.IsUsed = true;
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
                 throw new InvalidOperationException("Mã OTP đã hết hạn");
             }
 
@@ -320,6 +329,26 @@ namespace FixNear.Features.Auth.Services
                 _ => throw new InvalidOperationException("Loại tài khoản không được hỗ trợ")
             };
 
+            // Kiểm tra chuyên môn của Technician
+            if (registrationData.RegistrationType == AccountRegistrationType.Technician)
+            {
+                var serviceIds = registrationData.ServiceIds;
+
+                // Kiểm tra ID trùng
+                if (serviceIds.Distinct().Count() != serviceIds.Count)
+                    throw new InvalidOperationException("Danh sách chuyên môn không được chứa ID trùng");
+
+                // Kiểm tra các dịch vụ có tồn tại và đang hoạt động
+                if (serviceIds.Count > 0)
+                {
+                    var validServiceCount = await _context.Service
+                        .CountAsync(s =>serviceIds.Contains(s.ServiceId) && s.IsActive);
+
+                    if (validServiceCount != serviceIds.Count)
+                        throw new InvalidOperationException("Một hoặc nhiều dịch vụ không tồn tại hoặc đã ngừng hoạt động");
+                }
+            }
+
             //Tạo user
             var user = new User
             {
@@ -329,7 +358,7 @@ namespace FixNear.Features.Auth.Services
                 DateOfBirth = registrationData.DateOfBirth,
                 Gender = registrationData.Gender,
                 PasswordHash = registrationData.PasswordHash,
-                RoleType = (int)RoleType.Customer,
+                RoleType = (int) roleType,
                 Status = (int)UserStatus.Active
             };
 
@@ -368,6 +397,8 @@ namespace FixNear.Features.Auth.Services
                         _context.Address.Add(address);
                         await _context.SaveChangesAsync();
 
+                        createdAddressId = address.AddressId;
+
                         // Đặt địa chỉ mặc định
                         customerProfile.DefaultAddressId = address.AddressId;
 
@@ -403,6 +434,8 @@ namespace FixNear.Features.Auth.Services
 
                         _context.Address.Add(address);
                         await _context.SaveChangesAsync();
+
+                        createdAddressId = address.AddressId;
 
                         // Tạo Shop
                         var shop = new Shop
@@ -457,6 +490,22 @@ namespace FixNear.Features.Auth.Services
                         _context.TechnicianProfile.Add(technicianProfile);
                         await _context.SaveChangesAsync();
 
+                        // Tạo danh sách chuyên môn
+                        if (registrationData.ServiceIds.Count > 0)
+                        {
+                            var specializations = registrationData.ServiceIds
+                                .Select(serviceId => new TechnicianSpecialization
+                                {
+                                    TechnicianId = technicianProfile.TechnicianId,
+                                    ServiceId = serviceId,
+                                    CreatedAt = now
+                                })
+                                .ToList();
+
+                            _context.TechnicianSpecialization.AddRange(specializations);
+
+                            await _context.SaveChangesAsync();
+                        }
                         break;
                     }
 
@@ -472,6 +521,10 @@ namespace FixNear.Features.Auth.Services
 
             // Hoàn tất transaction
             await transaction.CommitAsync();
+
+            // Lấy tọa độ sau khi hoàn tất đăng ký
+            if(createdAddressId.HasValue)
+                await _addressLocationService.SaveLocationAsync( createdAddressId.Value);
         }
 
         public async Task ResendOtpAsync(ResendOtpRequestDto request)
@@ -483,7 +536,7 @@ namespace FixNear.Features.Auth.Services
             var verification = await _context.EmailVerifications.Where(e =>
                 e.Email == email &&
                 e.Purpose == EmailVerificationPurpose.Register &&
-                !e.IsUsed).OrderBy(e => e.CreatedAt).FirstOrDefaultAsync();
+                !e.IsUsed).OrderByDescending(e => e.CreatedAt).FirstOrDefaultAsync();
 
             if (verification == null)
                 throw new InvalidOperationException("Không tìm thấy yêu cầu đăng ký xác thực");
@@ -506,6 +559,7 @@ namespace FixNear.Features.Auth.Services
             {
                 Email = email,
                 Purpose = EmailVerificationPurpose.Register,
+                RegistrationType = verification.RegistrationType,
                 RegistrationData = verification.RegistrationData,
                 ExpiresAt = now.AddMinutes(5),
                 FailedAttempts = 0,

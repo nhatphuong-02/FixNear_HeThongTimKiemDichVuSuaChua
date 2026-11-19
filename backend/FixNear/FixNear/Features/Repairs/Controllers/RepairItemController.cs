@@ -1,9 +1,9 @@
-﻿using FixNear.Features.RepairRequest.DTOs;
-using FixNear.Features.RepairRequest.Interfaces;
+﻿using FixNear.Features.Repairs.Interfaces;
+using FixNear.Features.Repairs.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FixNear.Features.RepairRequest.Controllers
+namespace FixNear.Features.Repairs.Controllers
 {
     [ApiController]
     [Route("api/repair-items")]

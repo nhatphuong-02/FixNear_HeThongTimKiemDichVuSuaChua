@@ -1,6 +1,6 @@
-﻿using FixNear.Features.RepairRequest.DTOs;
+﻿using FixNear.Features.Repairs.DTOs;
 
-namespace FixNear.Features.RepairRequest.Interfaces
+namespace FixNear.Features.Repairs.Interfaces
 {
     public interface IRepairItemService
     {

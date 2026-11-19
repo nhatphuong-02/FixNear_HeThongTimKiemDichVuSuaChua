@@ -1,5 +1,4 @@
-﻿using FixNear.Domain.Models.Customers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace FixNear.Domain.Models.Locations;
