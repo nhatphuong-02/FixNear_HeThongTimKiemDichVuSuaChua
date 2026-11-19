@@ -1,82 +1,319 @@
 package com.example.fixnear.ui.auth
 
 import android.app.DatePickerDialog
-import java.util.Calendar
 import android.os.Bundle
 import android.util.Log
+import android.util.Patterns
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.fixnear.R
+import com.example.fixnear.data.model.ProvinceOption
+import com.example.fixnear.data.model.WardOption
 import com.example.fixnear.data.model.RegisterRequest
 import com.example.fixnear.data.remote.RetrofitClient
 import com.example.fixnear.databinding.ActivityRegisterBinding
 import com.example.fixnear.helper.setupPasswordToggle
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.util.Calendar
 import java.util.Locale
 
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
 
+    private var provinces = listOf<ProvinceOption>()
+    private var wards = listOf<WardOption>()
+
+    private var selectedProvinceId = 0
+    private var selectedWardId = 0
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        binding = ActivityRegisterBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setupDatePicker()
+
+        setupPasswordToggle(
+            binding.edtPassword,
+            binding.ivTogglePassword
+        )
+
+        setupPasswordToggle(
+            binding.edtConfirmPassword,
+            binding.ivToggleConfirmPassword
+        )
+
+        setupLocations()
+
+        binding.btnRegister.setOnClickListener {
+            register()
+        }
+
+        binding.tvGoToLogin.setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun setSpinnerItems(
+        spinner: android.widget.Spinner,
+        names: List<String>
+    ) {
+        val adapter = ArrayAdapter(
+            this,
+            R.layout.item_register_location,
+            names
+        )
+
+        adapter.setDropDownViewResource(
+            R.layout.item_register_location
+        )
+
+        spinner.adapter = adapter
+    }
+
+    private fun setupLocations() {
+
+        setSpinnerItems(
+            binding.spProvince,
+            listOf("Đang tải tỉnh/thành phố...")
+        )
+
+        setSpinnerItems(
+            binding.spWard,
+            listOf("Chọn tỉnh/thành phố trước")
+        )
+
+        binding.spWard.isEnabled = false
+        binding.btnRegister.isEnabled = false
+
+        binding.spProvince.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+
+                override fun onNothingSelected(
+                    parent: AdapterView<*>?
+                ) {}
+
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    selectedProvinceId = 0
+                    selectedWardId = 0
+                    wards = emptyList()
+
+                    setSpinnerItems(
+                        binding.spWard,
+                        listOf("Chọn phường/xã")
+                    )
+                    binding.spWard.isEnabled = false
+
+                    if (position == 0 || provinces.isEmpty()) {
+                        return
+                    }
+
+                    val province = provinces[position - 1]
+                    selectedProvinceId = province.provinceId
+
+                    loadWards(province.provinceId)
+                }
+            }
+
+        binding.spWard.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+
+                override fun onNothingSelected(
+                    parent: AdapterView<*>?
+                ) {}
+
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    selectedWardId =
+                        if (position > 0 &&
+                            position <= wards.size
+                        ) {
+                            wards[position - 1].wardId
+                        } else {
+                            0
+                        }
+                }
+            }
+
+        loadProvinces()
+    }
+
+    private fun loadProvinces() {
+        lifecycleScope.launch {
+            try {
+                provinces =
+                    RetrofitClient.locationApi.getProvinces()
+
+                setSpinnerItems(
+                    binding.spProvince,
+                    listOf("Chọn tỉnh/thành phố") +
+                            provinces.map { it.provinceName }
+                )
+
+                binding.btnRegister.isEnabled = true
+
+            } catch (e: Exception) {
+                Log.e("LOCATION_ERROR", "Tải tỉnh thất bại", e)
+
+                setSpinnerItems(
+                    binding.spProvince,
+                    listOf("Không tải được tỉnh/thành phố")
+                )
+
+                Toast.makeText(
+                    this@RegisterActivity,
+                    "Không tải được danh sách tỉnh/thành phố",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private fun loadWards(provinceId: Int) {
+        lifecycleScope.launch {
+
+            setSpinnerItems(
+                binding.spWard,
+                listOf("Đang tải phường/xã...")
+            )
+
+            try {
+                val result =
+                    RetrofitClient.locationApi.getWards(provinceId)
+
+                // Tránh hiển thị danh sách của tỉnh cũ
+                // nếu người dùng đổi tỉnh quá nhanh.
+                if (selectedProvinceId != provinceId) {
+                    return@launch
+                }
+
+                wards = result
+                selectedWardId = 0
+
+                setSpinnerItems(
+                    binding.spWard,
+                    listOf("Chọn phường/xã") +
+                            wards.map { it.wardName }
+                )
+
+                binding.spWard.isEnabled = true
+
+            } catch (e: Exception) {
+                Log.e("LOCATION_ERROR", "Tải phường lỗi", e)
+
+                if (selectedProvinceId == provinceId) {
+                    setSpinnerItems(
+                        binding.spWard,
+                        listOf("Không tải được phường/xã")
+                    )
+                }
+
+                Toast.makeText(
+                    this@RegisterActivity,
+                    "Không tải được danh sách phường/xã",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
     private fun setupDatePicker() {
         binding.edtDateOfBirth.setOnClickListener {
+
             val calendar = Calendar.getInstance()
 
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
             DatePickerDialog(
-                this,{ _, selectedYear, selectedMonth, selectedDay ->
+                this,
+                { _, year, month, day ->
+
                     val date = String.format(
                         Locale.US,
                         "%04d-%02d-%02d",
-                        selectedYear,
-                        selectedMonth + 1,
-                        selectedDay
+                        year,
+                        month + 1,
+                        day
                     )
 
                     binding.edtDateOfBirth.setText(date)
                 },
-                year,
-                month,
-                day
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
             ).apply {
                 datePicker.maxDate = System.currentTimeMillis()
             }.show()
         }
     }
 
-    private fun register(){
-        val fullName = binding.edtFullName.text.toString().trim()
-        val email = binding.edtEmail.text.toString().trim()
-        val phone = binding.edtPhone.text.toString().trim()
-        val dateOfBirth = binding.edtDateOfBirth.text.toString().trim()
-        val password = binding.edtPassword.text.toString().trim()
-        val confirmPassword = binding.edtConfirmPassword.text.toString().trim()
+    private fun register() {
 
-        if(fullName.isEmpty()){
-            binding.edtFullName.error = "Vui lòng nhập họ tên"
+        val fullName =
+            binding.edtFullName.text.toString().trim()
+
+        val email =
+            binding.edtEmail.text.toString().trim()
+
+        val phone =
+            binding.edtPhone.text.toString().trim()
+
+        val dateOfBirth =
+            binding.edtDateOfBirth.text.toString().trim()
+
+        val addressLine =
+            binding.edtAddressLine.text.toString().trim()
+
+        val password =
+            binding.edtPassword.text.toString()
+
+        val confirmPassword =
+            binding.edtConfirmPassword.text.toString()
+
+        if (fullName.length < 3) {
+            binding.edtFullName.error =
+                "Họ tên phải có ít nhất 3 ký tự"
+            binding.edtFullName.requestFocus()
             return
         }
 
-        if (email.isEmpty()) {
-            binding.edtEmail.error = "Vui lòng nhập email"
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.edtEmail.error = "Email không hợp lệ"
+            binding.edtEmail.requestFocus()
             return
         }
 
-        if (phone.isEmpty()) {
-            binding.edtPhone.error = "Vui lòng nhập số điện thoại"
+        if (!Regex("^(03|05|07|08|09)\\d{8}$")
+                .matches(phone)) {
+            binding.edtPhone.error =
+                "Số điện thoại phải có 10 chữ số hợp lệ"
+            binding.edtPhone.requestFocus()
             return
         }
 
-        if (dateOfBirth.isEmpty()) {
-            binding.edtDateOfBirth.error = "Vui lòng chọn ngày sinh"
+        if (dateOfBirth.isBlank()) {
+            binding.edtDateOfBirth.error = "Chọn ngày sinh"
+            binding.edtDateOfBirth.requestFocus()
             return
         }
 
-        val gender = when (binding.radioGroupGender.checkedRadioButtonId) {
+        val gender = when (
+            binding.radioGroupGender.checkedRadioButtonId
+        ) {
             binding.rbMale.id -> 1
             binding.rbFemale.id -> 2
             else -> {
@@ -89,44 +326,85 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
-        if (password.isEmpty()) {
-            binding.edtPassword.error = "Vui lòng nhập mật khẩu"
+        if (selectedProvinceId <= 0) {
+            Toast.makeText(
+                this,
+                "Vui lòng chọn tỉnh/thành phố",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        if (selectedWardId <= 0) {
+            Toast.makeText(
+                this,
+                "Vui lòng chọn phường/xã",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        if (addressLine.length < 5) {
+            binding.edtAddressLine.error =
+                "Vui lòng nhập địa chỉ chi tiết"
+            binding.edtAddressLine.requestFocus()
+            return
+        }
+
+        if (password.length < 8) {
+            binding.edtPassword.error =
+                "Mật khẩu phải có ít nhất 8 ký tự"
+            binding.edtPassword.requestFocus()
             return
         }
 
         if (password != confirmPassword) {
             binding.edtConfirmPassword.error =
                 "Mật khẩu xác nhận không khớp"
+            binding.edtConfirmPassword.requestFocus()
             return
         }
-        val request = RegisterRequest(fullName,email,phone,dateOfBirth,gender,password)
+
+        val request = RegisterRequest(
+            fullName = fullName,
+            email = email,
+            phone = phone,
+            dateOfBirth = dateOfBirth,
+            gender = gender,
+            password = password,
+            provinceId = selectedProvinceId,
+            wardId = selectedWardId,
+            addressLine = addressLine
+        )
 
         callRegisterApi(request)
     }
 
-    private fun callRegisterApi(request : RegisterRequest){
+    private fun callRegisterApi(request: RegisterRequest) {
         lifecycleScope.launch {
+
             binding.btnRegister.isEnabled = false
+
             try {
-                val respone = RetrofitClient.authApi.register(request)
+                val response =
+                    RetrofitClient.authApi.register(request)
 
-                if(respone.isSuccessful){
-                    val message = respone.body()?.message?:"Đăng ký thành công"
-
+                if (response.isSuccessful) {
                     Toast.makeText(
                         this@RegisterActivity,
-                        message,
+                        response.body()?.message
+                            ?: "Đăng ký thành công",
                         Toast.LENGTH_LONG
                     ).show()
 
                     finish()
-                }
-                else {
-                    val errorBody = respone.errorBody()?.string()
+
+                } else {
+                    val errorBody = response.errorBody()?.string()
 
                     Log.e(
                         "REGISTER_ERROR",
-                        "HTTP ${respone.code()} - Body: $errorBody"
+                        "HTTP ${response.code()}: $errorBody"
                     )
 
                     val message = try {
@@ -134,31 +412,37 @@ class RegisterActivity : AppCompatActivity() {
                         val errors = json.optJSONObject("errors")
 
                         if (errors != null) {
-                            val result = StringBuilder()
+                            val details = mutableListOf<String>()
                             val keys = errors.keys()
 
                             while (keys.hasNext()) {
                                 val key = keys.next()
-                                val messages = errors.optJSONArray(key)
+                                val values = errors.optJSONArray(key)
 
-                                if (messages != null) {
-                                    for (i in 0 until messages.length()) {
-                                        result.append("$key: ${messages.optString(i)}\n")
+                                if (values != null) {
+                                    for (i in 0 until values.length()) {
+                                        details.add(values.optString(i))
                                     }
                                 }
                             }
 
-                            result.toString().ifBlank {
-                                json.optString("title", "Dữ liệu không hợp lệ")
+                            details.joinToString("\n").ifBlank {
+                                json.optString(
+                                    "title",
+                                    "Dữ liệu đăng ký không hợp lệ"
+                                )
                             }
                         } else {
                             json.optString(
                                 "message",
-                                json.optString("title", "Đăng ký thất bại")
+                                json.optString(
+                                    "title",
+                                    "Đăng ký thất bại"
+                                )
                             )
                         }
                     } catch (e: Exception) {
-                        "Đăng ký thất bại (${respone.code()})"
+                        "Đăng ký thất bại (${response.code()})"
                     }
 
                     Toast.makeText(
@@ -167,36 +451,19 @@ class RegisterActivity : AppCompatActivity() {
                         Toast.LENGTH_LONG
                     ).show()
                 }
-            }
-            catch (e: Exception){
-                Log.e("FixNear", "Lỗi gọi API đăng ký", e)
+
+            } catch (e: Exception) {
+                Log.e("REGISTER_ERROR", "Lỗi gọi API", e)
 
                 Toast.makeText(
                     this@RegisterActivity,
-                    "Không thể kết nối máy chủ. Vui lòng thử lại.",
+                    "Lỗi kết nối: ${e.localizedMessage}",
                     Toast.LENGTH_LONG
                 ).show()
 
             } finally {
                 binding.btnRegister.isEnabled = true
             }
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        binding = ActivityRegisterBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        setupDatePicker()
-        setupPasswordToggle(binding.edtPassword,binding.ivTogglePassword)
-        setupPasswordToggle(binding.edtConfirmPassword,binding.ivToggleConfirmPassword)
-        binding.btnRegister.setOnClickListener {
-            register()
-        }
-        binding.tvGoToLogin.setOnClickListener {
-            finish()
         }
     }
 }

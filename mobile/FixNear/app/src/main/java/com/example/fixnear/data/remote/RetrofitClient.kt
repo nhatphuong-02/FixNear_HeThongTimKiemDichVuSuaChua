@@ -1,6 +1,5 @@
 package com.example.fixnear.data.remote
 
-
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -15,11 +14,20 @@ object RetrofitClient {
             .build()
             .create(AuthApi::class.java)
     }
-    val customerApi: CustomerApi by lazy{
+
+    val customerApi: CustomerApi by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(CustomerApi::class.java)
+    }
+
+    val locationApi: LocationApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(LocationApi::class.java)
     }
 }

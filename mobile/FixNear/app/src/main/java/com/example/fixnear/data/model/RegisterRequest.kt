@@ -6,5 +6,9 @@ data class RegisterRequest(
     val phone: String,
     val dateOfBirth: String,
     val gender: Int,
-    val password: String
+    val password: String,
+
+    val provinceId: Int,
+    val wardId: Int,
+    val addressLine: String
 )

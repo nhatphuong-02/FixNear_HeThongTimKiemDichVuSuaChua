@@ -41,11 +41,15 @@ class LoginActivity : AppCompatActivity() {
             login()
         }
 
+
         binding.btnGoRegister.setOnClickListener {
-            startActivity(
-                Intent(this, RegisterActivity::class.java)
+            val intent = Intent(
+                this@LoginActivity,
+                ChooseRegisterRoleActivity::class.java
             )
+            startActivity(intent)
         }
+
     }
 
     private fun login() {
