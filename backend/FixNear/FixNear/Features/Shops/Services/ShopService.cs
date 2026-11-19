@@ -21,9 +21,6 @@ public class ShopService : IShopService
         _context = context;
     }
 
-    // =========================================================
-    // PRIVATE HELPERS
-    // =========================================================
 
     // Kiểm tra quyền quản lý Shop
     private async Task<ShopRole> GetAuthorizedShopMemberAsync(
@@ -45,6 +42,67 @@ public class ShopService : IShopService
                 "Bạn không có quyền thực hiện thao tác trên cửa hàng này.");
 
         return member.ShopRole;
+    }
+
+    // Đồng bộ thành viên Manager của các hội thoại thuộc Shop.
+    // Phải gọi trong cùng transaction với thay đổi ShopMember.
+    private async Task SyncConversationManagersAsync(int shopId, DateTime now)
+    {
+        var validUserIds = await _context.ShopMember
+            .AsNoTracking()
+            .Where(m => m.ShopId == shopId &&
+                m.Status == ShopMemberStatus.Active && m.LeftAt == null &&
+                (m.ShopRole == ShopRole.Owner || m.ShopRole == ShopRole.Manager))
+            .Select(m => m.Manager.UserId)
+            .Distinct()
+            .ToListAsync();
+
+        var conversations = await _context.Conversation
+            .AsNoTracking()
+            .Where(c => !c.IsDeleted && c.Status == 1 &&
+                c.RepairRequest != null && c.RepairRequest.ShopId == shopId)
+            .Select(c => c.ConversationId)
+            .ToListAsync();
+
+        if (conversations.Count == 0) return;
+
+        var members = await _context.ConversationMember
+            .Where(m => conversations.Contains(m.ConversationId))
+            .ToListAsync();
+
+        // Chỉ thay đổi tư cách thành viên của tài khoản ManagerProfile;
+        // KHÔNG đụng Customer và Technician trong cùng hội thoại.
+        var managerUserIds = await _context.ManagerProfile
+            .AsNoTracking().Select(x => x.UserId).ToListAsync();
+        var managerSet = managerUserIds.ToHashSet();
+        var validSet = validUserIds.ToHashSet();
+        var existing = members.Select(m => (m.ConversationId, m.UserId)).ToHashSet();
+
+        foreach (var member in members.Where(m => managerSet.Contains(m.UserId)))
+        {
+            if (validSet.Contains(member.UserId))
+            {
+                if (member.LeftAt != null)
+                {
+                    member.LeftAt = null;
+                    member.JoinedAt = now;
+                    member.LastReadAt = now;
+                }
+            }
+            else if (member.LeftAt == null) member.LeftAt = now;
+        }
+
+        foreach (int conversationId in conversations)
+            foreach (int id in validUserIds)
+                if (!existing.Contains((conversationId, id)))
+                    _context.ConversationMember.Add(new FixNear.Domain.Models.Messaging.ConversationMember
+                    {
+                        ConversationId = conversationId,
+                        UserId = id,
+                        JoinedAt = now,
+                        CreatedAt = now,
+                        LastReadAt = now
+                    });
     }
 
     // Chuyển DateTime sang UTC.
@@ -305,9 +363,12 @@ public class ShopService : IShopService
             throw new InvalidOperationException(
                 "Không thể thay đổi vai trò Owner bằng chức năng này.");
 
+        await using var tx = await _context.Database.BeginTransactionAsync();
         targetMember.ShopRole = request.ShopRole;
-
         await _context.SaveChangesAsync();
+        await SyncConversationManagersAsync(shopId, DateTime.UtcNow);
+        await _context.SaveChangesAsync();
+        await tx.CommitAsync();
     }
 
     // Loại bỏ thành viên Shop
@@ -345,10 +406,14 @@ public class ShopService : IShopService
                 "Manager chỉ có thể loại bỏ thành viên Staff.");
         }
 
+        await using var tx = await _context.Database.BeginTransactionAsync();
+        var now = DateTime.UtcNow;
         targetMember.Status = ShopMemberStatus.Inactive;
-        targetMember.LeftAt = DateTime.UtcNow;
-
+        targetMember.LeftAt = now;
         await _context.SaveChangesAsync();
+        await SyncConversationManagersAsync(shopId, now);
+        await _context.SaveChangesAsync();
+        await tx.CommitAsync();
     }
 
     // =========================================================
@@ -782,4 +847,74 @@ public class ShopService : IShopService
             .OrderBy(shop => shop.DistanceKm)
             .ToList();
     }
+
+
+    // Tìm tất cả cửa hàng đang hoạt động trong bán kính tối đa 10 km
+    public async Task<List<NearbyShopResponseDto>>
+        GetAllNearbyShopsAsync(NearbyShopRequestDto request)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+
+        if (!double.IsFinite(request.Latitude) ||
+            !double.IsFinite(request.Longitude) ||
+            request.Latitude < -90 || request.Latitude > 90 ||
+            request.Longitude < -180 || request.Longitude > 180)
+            throw new ArgumentException(
+                "Tọa độ GPS không hợp lệ.");
+
+        if (!double.IsFinite(request.RadiusKm) ||
+            request.RadiusKm <= 0 ||
+            request.RadiusKm > 10)
+            throw new ArgumentException(
+                "Bán kính tìm kiếm phải lớn hơn 0 và không quá 10 km.");
+
+        var shops = await _context.Shop
+            .AsNoTracking()
+            .Where(s =>
+                s.Status == (int)ShopStatus.Active &&
+                s.Address.Location != null)
+            .Select(s => new
+            {
+                s.ShopId,
+                s.ShopName,
+                s.Description,
+                s.Phone,
+                s.LogoUrl,
+                s.RatingAverage,
+
+                Address = s.Address.AddressLine
+                    + ", " + s.Address.Ward.WardName
+                    + ", " + s.Address.Province.ProvinceName,
+
+                Latitude =
+                    (double)s.Address.Location!.Latitude,
+                Longitude =
+                    (double)s.Address.Location!.Longitude
+            })
+            .ToListAsync();
+
+        return shops
+            .Select(s => new NearbyShopResponseDto
+            {
+                ShopId = s.ShopId,
+                ShopName = s.ShopName,
+                Description = s.Description,
+                Phone = s.Phone,
+                LogoUrl = s.LogoUrl,
+                RatingAverage = s.RatingAverage,
+                Address = s.Address,
+                DistanceKm = CalculateDistanceKm(
+                    request.Latitude,
+                    request.Longitude,
+                    s.Latitude,
+                    s.Longitude)
+            })
+            .Where(s => s.DistanceKm <= request.RadiusKm)
+            .OrderBy(s => s.DistanceKm)
+            .ThenBy(s => s.ShopId)
+            .ToList();
+    }
+
 }
+

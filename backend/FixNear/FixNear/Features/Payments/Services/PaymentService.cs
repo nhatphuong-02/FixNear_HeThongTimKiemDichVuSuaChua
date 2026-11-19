@@ -14,7 +14,7 @@ namespace FixNear.Features.Payments.Services
 
         // Ma tam thoi, can thong nhat voi nhom
         private const int CashMethod = 1;
-        private const int QrMethod = 2;
+        private const int QrMethod = 3; // BANK_TRANSFER theo FixNearDB.sql
         private const int PendingStatus = 1;
 
         public PaymentService(FixNearDbContext context)
@@ -174,7 +174,13 @@ namespace FixNear.Features.Payments.Services
 
                         // Manager: thanh toan cua Shop minh quan ly
                         (roleType == 2 &&
-                         p.Invoice.Shop.Manager.UserId == userId)
+                         _context.ShopMember.Any(sm =>
+                             sm.ShopId == p.Invoice.ShopId &&
+                             sm.Manager.UserId == userId &&
+                             sm.Status == FixNear.Enums.ShopMemberStatus.Active &&
+                             sm.LeftAt == null &&
+                             (sm.ShopRole == FixNear.Enums.ShopRole.Owner ||
+                              sm.ShopRole == FixNear.Enums.ShopRole.Manager)))
                     ))
                 .FirstOrDefaultAsync();
 

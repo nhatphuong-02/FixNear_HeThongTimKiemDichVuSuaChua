@@ -1,4 +1,12 @@
-﻿/* ==================================================================
+﻿/*
+ FixNear - dữ liệu khởi tạo cho Admin, chạy sau FixNearDB_Completed.sql
+ GIỮ NGUYÊN danh sách Province/Ward ban đầu do người dùng cung cấp.
+ RepairItem/RepairPart là dữ liệu DANH MỤC ĐỀ XUẤT để Admin rà soát,
+ giá tham khảo mặc định 0 (CHƯA PHẢI giá bán). Shop tự cấu hình giá.
+ Script gốc là SEED MỘT LẦN trên DB trống, không chạy lại lần thứ hai.
+*/
+
+/* ==================================================================
    FixNearDB - SEED DATA TĨNH (dữ liệu tham chiếu)
    - Province, Ward : 34 tỉnh/thành, 3.321 phường/xã/đặc khu (sau sáp nhập 01/07/2025)
    - ServiceCategory, Service : danh mục dịch vụ dùng chung toàn hệ thống
@@ -3625,6 +3633,31 @@ FROM (VALUES
 ) AS v(CategoryName, ServiceName)
 JOIN dbo.ServiceCategory c ON c.CategoryName = v.CategoryName;
 
+
+PRINT N'2b. Bổ sung danh mục Service do Admin cấu hình (không thay đổi 4 Service gốc)...';
+INSERT INTO dbo.Service (CategoryId, ServiceName, Description)
+SELECT c.ServiceCategoryId, v.ServiceName, v.Description
+FROM (VALUES
+    (N'Điện thoại',N'Kiểm tra và chẩn đoán lỗi điện thoại',N'Kiểm tra tình trạng hoạt động, xác định hạng mục cần sửa'),
+    (N'Điện thoại',N'Thay màn hình điện thoại Android',N'Thay màn hình theo mẫu máy được Shop hỗ trợ'),
+    (N'Điện thoại',N'Thay pin iPhone',N'Thay pin theo mẫu máy được Shop hỗ trợ'),
+    (N'Điện thoại',N'Sửa cổng sạc điện thoại',N'Kiểm tra, vệ sinh và thay cổng sạc khi cần'),
+    (N'Điện thoại',N'Sửa loa và micro điện thoại',N'Kiểm tra loa, micro và liên kết mạch'),
+    (N'Điện thoại',N'Kiểm tra điện thoại vào nước',N'Kiểm tra tình trạng thiết bị trước khi báo giá'),
+    (N'Điện',N'Kiểm tra và sửa ổ cắm điện',N'Chẩn đoán sự cố tại ổ cắm và thay thế nếu cần'),
+    (N'Điện',N'Thay công tắc điện',N'Thay công tắc phù hợp với hệ thống điện'),
+    (N'Điện',N'Kiểm tra và sửa đèn chiếu sáng',N'Kiểm tra bộ nguồn và phần tử chiếu sáng'),
+    (N'Điện',N'Kiểm tra aptomat và cầu dao',N'Chẩn đoán sự cố thiết bị đóng cắt điện'),
+    (N'Điện',N'Kiểm tra đường dây điện dân dụng',N'Kiểm tra tình trạng đường dây và kết nối'),
+    (N'Nước',N'Xử lý rò rỉ đường ống nước',N'Xác định và khắc phục vị trí rò rỉ'),
+    (N'Nước',N'Thay vòi nước',N'Thay vòi nước phù hợp đầu nối'),
+    (N'Nước',N'Thông tắc đường ống nước',N'Thông tắc đường ống nước sinh hoạt'),
+    (N'Nước',N'Thay van khóa nước',N'Thay thiết bị khóa hoặc điều tiết nước'),
+    (N'Nước',N'Sửa bồn cầu',N'Kiểm tra phao, van xả, rò rỉ nước'),
+    (N'Nước',N'Sửa chậu rửa và xi phông',N'Kiểm tra, thay thế xi phông, xử lý rò rỉ')
+) AS v(CategoryName, ServiceName, Description)
+JOIN dbo.ServiceCategory c ON c.CategoryName = v.CategoryName;
+
 PRINT N'3. Tạo NotificationTemplate...';
 INSERT INTO dbo.NotificationTemplate (TemplateCode, Title, BodyTemplate) VALUES
     -- Báo giá & phân công (mẫu cũ)
@@ -3676,7 +3709,76 @@ INSERT INTO dbo.NotificationTemplate (TemplateCode, Title, BodyTemplate) VALUES
     (N'SHOP_VERIFIED', N'Cửa hàng đã được xác minh', N'Cửa hàng {ShopName} đã được FixNear xác minh.'),
     (N'SHOP_SUSPENDED', N'Cửa hàng bị tạm khóa', N'Cửa hàng {ShopName} đã bị tạm khóa. Lý do: {Reason}.'),
     -- Trò chuyện
-    (N'NEW_MESSAGE', N'Tin nhắn mới', N'{SenderName} đã gửi tin nhắn trong yêu cầu sửa chữa #{RequestId}.');
+    (N'NEW_MESSAGE', N'Tin nhắn mới', N'{SenderName} đã gửi tin nhắn trong yêu cầu sửa chữa #{RequestId}.'),
+    -- Mẫu thực tế được gọi trong FixNear(4).zip nhưng chưa có trong bản seed cũ
+    (N'SURVEY_COMPLETED', N'Kỹ thuật viên đã khảo sát xong', N'Kỹ thuật viên đã hoàn thành khảo sát yêu cầu sửa chữa #{RequestId}. Vui lòng kiểm tra kết quả.'),
+    (N'QUOTE_CREATED', N'Có báo giá mới cần kiểm tra', N'Kỹ thuật viên đã lập báo giá {QuoteNumber} cho yêu cầu #{RequestId}. Vui lòng kiểm tra trước khi gửi khách.'),
+    (N'REPAIR_AWAITING_ACCEPTANCE', N'Yêu cầu sửa chữa chờ nghiệm thu', N'Kỹ thuật viên đã hoàn thành sửa chữa yêu cầu #{RequestId}. Vui lòng kiểm tra và xác nhận nghiệm thu.'),
+    (N'PAYMENT_CONFIRMED', N'Đã xác nhận thanh toán', N'Giao dịch thanh toán cho hóa đơn {InvoiceNumber} đã được xác nhận thành công.');
+
+
+PRINT N'4. Danh mục RepairItem - công sửa chữa chung do Admin quản lý...';
+-- Giá DefaultPrice giữ 0: Admin phải cấu hình giá THAM KHẢO; không phải giá Shop.
+INSERT INTO dbo.RepairItem (ItemCode, ItemName, Description, Unit, DefaultPrice, IsActive)
+SELECT v.ItemCode, v.ItemName, v.Description, v.Unit, 0, 1
+FROM (VALUES
+    (N'PHONE-LAB-001', N'Công kiểm tra và chẩn đoán điện thoại', N'Kiểm tra và xác định nguyên nhân lỗi, chưa bao gồm linh kiện', N'Lần'),
+    (N'PHONE-LAB-002', N'Công tháo lắp và thay màn hình điện thoại', N'Chỉ bao gồm thao tác kỹ thuật; màn hình tính riêng', N'Lần'),
+    (N'PHONE-LAB-003', N'Công thay pin điện thoại', N'Chỉ bao gồm thao tác tháo lắp và thay pin', N'Lần'),
+    (N'PHONE-LAB-004', N'Công sửa hoặc thay cổng sạc', N'Chỉ bao gồm công xử lý cổng sạc', N'Lần'),
+    (N'PHONE-LAB-005', N'Công vệ sinh cổng sạc điện thoại', N'Vệ sinh cổng sạc, không bao gồm thay linh kiện', N'Lần'),
+    (N'PHONE-LAB-006', N'Công thay loa hoặc micro', N'Tiền công thay thế, không bao gồm linh kiện', N'Lần'),
+    (N'PHONE-LAB-007', N'Công vệ sinh và xử lý máy vào nước', N'Chỉ bao gồm thao tác kỹ thuật, kết quả tùy tình trạng thiết bị', N'Lần'),
+    (N'ELEC-LAB-001', N'Công kiểm tra hệ thống điện dân dụng', N'Kiểm tra vị trí sự cố, chưa bao gồm vật tư', N'Lần'),
+    (N'ELEC-LAB-002', N'Công thay ổ cắm điện', N'Tiền công thay ổ cắm, thiết bị thay thế tính riêng', N'Cái'),
+    (N'ELEC-LAB-003', N'Công thay công tắc điện', N'Tiền công thay công tắc, thiết bị tính riêng', N'Cái'),
+    (N'ELEC-LAB-004', N'Công thay aptomat hoặc cầu dao', N'Tiền công tháo lắp và kiểm tra thiết bị đóng cắt', N'Cái'),
+    (N'ELEC-LAB-005', N'Công xử lý mối nối điện bị chập', N'Xử lý một vị trí mối nối', N'Vị trí'),
+    (N'ELEC-LAB-006', N'Công sửa điểm hỏng dây điện', N'Xử lý một vị trí hư hỏng dây điện', N'Vị trí'),
+    (N'ELEC-LAB-007', N'Công thay hoặc lắp đèn chiếu sáng', N'Chỉ tiền công, không bao gồm bóng đèn hoặc bộ nguồn', N'Cái'),
+    (N'WATER-LAB-001', N'Công kiểm tra hệ thống cấp thoát nước', N'Xác định nguyên nhân rò rỉ hoặc tắc nghẽn', N'Lần'),
+    (N'WATER-LAB-002', N'Công xử lý rò rỉ đường ống nước', N'Xử lý một vị trí rò rỉ, vật tư tính riêng', N'Vị trí'),
+    (N'WATER-LAB-003', N'Công thay đoạn ống nước', N'Tiền công thay thế theo mét ống', N'Mét'),
+    (N'WATER-LAB-004', N'Công thay vòi nước', N'Tiền công thay vòi, vòi mới tính riêng', N'Cái'),
+    (N'WATER-LAB-005', N'Công thay van khóa nước', N'Tiền công thay van, vật tư tính riêng', N'Cái'),
+    (N'WATER-LAB-006', N'Công thông tắc đường ống', N'Tiền công thông tắc cho mỗi vị trí xử lý', N'Vị trí'),
+    (N'WATER-LAB-007', N'Công sửa bộ xả bồn cầu', N'Tiền công sửa chữa hoặc thay thế bộ xả', N'Lần'),
+    (N'WATER-LAB-008', N'Công thay xi phông chậu rửa', N'Tiền công thay bộ xi phông, thiết bị tính riêng', N'Bộ')
+) AS v(ItemCode, ItemName, Description, Unit);
+
+PRINT N'5. Danh mục RepairPart - linh kiện/vật tư chung do Admin quản lý...';
+-- CurrentPrice giữ 0: giá tham khảo chưa được Admin cấu hình.
+-- Danh mục linh kiện cấp nhóm; mỗi Shop chỉ chọn hàng hóa thật phù hợp thiết bị và định giá riêng.
+INSERT INTO dbo.RepairPart (PartCode, PartName, Description, Unit, CurrentPrice, IsActive)
+SELECT v.PartCode, v.PartName, v.Description, v.Unit, 0, 1
+FROM (VALUES
+    (N'PHONE-PART-001', N'Pin điện thoại iPhone', N'Pin tương thích theo dòng máy; Shop chọn mẫu cụ thể', N'Cái'),
+    (N'PHONE-PART-002', N'Pin điện thoại Android', N'Pin phù hợp dòng máy; Shop xác nhận model', N'Cái'),
+    (N'PHONE-PART-003', N'Màn hình iPhone', N'Màn hình theo dòng máy/chất lượng; cần chỉ rõ phiên bản khi bán', N'Cái'),
+    (N'PHONE-PART-004', N'Màn hình điện thoại Android', N'Màn hình theo dòng máy/chất lượng; cần chỉ rõ phiên bản', N'Cái'),
+    (N'PHONE-PART-005', N'Cụm cổng sạc điện thoại', N'Linh kiện cổng sạc phù hợp model', N'Cái'),
+    (N'PHONE-PART-006', N'Loa trong điện thoại', N'Linh kiện phù hợp model', N'Cái'),
+    (N'PHONE-PART-007', N'Loa ngoài điện thoại', N'Linh kiện phù hợp model', N'Cái'),
+    (N'PHONE-PART-008', N'Micro điện thoại', N'Linh kiện phù hợp model', N'Cái'),
+    (N'ELEC-PART-001', N'Ổ cắm điện dân dụng', N'Ổ cắm theo chuẩn và thông số an toàn phù hợp', N'Cái'),
+    (N'ELEC-PART-002', N'Công tắc điện dân dụng', N'Công tắc điện theo thông số phù hợp', N'Cái'),
+    (N'ELEC-PART-003', N'Aptomat 1P', N'Thiết bị đóng cắt, chọn đúng dòng định mức', N'Cái'),
+    (N'ELEC-PART-004', N'Aptomat 2P', N'Thiết bị đóng cắt, chọn đúng dòng định mức', N'Cái'),
+    (N'ELEC-PART-005', N'Dây điện dân dụng', N'Chọn tiết diện và loại dây phù hợp', N'Mét'),
+    (N'ELEC-PART-006', N'Bóng đèn LED', N'Bóng đèn theo công suất và đui phù hợp', N'Cái'),
+    (N'ELEC-PART-007', N'Bộ nguồn đèn LED', N'Bộ nguồn theo điện áp và công suất phù hợp', N'Bộ'),
+    (N'ELEC-PART-008', N'Băng keo cách điện', N'Vật tư điện có tính cách điện phù hợp', N'Cuộn'),
+    (N'WATER-PART-001', N'Ống nước PVC', N'Ống theo đường kính và tiêu chuẩn phù hợp', N'Mét'),
+    (N'WATER-PART-002', N'Ống nước PPR', N'Ống theo đường kính và tiêu chuẩn phù hợp', N'Mét'),
+    (N'WATER-PART-003', N'Co nối ống nước', N'Phụ kiện nối ống theo kích thước', N'Cái'),
+    (N'WATER-PART-004', N'Tê nối ống nước', N'Phụ kiện chia nhánh theo kích thước', N'Cái'),
+    (N'WATER-PART-005', N'Van khóa nước', N'Chọn đúng kích cỡ và chất liệu', N'Cái'),
+    (N'WATER-PART-006', N'Vòi nước', N'Vòi nước theo chuẩn đầu nối', N'Cái'),
+    (N'WATER-PART-007', N'Bộ xả bồn cầu', N'Bộ xả tương thích loại bồn cầu', N'Bộ'),
+    (N'WATER-PART-008', N'Xi phông chậu rửa', N'Bộ xi phông theo kích thước chậu', N'Bộ'),
+    (N'WATER-PART-009', N'Gioăng cao su chống rò', N'Gioăng theo kích cỡ đầu nối', N'Cái'),
+    (N'WATER-PART-010', N'Băng tan PTFE', N'Vật tư làm kín ren nối nước', N'Cuộn')
+) AS v(PartCode, PartName, Description, Unit);
 
 COMMIT TRANSACTION SeedStaticData;
 PRINT N'==> TẠO DỮ LIỆU TĨNH THÀNH CÔNG!';

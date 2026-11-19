@@ -6,11 +6,11 @@ public class TechnicianInvitationResponseDto
 
     public int ShopId { get; set; }
 
-    public string ShopName { get; set; } = null!;
+    public string ShopName { get; set; } = string.Empty;
 
-    public string Email { get; set; } = null!;
+    public string Email { get; set; } = string.Empty;
 
-    public string InvitedByName { get; set; } = null!;
+    public string InvitedByName { get; set; } = string.Empty;
 
     public int Status { get; set; }
 

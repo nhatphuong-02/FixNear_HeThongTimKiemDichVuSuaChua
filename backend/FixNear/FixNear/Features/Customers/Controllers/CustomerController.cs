@@ -160,5 +160,48 @@ namespace FixNear.Features.Customers.Controllers
                 return Conflict(new { message = e.Message });
             }
         }
+
+
+        //Đặt lịch sửa chữa
+
+        [HttpPost("repair-requests")]
+        public async Task<IActionResult> CreateRepairRequestAsync(
+            [FromBody] CreateRepairRequestDto request)
+        {
+            var userId = GetCurrentUserId();
+
+            if (userId == null)
+                return Unauthorized(new
+                {
+                    message = "Người dùng chưa đăng nhập."
+                });
+
+            try
+            {
+                var repairRequestId = await _customerService
+                    .CreateRepairRequestAsync(userId.Value, request);
+
+                return StatusCode(201, new
+                {
+                    message = "Đặt lịch sửa chữa thành công.",
+                    repairRequestId,
+                    status = 1,
+                    statusName = "Pending"
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+        }
+
     }
 }

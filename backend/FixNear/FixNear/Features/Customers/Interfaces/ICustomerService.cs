@@ -13,5 +13,9 @@ namespace FixNear.Features.Customers.Interfaces
         Task<AddressResponseDto> CreateAddressesAsync(int userId, AddressRequestDto request);
         Task<AddressResponseDto> ReplaceAddressAsync(int userId, int addressId, AddressRequestDto request);
         Task SetDefaultAddressAsync(int userId, int addressId);
+
+        //Tạo yêu cầu sửa chữa
+        Task<int> CreateRepairRequestAsync( int userId, CreateRepairRequestDto request);
+
     }
 }
