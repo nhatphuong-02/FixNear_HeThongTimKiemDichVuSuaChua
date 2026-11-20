@@ -57,9 +57,11 @@ public sealed class MessageAttachmentController : ControllerBase
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(MaxImageBytes + 1024 * 1024)]
     public async Task<IActionResult> Upload(
-        int conversationId, [FromForm] IFormFile file,
+        int conversationId,
+        IFormFile file,
         CancellationToken cancellationToken)
     {
+
         var userId = CurrentUserId();
         if (!userId.HasValue) return Unauthorized();
         if (!await CanAccessAsync(conversationId, userId.Value)) return NotFound();

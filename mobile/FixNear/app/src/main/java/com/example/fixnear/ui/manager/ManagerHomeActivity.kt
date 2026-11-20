@@ -519,6 +519,27 @@ class ManagerHomeActivity : AppCompatActivity() {
             openShopServices()
         }
 
+        binding.rowCustomerChats.setOnClickListener {
+
+            val shop = shops.firstOrNull()
+
+            if (shop == null) {
+                showMessage("Chưa tải được thông tin cửa hàng.")
+                return@setOnClickListener
+            }
+
+            startActivity(
+                Intent(
+                    this,
+                    ManagerChatListActivity::class.java
+                ).apply {
+                    putExtra("SHOP_ID", shop.shopId)
+                    putExtra("SHOP_NAME", shop.shopName)
+                }
+            )
+        }
+
+
         binding.btnLogout.setOnClickListener {
             sessionManager.clearSession()
             goToLogin()
