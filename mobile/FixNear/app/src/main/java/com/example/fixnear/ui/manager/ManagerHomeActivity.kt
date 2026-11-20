@@ -1,5 +1,4 @@
 package com.example.fixnear.ui.manager
-
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
