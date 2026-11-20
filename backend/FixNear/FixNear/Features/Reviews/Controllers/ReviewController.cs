@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using FixNear.Features.Reviews.DTOs;
 using FixNear.Features.Reviews.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -55,6 +55,7 @@ namespace FixNear.Features.Reviews.Controllers
                         {
                             reviewId = result.ReviewId,
                             repairRequestId = result.RepairRequestId,
+                            reviewType = dto.ReviewType,
                             rating = result.Rating,
                             imageCount = result.ImageCount
                         }
@@ -87,7 +88,7 @@ namespace FixNear.Features.Reviews.Controllers
                 CreateReviewStatus.AlreadyReviewed =>
                     Conflict(new
                     {
-                        message = "Yêu cầu sửa chữa đã được đánh giá"
+                        message = "Đối tượng này đã được đánh giá cho yêu cầu sửa chữa"
                     }),
 
                 CreateReviewStatus.TechnicianNotAssigned =>
@@ -157,6 +158,31 @@ namespace FixNear.Features.Reviews.Controllers
         }
 
         // ============================================
+
+        // Xem danh gia rieng cua Technician (public, co phan trang).
+        [HttpGet("/api/technicians/{technicianId:int}/reviews")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTechnicianReviews(
+            int technicianId, [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = await _reviewService.GetByTechnicianAsync(
+                technicianId, page, pageSize);
+            return result.Status switch
+            {
+                GetTechnicianReviewsStatus.Success => Ok(new
+                {
+                    message = "Lấy đánh giá kỹ thuật viên thành công",
+                    data = result.Data
+                }),
+                GetTechnicianReviewsStatus.InvalidInput =>
+                    BadRequest(new { message = "Tham số không hợp lệ" }),
+                GetTechnicianReviewsStatus.TechnicianNotFound =>
+                    NotFound(new { message = "Không tìm thấy kỹ thuật viên" }),
+                _ => StatusCode(500)
+            };
+        }
+
         // X18 - PHAN HOI DANH GIA
         // POST /api/reviews/{id}/reply
         // ============================================

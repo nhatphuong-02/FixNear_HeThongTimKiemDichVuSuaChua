@@ -1,4 +1,4 @@
-﻿using FixNear.Domain.Models.Customers;
+using FixNear.Domain.Models.Customers;
 using FixNear.Domain.Models.Repairs;
 using FixNear.Domain.Models.Shops;
 using FixNear.Domain.Models.Technicians;
@@ -16,6 +16,8 @@ public partial class Review
     public int ShopId { get; set; }
 
     public int? TechnicianId { get; set; }
+
+    public int ReviewType { get; set; } = 1;
 
     public int Rating { get; set; }
 

@@ -1,4 +1,4 @@
-﻿using FixNear.Domain.Models.Billing;
+using FixNear.Domain.Models.Billing;
 using FixNear.Domain.Models.Customers;
 using FixNear.Domain.Models.Locations;
 using FixNear.Domain.Models.Messaging;
@@ -71,7 +71,6 @@ public partial class RepairRequest
 
     public virtual ICollection<RepairSchedule> RepairSchedule { get; set; } = new List<RepairSchedule>();
 
-    public virtual Review? ReviewRepairRequest { get; set; }
 
     public virtual ICollection<Review> ReviewRepairRequestNavigation { get; set; } = new List<Review>();
 

@@ -1,6 +1,7 @@
-﻿
+
 using System.Data;
 using FixNear.Domain.Models.Reviews;
+using FixNear.Enums;
 using FixNear.Features.Reviews.DTOs;
 using FixNear.Features.Reviews.Interfaces;
 using FixNear.Infrastructure.Persistence;
@@ -35,6 +36,9 @@ namespace FixNear.Features.Reviews.Services
                 dto.RepairRequestId <= 0 ||
                 dto.Rating < 1 ||
                 dto.Rating > 5 ||
+                (dto.ReviewType != 1 && dto.ReviewType != 2) ||
+                (dto.ReviewType == 1 && dto.TechnicianId.HasValue) ||
+                (dto.ReviewType == 2 && !dto.TechnicianId.HasValue) ||
                 (dto.TechnicianId.HasValue &&
                  dto.TechnicianId.Value <= 0) ||
                 (dto.Comment?.Length ?? 0) > 2000)
@@ -152,7 +156,8 @@ namespace FixNear.Features.Reviews.Services
             // 7. Moi yeu cau chi duoc danh gia mot lan
             bool alreadyReviewed = await _context.Review
                 .AnyAsync(r =>
-                    r.RepairRequestId == request.RepairRequestId);
+                    r.RepairRequestId == request.RepairRequestId &&
+                    r.ReviewType == dto.ReviewType);
 
             if (alreadyReviewed)
             {
@@ -194,6 +199,7 @@ namespace FixNear.Features.Reviews.Services
                 CustomerId = request.CustomerId,
                 ShopId = request.ShopId,
                 TechnicianId = dto.TechnicianId,
+                ReviewType = dto.ReviewType,
                 Rating = dto.Rating,
                 Comment = string.IsNullOrWhiteSpace(dto.Comment)
                     ? null
@@ -277,6 +283,7 @@ namespace FixNear.Features.Reviews.Services
                 .AsNoTracking()
                 .Where(r =>
                     r.ShopId == shopId &&
+                    r.ReviewType == 1 &&
                     r.Status == VisibleReviewStatus);
 
             // 4. Dem tong so danh gia
@@ -292,6 +299,7 @@ namespace FixNear.Features.Reviews.Services
                 {
                     ReviewId = r.ReviewId,
                     ShopId = r.ShopId,
+                    ReviewType = r.ReviewType,
                     TechnicianId = r.TechnicianId,
                     Rating = r.Rating,
                     Comment = r.Comment,
@@ -327,6 +335,57 @@ namespace FixNear.Features.Reviews.Services
         }
 
         // ============================================
+
+        // Danh gia rieng cua Technician: chi nhung review loai 2.
+        public async Task<GetTechnicianReviewsResult> GetByTechnicianAsync(
+            int technicianId, int page, int pageSize)
+        {
+            if (technicianId <= 0 || page <= 0 || pageSize <= 0 ||
+                pageSize > 50 || (long)(page - 1) * pageSize > int.MaxValue)
+                return new() { Status = GetTechnicianReviewsStatus.InvalidInput };
+
+            bool exists = await _context.TechnicianProfile.AsNoTracking()
+                .AnyAsync(t => t.TechnicianId == technicianId);
+            if (!exists)
+                return new() { Status = GetTechnicianReviewsStatus.TechnicianNotFound };
+
+            var query = _context.Review.AsNoTracking().Where(r =>
+                r.TechnicianId == technicianId && r.ReviewType == 2 && r.Status == 1);
+            int total = await query.CountAsync();
+            var rows = await query
+                .OrderByDescending(r => r.CreatedAt).ThenByDescending(r => r.ReviewId)
+                .Skip((page - 1) * pageSize).Take(pageSize)
+                .Select(r => new ReviewResponseDto
+                {
+                    ReviewId = r.ReviewId,
+                    ShopId = r.ShopId,
+                    ReviewType = r.ReviewType,
+                    TechnicianId = r.TechnicianId,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedAt = r.CreatedAt,
+                    Images = r.ReviewImage.OrderBy(img => img.DisplayOrder)
+                        .Select(img => new ReviewImageResponseDto
+                        {
+                            ReviewImageId = img.ReviewImageId,
+                            ImageUrl = img.ImageUrl,
+                            DisplayOrder = img.DisplayOrder
+                        }).ToList()
+                }).ToListAsync();
+            return new()
+            {
+                Status = GetTechnicianReviewsStatus.Success,
+                Data = new TechnicianReviewsResponseDto
+                {
+                    TechnicianId = technicianId,
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalCount = total,
+                    Reviews = rows
+                }
+            };
+        }
+
         // X18 - MANAGER PHAN HOI DANH GIA
         // ============================================
         public async Task<CreateReviewReplyResult> ReplyAsync(
@@ -366,7 +425,14 @@ namespace FixNear.Features.Reviews.Services
                 .AsNoTracking()
                 .Where(r =>
                     r.ReviewId == reviewId &&
-                    r.Shop.Manager.UserId == managerUserId)
+                    r.ReviewType == 1 &&
+                    _context.ShopMember.Any(sm =>
+                        sm.ShopId == r.ShopId &&
+                        sm.Manager.UserId == managerUserId &&
+                        sm.LeftAt == null &&
+                        sm.Status == ShopMemberStatus.Active &&
+                        (sm.ShopRole == ShopRole.Owner ||
+                         sm.ShopRole == ShopRole.Manager)))
                 .Select(r => new
                 {
                     r.ReviewId

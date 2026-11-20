@@ -1,5 +1,5 @@
 ﻿/*
- FixNear - dữ liệu khởi tạo cho Admin, chạy sau FixNearDB_Completed.sql
+ FixNear - dữ liệu khởi tạo cho Admin, chạy sau FixNearDB.sql
  GIỮ NGUYÊN danh sách Province/Ward ban đầu do người dùng cung cấp.
  RepairItem/RepairPart là dữ liệu DANH MỤC ĐỀ XUẤT để Admin rà soát,
  giá tham khảo mặc định 0 (CHƯA PHẢI giá bán). Shop tự cấu hình giá.

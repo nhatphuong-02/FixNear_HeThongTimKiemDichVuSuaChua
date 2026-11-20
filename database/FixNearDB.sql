@@ -1,12 +1,12 @@
 ﻿/*
- FixNearDB - Schema FULL (tạo MỚI) đồng bộ với FixNear(4).zip
+ FixNearDB - Schema FULL (tạo MỚI) đối chiếu FixNear(5).zip
  NGUYÊN TẮC:
    - Chỉ chạy trên SQL Server khi muốn tạo DB MỚI CHƯA TỒN TẠI.
-   - Database đã tồn tại: chạy FixNearDB_Migrate_Existing.sql, KHÔNG chạy file này.
+   - Database đã tồn tại: KHÔNG chạy file này. Chỉ chạy Review_Migrate_Existing.sql nếu cần cập nhật Review.
    - Bổ sung ShopRepairItem, ShopRepairPart, Unit, IsSupplemental,
      ManagerAcceptedAt/ByUserId, BankBin/Account..., PaymentReference,
      ConversationMember.LastReadAt.
-   - RepairPartUsage chưa có QuoteDetailId trong model FixNear(4),
+   - RepairPartUsage chưa có QuoteDetailId trong model FixNear(5),
      do đó không tự thêm cột gây lệch model.
    - Đừng seed tài khoản Shop, payment, ngân hàng giả làm dữ liệu thật.
 */
@@ -88,7 +88,7 @@ CREATE TABLE dbo.EmailVerification (
     CONSTRAINT PK_EmailVerification PRIMARY KEY (EmailVerificationId),
     CONSTRAINT FK_EmailVerification_User FOREIGN KEY (UserId)
         REFERENCES dbo.[User](UserId) ON DELETE NO ACTION,
-    CONSTRAINT CK_EmailVerification_Purpose CHECK (Purpose IN (1, 2)),
+    CONSTRAINT CK_EmailVerification_Purpose CHECK (Purpose IN (1, 2, 3, 4)),
     CONSTRAINT CK_EmailVerification_FailedAttempts CHECK (FailedAttempts >= 0),
     CONSTRAINT CK_EmailVerification_ExpiresAt CHECK (ExpiresAt > CreatedAt)
 );
@@ -680,7 +680,8 @@ CREATE TABLE dbo.Review (
     RepairRequestId INT             NOT NULL,
     CustomerId      INT             NOT NULL,
     ShopId          INT             NOT NULL,
-    TechnicianId    INT             NULL,           -- thợ được đánh giá (nguồn của TechnicianProfile.RatingAverage)
+    TechnicianId    INT             NULL,           -- chi co gia tri voi ReviewType=2
+    ReviewType      INT             NOT NULL CONSTRAINT DF_Review_ReviewType DEFAULT (1), -- 1: Shop; 2: Technician
     Rating          INT             NOT NULL,
     Comment         NVARCHAR(2000)  NULL,
     Status          INT             NOT NULL CONSTRAINT DF_Review_Status DEFAULT (1), -- 1: PUBLISHED
@@ -925,6 +926,7 @@ ALTER TABLE dbo.QuoteDetail       ADD CONSTRAINT CK_QuoteDetail_Quantity     CHE
 ALTER TABLE dbo.Invoice           ADD CONSTRAINT CK_Invoice_Amounts          CHECK (TotalAmount >= 0);
 ALTER TABLE dbo.Payment           ADD CONSTRAINT CK_Payment_Amount           CHECK (Amount > 0);
 ALTER TABLE dbo.Review            ADD CONSTRAINT CK_Review_Rating            CHECK (Rating BETWEEN 1 AND 5);
+ALTER TABLE dbo.Review ADD CONSTRAINT CK_Review_Type CHECK ((ReviewType = 1 AND TechnicianId IS NULL) OR (ReviewType = 2 AND TechnicianId IS NOT NULL));
 GO
 
 ALTER TABLE dbo.[User]   ADD CONSTRAINT CK_User_Role    CHECK (RoleType BETWEEN 1 AND 4);
@@ -976,7 +978,7 @@ CREATE UNIQUE INDEX UX_RepairSchedule_Current    ON dbo.RepairSchedule(RepairReq
 CREATE UNIQUE INDEX UX_Quote_Number              ON dbo.Quote(QuoteNumber);
 CREATE UNIQUE INDEX UX_Invoice_Number            ON dbo.Invoice(InvoiceNumber);
 CREATE UNIQUE INDEX UX_Warranty_Code             ON dbo.Warranty(WarrantyCode);
-CREATE UNIQUE INDEX UX_Review_Request            ON dbo.Review(RepairRequestId);
+CREATE UNIQUE INDEX UX_Review_Request_Type       ON dbo.Review(RepairRequestId, ReviewType);
 CREATE UNIQUE INDEX UX_NotificationTemplate_Code ON dbo.NotificationTemplate(TemplateCode);
 CREATE UNIQUE INDEX UX_PaymentTransaction_Code   ON dbo.PaymentTransaction(TransactionCode) WHERE TransactionCode IS NOT NULL;
 GO
@@ -1077,7 +1079,7 @@ BEGIN
 
     IF EXISTS (
         SELECT 1 FROM inserted i
-        WHERE i.TechnicianId IS NOT NULL
+        WHERE i.ReviewType = 2 AND i.TechnicianId IS NOT NULL
           AND NOT EXISTS (SELECT 1 FROM dbo.RepairAssignment a
                           WHERE a.RepairRequestId = i.RepairRequestId AND a.TechnicianId = i.TechnicianId))
     BEGIN
@@ -1087,13 +1089,13 @@ BEGIN
 
     UPDATE s
     SET RatingAverage = ISNULL((SELECT CAST(AVG(CAST(r.Rating AS DECIMAL(9,4))) AS DECIMAL(3,2))
-                                FROM dbo.Review r WHERE r.ShopId = s.ShopId AND r.Status = 1), 0)
+                                FROM dbo.Review r WHERE r.ShopId = s.ShopId AND r.ReviewType = 1 AND r.Status = 1), 0)
     FROM dbo.Shop s
     WHERE s.ShopId IN (SELECT ShopId FROM inserted UNION SELECT ShopId FROM deleted);
 
     UPDATE tp
     SET RatingAverage = ISNULL((SELECT CAST(AVG(CAST(r.Rating AS DECIMAL(9,4))) AS DECIMAL(3,2))
-                                FROM dbo.Review r WHERE r.TechnicianId = tp.TechnicianId AND r.Status = 1), 0)
+                                FROM dbo.Review r WHERE r.TechnicianId = tp.TechnicianId AND r.ReviewType = 2 AND r.Status = 1), 0)
     FROM dbo.TechnicianProfile tp
     WHERE tp.TechnicianId IN (SELECT TechnicianId FROM inserted WHERE TechnicianId IS NOT NULL
                               UNION
