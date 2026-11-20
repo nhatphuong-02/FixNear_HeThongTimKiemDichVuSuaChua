@@ -1,4 +1,5 @@
 
+using FixNear.Features.Messaging.Hubs;
 using FixNear.Infrastructure.Configurations;
 using FixNear.Infrastructure.DependencyInjection;
 
@@ -16,9 +17,12 @@ builder.Services.AddFixNearSwagger();
 // 4. Register Controllers
 builder.Services.AddControllersWithViews();
 
+// 5. Chat
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
-// 5. Configure Middleware
+// 6. Configure Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -45,5 +49,7 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.MapControllers();
+
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();

@@ -30,4 +30,8 @@ public interface IShopService
     //Nearby shop
     Task<List<NearbyShopResponseDto>> GetNearbyShopsByServiceAsync(int serviceId, NearbyShopRequestDto request);
 
+    // Tìm tất cả cửa hàng đang hoạt động gần vị trí GPS
+    Task<List<NearbyShopResponseDto>> GetAllNearbyShopsAsync(NearbyShopRequestDto request);
+
+
 }

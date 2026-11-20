@@ -1,4 +1,17 @@
-﻿CREATE DATABASE FixNearDB COLLATE Vietnamese_CI_AS;
+﻿/*
+ FixNearDB - Schema FULL (tạo MỚI) đồng bộ với FixNear(4).zip
+ NGUYÊN TẮC:
+   - Chỉ chạy trên SQL Server khi muốn tạo DB MỚI CHƯA TỒN TẠI.
+   - Database đã tồn tại: chạy FixNearDB_Migrate_Existing.sql, KHÔNG chạy file này.
+   - Bổ sung ShopRepairItem, ShopRepairPart, Unit, IsSupplemental,
+     ManagerAcceptedAt/ByUserId, BankBin/Account..., PaymentReference,
+     ConversationMember.LastReadAt.
+   - RepairPartUsage chưa có QuoteDetailId trong model FixNear(4),
+     do đó không tự thêm cột gây lệch model.
+   - Đừng seed tài khoản Shop, payment, ngân hàng giả làm dữ liệu thật.
+*/
+
+CREATE DATABASE FixNearDB COLLATE Vietnamese_CI_AS;
 GO
 
 ALTER DATABASE FixNearDB SET READ_COMMITTED_SNAPSHOT ON;
@@ -169,6 +182,9 @@ CREATE TABLE dbo.Shop (
     Email           NVARCHAR(200)   NULL,
     LogoUrl         NVARCHAR(500)   NULL,
     TaxCode         NVARCHAR(50)    NULL,
+    BankBin         NVARCHAR(20)    NULL,      -- BIN ngân hàng do Shop cấu hình
+    BankAccountNo   NVARCHAR(50)    NULL,
+    BankAccountName NVARCHAR(200)   NULL,
     RatingAverage   DECIMAL(3,2)    NOT NULL CONSTRAINT DF_Shop_Rating DEFAULT (0),
     Status          INT             NOT NULL CONSTRAINT DF_Shop_Status DEFAULT (1), -- 4: PENDING
     IsVerified      BIT             NOT NULL CONSTRAINT DF_Shop_IsVerified DEFAULT (0),
@@ -341,6 +357,7 @@ CREATE TABLE dbo.RepairItem (
     ItemName        NVARCHAR(200)   NOT NULL,
     Description     NVARCHAR(1000)  NULL,
     DefaultPrice    DECIMAL(18,2)   NOT NULL CONSTRAINT DF_RepairItem_DefaultPrice DEFAULT (0),
+    Unit            NVARCHAR(50)    NULL,
     IsActive        BIT             NOT NULL CONSTRAINT DF_RepairItem_IsActive DEFAULT (1),
     CreatedAt       DATETIME2       NOT NULL CONSTRAINT DF_RepairItem_CreatedAt DEFAULT SYSUTCDATETIME(),
     UpdatedAt       DATETIME2       NULL,
@@ -363,6 +380,40 @@ CREATE TABLE dbo.RepairPart (
 );
 GO
 
+-- Bảng giá công sửa chữa riêng theo Shop (catalog gốc: RepairItem)
+CREATE TABLE dbo.ShopRepairItem (
+    ShopRepairItemId INT IDENTITY(1,1) NOT NULL,
+    ShopId INT NOT NULL,
+    RepairItemId INT NOT NULL,
+    Price DECIMAL(18,2) NOT NULL,
+    IsActive BIT NOT NULL CONSTRAINT DF_ShopRepairItem_IsActive DEFAULT (1),
+    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_ShopRepairItem_CreatedAt DEFAULT SYSUTCDATETIME(),
+    UpdatedAt DATETIME2 NULL,
+    CONSTRAINT PK_ShopRepairItem PRIMARY KEY (ShopRepairItemId),
+    CONSTRAINT UQ_ShopRepairItem_Shop_Item UNIQUE (ShopId, RepairItemId),
+    CONSTRAINT FK_ShopRepairItem_Shop FOREIGN KEY (ShopId) REFERENCES dbo.Shop(ShopId),
+    CONSTRAINT FK_ShopRepairItem_RepairItem FOREIGN KEY (RepairItemId) REFERENCES dbo.RepairItem(RepairItemId),
+    CONSTRAINT CK_ShopRepairItem_Price CHECK (Price >= 0)
+);
+GO
+
+-- Bảng giá linh kiện/vật tư riêng theo Shop (catalog gốc: RepairPart)
+CREATE TABLE dbo.ShopRepairPart (
+    ShopRepairPartId INT IDENTITY(1,1) NOT NULL,
+    ShopId INT NOT NULL,
+    RepairPartId INT NOT NULL,
+    Price DECIMAL(18,2) NOT NULL,
+    IsActive BIT NOT NULL CONSTRAINT DF_ShopRepairPart_IsActive DEFAULT (1),
+    CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_ShopRepairPart_CreatedAt DEFAULT SYSUTCDATETIME(),
+    UpdatedAt DATETIME2 NULL,
+    CONSTRAINT PK_ShopRepairPart PRIMARY KEY (ShopRepairPartId),
+    CONSTRAINT UQ_ShopRepairPart_Shop_Part UNIQUE (ShopId, RepairPartId),
+    CONSTRAINT FK_ShopRepairPart_Shop FOREIGN KEY (ShopId) REFERENCES dbo.Shop(ShopId),
+    CONSTRAINT FK_ShopRepairPart_RepairPart FOREIGN KEY (RepairPartId) REFERENCES dbo.RepairPart(RepairPartId),
+    CONSTRAINT CK_ShopRepairPart_Price CHECK (Price >= 0)
+);
+GO
+
 -- 20. RepairRequest
 CREATE TABLE dbo.RepairRequest (
     RepairRequestId INT IDENTITY(1,1) NOT NULL,
@@ -379,10 +430,13 @@ CREATE TABLE dbo.RepairRequest (
     CreatedAt       DATETIME2       NOT NULL CONSTRAINT DF_RepairRequest_CreatedAt DEFAULT SYSUTCDATETIME(),
     UpdatedAt       DATETIME2       NULL,
     CompletedAt     DATETIME2       NULL,
+    ManagerAcceptedAt DATETIME2     NULL,
+    ManagerAcceptedByUserId INT     NULL,
     CancelledAt     DATETIME2       NULL,
     CONSTRAINT PK_RepairRequest PRIMARY KEY (RepairRequestId),
     CONSTRAINT FK_RepairRequest_Customer FOREIGN KEY (CustomerId) REFERENCES dbo.CustomerProfile(CustomerId),
-    CONSTRAINT FK_RepairRequest_Shop FOREIGN KEY (ShopId) REFERENCES dbo.Shop(ShopId)
+    CONSTRAINT FK_RepairRequest_Shop FOREIGN KEY (ShopId) REFERENCES dbo.Shop(ShopId),
+    CONSTRAINT FK_RepairRequest_ManagerAcceptedByUser FOREIGN KEY (ManagerAcceptedByUserId) REFERENCES dbo.[User](UserId)
 );
 GO
 
@@ -474,6 +528,7 @@ CREATE TABLE dbo.Quote (
     QuoteNumber     NVARCHAR(50)    NOT NULL,
     TotalAmount     DECIMAL(18,2)   NOT NULL CONSTRAINT DF_Quote_TotalAmount DEFAULT (0),
     Status          INT             NOT NULL CONSTRAINT DF_Quote_Status DEFAULT (1), -- 1: DRAFT
+    IsSupplemental  BIT             NOT NULL CONSTRAINT DF_Quote_IsSupplemental DEFAULT (0),
     CustomerResponse INT            NULL,
     CustomerResponseAt DATETIME2    NULL,
     ValidUntil      DATETIME2       NULL,
@@ -566,6 +621,10 @@ CREATE TABLE dbo.Invoice (
     Status          INT             NOT NULL CONSTRAINT DF_Invoice_Status DEFAULT (1), -- 1: UNPAID
     IssuedAt        DATETIME2       NOT NULL CONSTRAINT DF_Invoice_IssuedAt DEFAULT SYSUTCDATETIME(),
     PaidAt          DATETIME2       NULL,
+    BankBin         NVARCHAR(20)    NULL,
+    BankAccountNo   NVARCHAR(50)    NULL,
+    BankAccountName NVARCHAR(200)   NULL,
+    PaymentReference NVARCHAR(100)  NULL,
     CONSTRAINT PK_Invoice PRIMARY KEY (InvoiceId),
     CONSTRAINT FK_Invoice_Request FOREIGN KEY (RepairRequestId) REFERENCES dbo.RepairRequest(RepairRequestId),
     CONSTRAINT FK_Invoice_Customer FOREIGN KEY (CustomerId) REFERENCES dbo.CustomerProfile(CustomerId),
@@ -784,6 +843,7 @@ CREATE TABLE dbo.ConversationMember (
     UserId          INT             NOT NULL,
     JoinedAt        DATETIME2       NOT NULL CONSTRAINT DF_ConversationMember_JoinedAt DEFAULT SYSUTCDATETIME(),
     LeftAt          DATETIME2       NULL,           -- soft leave: giữ dòng để lịch sử tin nhắn còn nguyên
+    LastReadAt      DATETIME2       NULL,
     CreatedAt       DATETIME2       NOT NULL CONSTRAINT DF_ConversationMember_CreatedAt DEFAULT SYSUTCDATETIME(),
     CONSTRAINT PK_ConversationMember PRIMARY KEY (ConversationMemberId),
     CONSTRAINT UQ_ConversationMember UNIQUE (ConversationId, UserId),

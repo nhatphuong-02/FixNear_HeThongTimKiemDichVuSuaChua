@@ -18,6 +18,8 @@ public partial class ConversationMember
 
     public DateTime CreatedAt { get; set; }
 
+    public DateTime? LastReadAt { get; set; }
+
     public virtual Conversation Conversation { get; set; } = null!;
 
     public virtual ICollection<Message> Message { get; set; } = new List<Message>();

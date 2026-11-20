@@ -1,6 +1,9 @@
 ﻿
 using System.Data;
 using FixNear.Domain.Models.Billing;
+using FixNear.Domain.Models.Notifications;
+using FixNear.Domain.Enums;
+using FixNear.Enums;
 using FixNear.Features.Invoices.DTOs;
 using FixNear.Features.Invoices.Interfaces;
 using FixNear.Infrastructure.Persistence;
@@ -43,13 +46,20 @@ namespace FixNear.Features.Invoices.Services
                 .AsNoTracking()
                 .Where(r =>
                     r.RepairRequestId == dto.RepairRequestId &&
-                    r.Shop.Manager.UserId == userId)
+                    _context.ShopMember.Any(sm =>
+                        sm.ShopId == r.ShopId &&
+                        sm.Manager.UserId == userId &&
+                        sm.Status == ShopMemberStatus.Active &&
+                        sm.LeftAt == null &&
+                        (sm.ShopRole == ShopRole.Owner ||
+                         sm.ShopRole == ShopRole.Manager)))
                 .Select(r => new
                 {
                     r.RepairRequestId,
                     r.CustomerId,
                     r.ShopId,
-                    r.Status
+                    r.Status,
+                    r.ManagerAcceptedAt
                 })
                 .FirstOrDefaultAsync();
 
@@ -61,12 +71,10 @@ namespace FixNear.Features.Invoices.Services
                 };
             }
 
-            // 3. Kiem tra tien do sua chua
-            // Ma 11 dang la quy uoc tam cua X11.
-            // Can dong bo voi Thinh truoc khi test.
-            const int ChoNghiemThu = 11;
-
-            if (request.Status != ChoNghiemThu)
+            // Chỉ xuất hóa đơn sau khi KTV đã hoàn thành
+            // và Owner/Manager đã nghiệm thu.
+            if (request.Status != (int)RepairRequestStatus.Completed ||
+                request.ManagerAcceptedAt == null)
             {
                 return new CreateInvoiceResult
                 {
@@ -87,42 +95,44 @@ namespace FixNear.Features.Invoices.Services
                 };
             }
 
-            // 5. Lay bao gia da duoc Customer chap nhan
-            var quote = await _context.Quote
+            // 5. Gộp báo giá gốc và TẤT CẢ báo giá bổ sung đã duyệt.
+            var quotes = await _context.Quote
                 .AsNoTracking()
                 .Include(q => q.QuoteDetail)
-                .FirstOrDefaultAsync(q =>
-                    q.QuoteId == dto.QuoteId &&
-                    q.RepairRequestId == request.RepairRequestId &&
-                    q.Status == 3 &&
-                    q.CustomerResponse == 1);
+                .Where(q => q.RepairRequestId == request.RepairRequestId &&
+                    q.Status == (int)QuoteStatus.Accepted &&
+                    q.CustomerResponse == (int)QuoteCustomerResponse.Accepted)
+                .OrderBy(q => q.QuoteId)
+                .ToListAsync();
 
-            if (quote == null)
-            {
-                return new CreateInvoiceResult
-                {
-                    Status = CreateInvoiceStatus.QuoteNotAccepted
-                };
-            }
+            // QuoteId từ DTO là báo giá gốc để tương thích Mobile cũ.
+            if (!quotes.Any(q => q.QuoteId == dto.QuoteId && !q.IsSupplemental))
+                return new CreateInvoiceResult { Status = CreateInvoiceStatus.QuoteNotAccepted };
 
-            if (quote.QuoteDetail.Count == 0)
-            {
-                return new CreateInvoiceResult
-                {
-                    Status = CreateInvoiceStatus.EmptyQuote
-                };
-            }
+            // Không phát hành khi còn phát sinh chưa được xử lý.
+            bool pending = await _context.Quote.AnyAsync(q =>
+                q.RepairRequestId == request.RepairRequestId &&
+                q.IsSupplemental &&
+                (q.Status == (int)QuoteStatus.Draft || q.Status == (int)QuoteStatus.Sent));
+            if (pending)
+                return new CreateInvoiceResult { Status = CreateInvoiceStatus.InvalidRequestStatus };
 
-            // 6. Kiem tra chi tiet bao gia
-            if (quote.QuoteDetail.Any(d =>
-                d.Quantity <= 0 ||
-                d.UnitPrice < 0))
-            {
-                return new CreateInvoiceResult
-                {
-                    Status = CreateInvoiceStatus.InvalidQuoteDetail
-                };
-            }
+            if (quotes.Any(q => q.QuoteDetail.Count == 0))
+                return new CreateInvoiceResult { Status = CreateInvoiceStatus.EmptyQuote };
+
+            if (quotes.SelectMany(q => q.QuoteDetail)
+                .Any(d => d.Quantity <= 0 || d.UnitPrice < 0))
+                return new CreateInvoiceResult { Status = CreateInvoiceStatus.InvalidQuoteDetail };
+
+            // Snapshot tài khoản thụ hưởng tại thời điểm phát hành.
+            var bank = await _context.Shop.AsNoTracking()
+                .Where(sh => sh.ShopId == request.ShopId)
+                .Select(sh => new { sh.BankBin, sh.BankAccountNo, sh.BankAccountName })
+                .FirstAsync();
+            if (string.IsNullOrWhiteSpace(bank.BankBin) ||
+                string.IsNullOrWhiteSpace(bank.BankAccountNo) ||
+                string.IsNullOrWhiteSpace(bank.BankAccountName))
+                return new CreateInvoiceResult { Status = CreateInvoiceStatus.InvalidInput };
 
             // 7. Tao so hoa don duy nhat
             var now = DateTime.UtcNow;
@@ -144,26 +154,28 @@ namespace FixNear.Features.Invoices.Services
                 TotalAmount = 0m,
 
                 Status = 1,
-                IssuedAt = now
+                IssuedAt = now,
+                BankBin = bank.BankBin,
+                BankAccountNo = bank.BankAccountNo,
+                BankAccountName = bank.BankAccountName
             };
 
-            // 9. Sao chep chi tiet tu bao gia
-            foreach (var detail in quote.QuoteDetail)
+            // 9. Snapshot chi tiết mọi báo giá đã được khách chấp nhận.
+            foreach (var quote in quotes)
             {
-                invoice.InvoiceDetail.Add(new InvoiceDetail
+                foreach (var detail in quote.QuoteDetail)
                 {
-                    Description =
-                        string.IsNullOrWhiteSpace(detail.Description)
-                            ? $"Hang muc bao gia {detail.QuoteDetailId}"
-                            : detail.Description.Trim(),
-
-                    Quantity = detail.Quantity,
-                    UnitPrice = detail.UnitPrice,
-                    CreatedAt = now
-
-                    // Khong gan Amount.
-                    // SQL Server tu tinh.
-                });
+                    invoice.InvoiceDetail.Add(new InvoiceDetail
+                    {
+                        Description = $"{quote.QuoteNumber} - " +
+                            (string.IsNullOrWhiteSpace(detail.Description)
+                                ? $"Hạng mục {detail.QuoteDetailId}"
+                                : detail.Description.Trim()),
+                        Quantity = detail.Quantity,
+                        UnitPrice = detail.UnitPrice,
+                        CreatedAt = now
+                    });
+                }
             }
 
             // 10. Luu hoa don va chi tiet
@@ -171,8 +183,43 @@ namespace FixNear.Features.Invoices.Services
 
             await _context.SaveChangesAsync();
 
+            invoice.PaymentReference = $"FN{invoice.InvoiceId}";
+            await _context.SaveChangesAsync();
+
             // 11. Doc lai tong tien do trigger cap nhat
             await _context.Entry(invoice).ReloadAsync();
+
+            // Không phát hành hóa đơn với số tiền không hợp lệ.
+            var expected = quotes.Sum(q => q.QuoteDetail.Sum(d => d.Amount));
+            if (invoice.TotalAmount <= 0 || invoice.TotalAmount != expected)
+                throw new InvalidOperationException("Tổng hóa đơn và báo giá không khớp.");
+
+            var customerUserId = await _context.CustomerProfile
+                .Where(c => c.CustomerId == request.CustomerId)
+                .Select(c => c.UserId)
+                .FirstAsync();
+
+            var template = await _context.NotificationTemplate
+                .FirstAsync(t => t.TemplateCode == "INVOICE_ISSUED");
+            var notice = new Notification
+            {
+                TemplateId = template.NotificationTemplateId,
+                Title = template.Title.Replace("{InvoiceNumber}", invoice.InvoiceNumber),
+                Body = (template.BodyTemplate ?? "")
+                    .Replace("{InvoiceNumber}", invoice.InvoiceNumber)
+                    .Replace("{Amount}", invoice.TotalAmount.ToString("N0") + " đ"),
+                RefType = (int)NotificationRefType.Invoice,
+                RefId = invoice.InvoiceId,
+                CreatedAt = DateTime.UtcNow
+            };
+            notice.UserNotification.Add(new UserNotification
+            {
+                UserId = customerUserId,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+            _context.Notification.Add(notice);
+            await _context.SaveChangesAsync();
 
             // 12. Hoan tat transaction
             await transaction.CommitAsync();
@@ -227,7 +274,13 @@ namespace FixNear.Features.Invoices.Services
 
                         // Manager: chi xem hoa don Shop minh
                         (roleType == 2 &&
-                         i.Shop.Manager.UserId == userId)
+                         _context.ShopMember.Any(sm =>
+                             sm.ShopId == i.ShopId &&
+                             sm.Manager.UserId == userId &&
+                             sm.Status == ShopMemberStatus.Active &&
+                             sm.LeftAt == null &&
+                             (sm.ShopRole == ShopRole.Owner ||
+                              sm.ShopRole == ShopRole.Manager)))
                     ))
                 .FirstOrDefaultAsync();
 

@@ -65,6 +65,10 @@ public static class ServicesRegistration
 
         // Technician
         services.AddScoped<ITechnicianService, TechnicianService>();
+        services.AddScoped<ITechnicianAssignmentService, TechnicianAssignmentService>();
+        services.AddScoped<ITechnicianRepairService, TechnicianRepairService>();
+
+
 
         // Quote
         services.AddScoped<IQuoteService, QuoteService>();

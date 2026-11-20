@@ -4,26 +4,7 @@ namespace FixNear.Features.Manager.Interfaces;
 
 public interface IManagerService
 {
-    #region T01 - Xem thông tin cửa hàng
-
-    Task<object> GetShopsAsync(int managerId);
-
-    Task<object?> GetShopAsync(
-        int managerId,
-        int shopId);
-
-    #endregion
-
-    #region T02 - Cập nhật thông tin cửa hàng
-
-    Task<bool> UpdateShopAsync(
-        int managerId,
-        int shopId,
-        UpdateShopDto dto);
-
-    #endregion
-
-    #region T03 - Quản lý ảnh cửa hàng
+    #region Quản lý ảnh cửa hàng
 
     Task<object> GetShopImagesAsync(
         int userId,
@@ -52,7 +33,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T04 - Quản lý dịch vụ của cửa hàng
+    #region Quản lý dịch vụ của cửa hàng
 
     Task<object> GetSystemServicesAsync();
 
@@ -84,7 +65,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T05 - Quản lý giá dịch vụ
+    #region Quản lý giá dịch vụ
 
     Task<object?> GetServicePricesAsync(
         int userId,
@@ -109,36 +90,7 @@ public interface IManagerService
 
     #endregion
 
-    #region T06 - Quản lý kỹ thuật viên
-
-Task<object?> GetTechniciansAsync(
-    int managerId,
-    int shopId);
-
-Task<object?> GetTechnicianAsync(
-    int managerId,
-    int shopId,
-    int technicianId);
-
-Task<object?> AddTechnicianAsync(
-    int managerId,
-    int shopId,
-    AddTechnicianToShopDto dto);
-
-Task<bool> UpdateTechnicianAsync(
-    int managerId,
-    int shopId,
-    int technicianId,
-    UpdateTechnicianShopDto dto);
-
-Task<bool> RemoveTechnicianAsync(
-    int managerId,
-    int shopId,
-    int technicianId);
-
-#endregion
-
-    #region T07 - Xem danh sách yêu cầu sửa chữa
+    #region Xem danh sách yêu cầu sửa chữa
 
     Task<object?> GetRepairRequestsAsync(
         int managerId,
@@ -146,7 +98,11 @@ Task<bool> RemoveTechnicianAsync(
 
     #endregion
 
-    #region T08 - Tiếp nhận yêu cầu
+    // Chi tiết Repair cho Manager đã được cấp quyền Shop.
+    Task<object?> GetRepairRequestDetailAsync(
+        int userId, int shopId, int repairRequestId);
+
+    #region Tiếp nhận yêu cầu
 
     Task<ManagerActionResult> AcceptRepairRequestAsync(
         int managerId,
@@ -156,7 +112,7 @@ Task<bool> RemoveTechnicianAsync(
 
     #endregion
 
-    #region T09 - Từ chối yêu cầu
+    #region Từ chối yêu cầu
 
     Task<ManagerActionResult> RejectRepairRequestAsync(
         int managerId,
@@ -166,7 +122,7 @@ Task<bool> RemoveTechnicianAsync(
 
     #endregion
 
-    #region T10 - Phân công kỹ thuật viên
+    #region Phân công kỹ thuật viên
 
     Task<ManagerActionResult> AssignRepairTechnicianAsync(
         int managerId,
@@ -175,7 +131,7 @@ Task<bool> RemoveTechnicianAsync(
 
     #endregion
 
-    #region T11 - Đổi kỹ thuật viên
+    #region Đổi kỹ thuật viên
 
     Task<ManagerActionResult> ReassignRepairTechnicianAsync(
         int managerId,
@@ -185,7 +141,7 @@ Task<bool> RemoveTechnicianAsync(
 
     #endregion
 
-    #region T12 - Lịch sửa chữa
+    #region Lịch sửa chữa
 
     Task<object?> GetManagerRepairSchedulesAsync(
         int managerId,

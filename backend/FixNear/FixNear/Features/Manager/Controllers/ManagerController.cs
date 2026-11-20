@@ -2,7 +2,9 @@
 using FixNear.Features.Manager.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FixNear.Features.Manager.Controllers;
 
@@ -18,97 +20,28 @@ public class ManagerController : ControllerBase
         _managerService = managerService;
     }
 
-    #region T01 - Xem thông tin cửa hàng
-
-    [HttpGet("shops")]
-    public async Task<IActionResult> GetShops(
-        [FromQuery] int managerId)
+    //Lấy id người dùng hiện tại
+    private int? GetCurrentUserId()
     {
-        if (managerId <= 0)
-            return BadRequest(new
-            {
-                message = "ManagerId không hợp lệ"
-            });
+        var claim = User.FindFirst(
+            ClaimTypes.NameIdentifier)?.Value;
 
-        var result = await _managerService
-            .GetShopsAsync(managerId);
-
-        return Ok(result);
+        return int.TryParse(claim, out int userId)
+            ? userId
+            : null;
     }
 
-    [HttpGet("shops/{shopId:int}")]
-    public async Task<IActionResult> GetShop(
-        int shopId,
-        [FromQuery] int managerId)
-    {
-        if (managerId <= 0 || shopId <= 0)
-            return BadRequest(new
-            {
-                message = "ManagerId hoặc ShopId không hợp lệ"
-            });
-
-        var result = await _managerService
-            .GetShopAsync(managerId, shopId);
-
-        if (result == null)
-            return NotFound(new
-            {
-                message = "Không tìm thấy cửa hàng"
-            });
-
-        return Ok(result);
-    }
-
-    #endregion
-
-    #region T02 - Cập nhật thông tin cửa hàng
-
-    [HttpPut("shops/{shopId:int}")]
-    public async Task<IActionResult> UpdateShop(
-        int shopId,
-        [FromQuery] int managerId,
-        [FromBody] UpdateShopDto dto)
-    {
-        if (managerId <= 0 || shopId <= 0)
-            return BadRequest(new
-            {
-                message = "ManagerId hoặc ShopId không hợp lệ"
-            });
-
-        try
-        {
-            var updated = await _managerService
-                .UpdateShopAsync(managerId, shopId, dto);
-
-            if (!updated)
-                return NotFound(new
-                {
-                    message = "Không tìm thấy cửa hàng"
-                });
-
-            return Ok(new
-            {
-                message = "Cập nhật cửa hàng thành công"
-            });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new
-            {
-                message = ex.Message
-            });
-        }
-    }
-
-    #endregion
 
     #region T03 - Quản lý ảnh cửa hàng
 
     [HttpGet("shops/{shopId:int}/images")]
     public async Task<IActionResult> GetImages(
-        int shopId,
-        [FromQuery] int managerId)
+        int shopId)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         if (managerId <= 0 || shopId <= 0)
             return BadRequest(new
             {
@@ -124,9 +57,12 @@ public class ManagerController : ControllerBase
     [HttpPost("shops/{shopId:int}/images")]
     public async Task<IActionResult> AddImage(
         int shopId,
-        [FromQuery] int managerId,
         [FromBody] ShopImageDto dto)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         if (managerId <= 0 || shopId <= 0)
             return BadRequest(new
             {
@@ -163,9 +99,12 @@ public class ManagerController : ControllerBase
     public async Task<IActionResult> UpdateImage(
         int shopId,
         int imageId,
-        [FromQuery] int managerId,
         [FromBody] ShopImageDto dto)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         if (managerId <= 0 || shopId <= 0 || imageId <= 0)
             return BadRequest(new
             {
@@ -194,9 +133,12 @@ public class ManagerController : ControllerBase
     [HttpDelete("shops/{shopId:int}/images/{imageId:int}")]
     public async Task<IActionResult> DeleteImage(
         int shopId,
-        int imageId,
-        [FromQuery] int managerId)
+        int imageId)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         if (managerId <= 0 || shopId <= 0 || imageId <= 0)
             return BadRequest(new
             {
@@ -224,9 +166,12 @@ public class ManagerController : ControllerBase
     [HttpPut("shops/{shopId:int}/images/{imageId:int}/primary")]
     public async Task<IActionResult> SetPrimaryImage(
         int shopId,
-        int imageId,
-        [FromQuery] int managerId)
+        int imageId)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         if (managerId <= 0 || shopId <= 0 || imageId <= 0)
             return BadRequest(new
             {
@@ -268,8 +213,12 @@ public class ManagerController : ControllerBase
 
     [HttpGet("shops/{shopId}/services")]
     public async Task<IActionResult> GetShopServices(
-        int shopId, [FromQuery] int managerId)
+        int shopId)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         var result = await _managerService
             .GetShopServicesAsync(managerId, shopId);
 
@@ -288,9 +237,12 @@ public class ManagerController : ControllerBase
 
     [HttpGet("shops/{shopId}/services/{shopServiceId}")]
     public async Task<IActionResult> GetShopServiceDetail(
-        int shopId, int shopServiceId,
-        [FromQuery] int managerId)
+        int shopId, int shopServiceId)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         var result = await _managerService
             .GetShopServiceDetailAsync(
                 managerId, shopId, shopServiceId);
@@ -310,9 +262,12 @@ public class ManagerController : ControllerBase
 
     [HttpPost("shops/{shopId}/services")]
     public async Task<IActionResult> AddShopService(
-        int shopId, [FromQuery] int managerId,
-        [FromBody] AddShopServiceDto dto)
+        int shopId, [FromBody] AddShopServiceDto dto)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         try
         {
             var result = await _managerService
@@ -339,9 +294,12 @@ public class ManagerController : ControllerBase
     [HttpPut("shops/{shopId}/services/{shopServiceId}")]
     public async Task<IActionResult> UpdateShopService(
         int shopId, int shopServiceId,
-        [FromQuery] int managerId,
         [FromBody] UpdateShopServiceDto dto)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         var success = await _managerService
             .UpdateShopServiceAsync(
                 managerId, shopId, shopServiceId, dto);
@@ -360,9 +318,12 @@ public class ManagerController : ControllerBase
 
     [HttpPatch("shops/{shopId}/services/{shopServiceId}/deactivate")]
     public async Task<IActionResult> DeactivateShopService(
-        int shopId, int shopServiceId,
-        [FromQuery] int managerId)
+        int shopId, int shopServiceId)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         var success = await _managerService
             .SetShopServiceStatusAsync(
                 managerId, shopId, shopServiceId, false);
@@ -381,9 +342,12 @@ public class ManagerController : ControllerBase
 
     [HttpPatch("shops/{shopId}/services/{shopServiceId}/activate")]
     public async Task<IActionResult> ActivateShopService(
-        int shopId, int shopServiceId,
-        [FromQuery] int managerId)
+        int shopId, int shopServiceId)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         try
         {
             var success = await _managerService
@@ -413,10 +377,13 @@ public class ManagerController : ControllerBase
 
     [HttpGet("service-prices")]
     public async Task<IActionResult> GetServicePrices(
-        [FromQuery] int managerId,
         [FromQuery] int shopId,
         [FromQuery] bool includeHistory = false)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         var data = await _managerService
             .GetServicePricesAsync(managerId, shopId, includeHistory);
 
@@ -436,9 +403,12 @@ public class ManagerController : ControllerBase
     [HttpGet("service-prices/{servicePriceId:int}")]
     public async Task<IActionResult> GetServicePrice(
         int servicePriceId,
-        [FromQuery] int managerId,
         [FromQuery] int shopId)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         var data = await _managerService
             .GetServicePriceAsync(managerId, shopId, servicePriceId);
 
@@ -457,10 +427,13 @@ public class ManagerController : ControllerBase
 
     [HttpPost("service-prices")]
     public async Task<IActionResult> AddServicePrice(
-        [FromQuery] int managerId,
         [FromQuery] int shopId,
         [FromBody] ServicePriceDto dto)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         try
         {
             var data = await _managerService
@@ -487,10 +460,13 @@ public class ManagerController : ControllerBase
     [HttpPut("service-prices/{servicePriceId:int}")]
     public async Task<IActionResult> UpdateServicePrice(
         int servicePriceId,
-        [FromQuery] int managerId,
         [FromQuery] int shopId,
         [FromBody] UpdateServicePriceDto dto)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         try
         {
             var data = await _managerService
@@ -517,218 +493,152 @@ public class ManagerController : ControllerBase
 
     #endregion
 
-    #region T06 - Quan ly ky thuat vien
+    #region Danh sách và chi tiết Repair
 
-    [HttpGet("technicians")]
-    public async Task<IActionResult> GetTechnicians(
-        [FromQuery] int managerId,
+    [HttpGet("repair-requests")]
+    public async Task<IActionResult> GetRepairRequests(
         [FromQuery] int shopId)
     {
-        var data = await _managerService
-            .GetTechniciansAsync(managerId, shopId);
+        var userId = GetCurrentUserId();
+        if (userId == null) return Unauthorized();
 
-        if (data == null)
-            return NotFound(new
-            {
-                message = "Không tìm thấy cửa hàng thuộc Manager."
-            });
+        if (shopId <= 0)
+            return BadRequest(new { message = "ShopId không hợp lệ." });
 
-        return Ok(new
-        {
-            message = "Lấy danh sách kỹ thuật viên thành công",
-            data
-        });
-    }
-
-    [HttpGet("technicians/{technicianId:int}")]
-    public async Task<IActionResult> GetTechnician(
-        int technicianId,
-        [FromQuery] int managerId,
-        [FromQuery] int shopId)
-    {
-        var data = await _managerService
-            .GetTechnicianAsync(managerId, shopId, technicianId);
-
-        if (data == null)
-            return NotFound(new
-            {
-                message = "Không tìm thấy kỹ thuật viên đang thuộc cửa hàng."
-            });
-
-        return Ok(new
-        {
-            message = "Lấy chi tiết kỹ thuật viên thành công",
-            data
-        });
-    }
-
-    [HttpPost("technicians")]
-    public async Task<IActionResult> AddTechnician(
-        [FromQuery] int managerId,
-        [FromQuery] int shopId,
-        [FromBody] AddTechnicianToShopDto dto)
-    {
         try
         {
-            var data = await _managerService
-                .AddTechnicianAsync(managerId, shopId, dto);
+            var result = await _managerService
+                .GetRepairRequestsAsync(userId.Value, shopId);
 
-            if (data == null)
-                return NotFound(new
-                {
-                    message = "Không tìm thấy cửa hàng thuộc Manager."
-                });
-
-            return StatusCode(201, new
+            return Ok(new
             {
-                message = "Thêm kỹ thuật viên vào cửa hàng thành công",
-                data
+                message = "Lấy danh sách yêu cầu thành công.",
+                data = result
             });
         }
-        catch (InvalidOperationException ex)
+        catch (UnauthorizedAccessException)
         {
-            return Conflict(new { message = ex.Message });
+            return Forbid();
         }
     }
 
-    [HttpPut("technicians/{technicianId:int}")]
-    public async Task<IActionResult> UpdateTechnician(
-        int technicianId,
-        [FromQuery] int managerId,
-        [FromQuery] int shopId,
-        [FromBody] UpdateTechnicianShopDto dto)
+    [HttpGet("repair-requests/{id:int}")]
+    public async Task<IActionResult> GetRepairRequestDetail(
+        int id,
+        [FromQuery] int shopId)
     {
+        var userId = GetCurrentUserId();
+        if (userId == null) return Unauthorized();
+
+        if (shopId <= 0 || id <= 0)
+            return BadRequest(new { message = "ID không hợp lệ." });
+
         try
         {
-            bool success = await _managerService
-                .UpdateTechnicianAsync(
-                    managerId, shopId, technicianId, dto);
+            var result = await _managerService
+                .GetRepairRequestDetailAsync(
+                    userId.Value, shopId, id);
 
-            if (!success)
+            if (result == null)
                 return NotFound(new
                 {
-                    message = "Không tìm thấy kỹ thuật viên đang thuộc cửa hàng."
+                    message = "Không tìm thấy yêu cầu sửa chữa."
                 });
 
             return Ok(new
             {
-                message = "Cập nhật liên kết kỹ thuật viên thành công"
+                message = "Lấy chi tiết thành công.",
+                data = result
             });
         }
-        catch (InvalidOperationException ex)
+        catch (UnauthorizedAccessException)
         {
-            return Conflict(new { message = ex.Message });
+            return Forbid();
         }
-    }
-
-    [HttpDelete("technicians/{technicianId:int}")]
-    public async Task<IActionResult> RemoveTechnician(
-        int technicianId,
-        [FromQuery] int managerId,
-        [FromQuery] int shopId)
-    {
-        bool success = await _managerService
-            .RemoveTechnicianAsync(managerId, shopId, technicianId);
-
-        if (!success)
-            return NotFound(new
-            {
-                message = "Không tìm thấy kỹ thuật viên đang thuộc cửa hàng."
-            });
-
-        return Ok(new
-        {
-            message = "Đã cho kỹ thuật viên rời cửa hàng và lưu thời điểm LeftAt."
-        });
     }
 
     #endregion
 
-    #region T07 - Xem danh sach yeu cau sua chua
-
-    [HttpGet("repair-requests")]
-    public async Task<IActionResult> GetRepairRequests(
-        [FromQuery] int managerId,
-        [FromQuery] int shopId)
-    {
-        var result = await _managerService
-            .GetRepairRequestsAsync(managerId, shopId);
-
-        if (result == null)
-        {
-            return NotFound(new
-            {
-                message = "Không tìm thấy cửa hàng thuộc Manager."
-            });
-        }
-
-        return Ok(new
-        {
-            message = "Lấy danh sách yêu cầu thành công.",
-            data = result
-        });
-    }
-
-    #endregion
-
-    #region T08 - Tiep nhan yeu cau
+    #region Tiếp nhận Repair
 
     [HttpPatch("repair-requests/{id:int}/accept")]
     public async Task<IActionResult> AcceptRepairRequest(
         int id,
-        [FromQuery] int managerId,
         [FromQuery] int shopId,
         [FromBody] AcceptRepairRequestDto dto)
     {
-        var result = await _managerService
-            .AcceptRepairRequestAsync(
-                managerId,
-                shopId,
-                id,
-                dto);
+        var userId = GetCurrentUserId();
+        if (userId == null) return Unauthorized();
 
-        return StatusCode(result.StatusCode, new
+        if (shopId <= 0 || id <= 0)
+            return BadRequest(new { message = "ID không hợp lệ." });
+
+        try
         {
-            message = result.Message,
-            data = result.Data
-        });
+            var result = await _managerService
+                .AcceptRepairRequestAsync(
+                    userId.Value, shopId, id, dto);
+
+            return StatusCode(result.StatusCode, new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
     }
 
     #endregion
 
-    #region T09 - Tu choi yeu cau
+    #region Từ chối Repair
 
     [HttpPatch("repair-requests/{id:int}/reject")]
     public async Task<IActionResult> RejectRepairRequest(
         int id,
-        [FromQuery] int managerId,
         [FromQuery] int shopId,
         [FromBody] RejectRepairRequestDto dto)
     {
-        var result = await _managerService
-            .RejectRepairRequestAsync(
-                managerId,
-                shopId,
-                id,
-                dto);
+        var userId = GetCurrentUserId();
+        if (userId == null) return Unauthorized();
 
-        return StatusCode(result.StatusCode, new
+        if (shopId <= 0 || id <= 0)
+            return BadRequest(new { message = "ID không hợp lệ." });
+
+        try
         {
-            message = result.Message,
-            data = result.Data
-        });
+            var result = await _managerService
+                .RejectRepairRequestAsync(
+                    userId.Value, shopId, id, dto);
+
+            return StatusCode(result.StatusCode, new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
     }
 
     #endregion
+
 
     #region T10 - Phan cong ky thuat vien
 
     [HttpPost("repair-assignments")]
     public async Task<IActionResult> AssignRepairTechnician(
-        [FromQuery] int managerId,
         [FromQuery] int shopId,
         [FromBody] AssignTechnicianDto dto)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         try
         {
             var result = await _managerService
@@ -759,10 +669,13 @@ public class ManagerController : ControllerBase
     [HttpPatch("repair-assignments/{id:int}/reassign")]
     public async Task<IActionResult> ReassignRepairTechnician(
         int id,
-        [FromQuery] int managerId,
         [FromQuery] int shopId,
         [FromBody] ReassignTechnicianDto dto)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         try
         {
             var result = await _managerService
@@ -793,10 +706,13 @@ public class ManagerController : ControllerBase
 
     [HttpGet("repair-schedules")]
     public async Task<IActionResult> GetManagerRepairSchedules(
-        [FromQuery] int managerId,
         [FromQuery] int shopId,
         [FromQuery] bool includeHistory = false)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         var result = await _managerService
             .GetManagerRepairSchedulesAsync(
                 managerId,
@@ -820,10 +736,13 @@ public class ManagerController : ControllerBase
 
     [HttpPost("repair-schedules")]
     public async Task<IActionResult> CreateManagerRepairSchedule(
-        [FromQuery] int managerId,
         [FromQuery] int shopId,
         [FromBody] CreateRepairScheduleDto dto)
     {
+        var currentUserId = GetCurrentUserId();
+        if (!currentUserId.HasValue) return Unauthorized();
+        int managerId = currentUserId.Value;
+
         try
         {
             var result = await _managerService
@@ -850,6 +769,17 @@ public class ManagerController : ControllerBase
     #endregion
 
 
+}
 
-
+// Converts failed ShopMember authorization to HTTP 403 for older Manager actions.
+public sealed class ManagerShopAuthorizationExceptionFilterAttribute : ExceptionFilterAttribute
+{
+    public override void OnException(ExceptionContext context)
+    {
+        if (context.Exception is UnauthorizedAccessException)
+        {
+            context.Result = new ForbidResult();
+            context.ExceptionHandled = true;
+        }
+    }
 }

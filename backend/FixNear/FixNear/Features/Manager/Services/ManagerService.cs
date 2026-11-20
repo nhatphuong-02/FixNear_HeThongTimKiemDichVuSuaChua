@@ -1,5 +1,6 @@
 ﻿using FixNear.Domain.Enums;
 using FixNear.Domain.Models.Repairs;
+using FixNear.Domain.Models.Notifications;
 using FixNear.Domain.Models.ServiceCatalog;
 using FixNear.Domain.Models.Shops;
 using FixNear.Domain.Models.Technicians;
@@ -131,16 +132,17 @@ public class ManagerService : IManagerService
 
     #endregion
 
-    #region T03 - Quản lý nhiều ảnh cửa hàng
+    #region Quản lý nhiều ảnh cửa hàng
 
     public async Task<object> GetShopImagesAsync(
         int managerId, int shopId)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         return await _db.ShopImage
             .AsNoTracking()
             .Where(x =>
-                x.ShopId == shopId &&
-                x.Shop.ManagerId == managerId)
+                x.ShopId == shopId)
             .OrderByDescending(x => x.IsPrimary)
             .ThenBy(x => x.DisplayOrder)
             .Select(x => new
@@ -161,9 +163,10 @@ public class ManagerService : IManagerService
         int shopId,
         ShopImageDto dto)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         var ownsShop = await _db.Shop.AnyAsync(x =>
-            x.ShopId == shopId &&
-            x.ManagerId == managerId);
+            x.ShopId == shopId);
 
         if (!ownsShop)
             return null;
@@ -202,11 +205,12 @@ public class ManagerService : IManagerService
         int imageId,
         ShopImageDto dto)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         var image = await _db.ShopImage
             .FirstOrDefaultAsync(x =>
                 x.ShopImageId == imageId &&
-                x.ShopId == shopId &&
-                x.Shop.ManagerId == managerId);
+                x.ShopId == shopId);
 
         if (image == null)
             return false;
@@ -223,11 +227,12 @@ public class ManagerService : IManagerService
         int shopId,
         int imageId)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         var image = await _db.ShopImage
             .FirstOrDefaultAsync(x =>
                 x.ShopImageId == imageId &&
-                x.ShopId == shopId &&
-                x.Shop.ManagerId == managerId);
+                x.ShopId == shopId);
 
         if (image == null)
             return false;
@@ -243,13 +248,14 @@ public class ManagerService : IManagerService
         int shopId,
         int imageId)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         await using var transaction =
             await _db.Database.BeginTransactionAsync();
 
         var images = await _db.ShopImage
             .Where(x =>
-                x.ShopId == shopId &&
-                x.Shop.ManagerId == managerId)
+                x.ShopId == shopId)
             .ToListAsync();
 
         var selected = images.FirstOrDefault(x =>
@@ -278,7 +284,7 @@ public class ManagerService : IManagerService
 
     #endregion
 
-    #region T04 - Quản lý dịch vụ của cửa hàng
+    #region Quản lý dịch vụ của cửa hàng
 
     public async Task<object> GetSystemServicesAsync()
     {
@@ -301,9 +307,10 @@ public class ManagerService : IManagerService
     public async Task<object?> GetShopServicesAsync(
         int managerId, int shopId)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         bool ownsShop = await _db.Shop
-            .AnyAsync(s => s.ShopId == shopId &&
-                           s.ManagerId == managerId);
+            .AnyAsync(s => s.ShopId == shopId);
 
         if (!ownsShop)
             return null;
@@ -329,12 +336,13 @@ public class ManagerService : IManagerService
     public async Task<object?> GetShopServiceDetailAsync(
         int managerId, int shopId, int shopServiceId)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         return await _db.ShopService
             .AsNoTracking()
             .Where(ss =>
                 ss.ShopServiceId == shopServiceId &&
-                ss.ShopId == shopId &&
-                ss.Shop.ManagerId == managerId)
+                ss.ShopId == shopId)
             .Select(ss => new
             {
                 ss.ShopServiceId,
@@ -353,9 +361,10 @@ public class ManagerService : IManagerService
     public async Task<object?> AddShopServiceAsync(
         int managerId, int shopId, AddShopServiceDto dto)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         bool ownsShop = await _db.Shop
-            .AnyAsync(s => s.ShopId == shopId &&
-                           s.ManagerId == managerId);
+            .AnyAsync(s => s.ShopId == shopId);
 
         if (!ownsShop)
             return null;
@@ -424,11 +433,12 @@ public class ManagerService : IManagerService
         int managerId, int shopId, int shopServiceId,
         UpdateShopServiceDto dto)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         var shopService = await _db.ShopService
             .FirstOrDefaultAsync(ss =>
                 ss.ShopServiceId == shopServiceId &&
-                ss.ShopId == shopId &&
-                ss.Shop.ManagerId == managerId);
+                ss.ShopId == shopId);
 
         if (shopService == null)
             return false;
@@ -443,11 +453,12 @@ public class ManagerService : IManagerService
         int managerId, int shopId, int shopServiceId,
         bool isActive)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         var shopService = await _db.ShopService
             .FirstOrDefaultAsync(ss =>
                 ss.ShopServiceId == shopServiceId &&
-                ss.ShopId == shopId &&
-                ss.Shop.ManagerId == managerId);
+                ss.ShopId == shopId);
 
         if (shopService == null)
             return false;
@@ -473,13 +484,15 @@ public class ManagerService : IManagerService
 
     #endregion
 
-    #region T05 - Quan ly gia dich vu
+    #region Quản lý giá dịch vụ
 
     public async Task<object?> GetServicePricesAsync(
         int managerId, int shopId, bool includeHistory)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         bool ownsShop = await _db.Shop.AnyAsync(
-            s => s.ShopId == shopId && s.ManagerId == managerId);
+            s => s.ShopId == shopId);
 
         if (!ownsShop)
             return null;
@@ -512,12 +525,14 @@ public class ManagerService : IManagerService
     public async Task<object?> GetServicePriceAsync(
         int managerId, int shopId, int servicePriceId)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         return await _db.ServicePrice
             .AsNoTracking()
             .Where(p =>
                 p.ServicePriceId == servicePriceId &&
                 p.ShopService.ShopId == shopId &&
-                p.ShopService.Shop.ManagerId == managerId)
+                p.ShopService.ShopId == shopId)
             .Select(p => new
             {
                 p.ServicePriceId,
@@ -539,12 +554,13 @@ public class ManagerService : IManagerService
     public async Task<object?> AddServicePriceAsync(
         int managerId, int shopId, ServicePriceDto dto)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         var shopService = await _db.ShopService
             .AsNoTracking()
             .FirstOrDefaultAsync(ss =>
                 ss.ShopServiceId == dto.ShopServiceId &&
-                ss.ShopId == shopId &&
-                ss.Shop.ManagerId == managerId);
+                ss.ShopId == shopId);
 
         if (shopService == null)
             return null;
@@ -604,13 +620,15 @@ public class ManagerService : IManagerService
         int servicePriceId,
         UpdateServicePriceDto dto)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         var oldPrice = await _db.ServicePrice
             .Include(p => p.ShopService)
             .FirstOrDefaultAsync(p =>
                 p.ServicePriceId == servicePriceId &&
                 p.IsActive &&
                 p.ShopService.ShopId == shopId &&
-                p.ShopService.Shop.ManagerId == managerId);
+                p.ShopService.ShopId == shopId);
 
         if (oldPrice == null)
             return null;
@@ -667,14 +685,15 @@ public class ManagerService : IManagerService
 
     #endregion
 
-    #region T06 - Quản lý kỹ thuật viên
+    #region Quản lý kỹ thuật viên
 
     public async Task<object?> GetTechniciansAsync(
         int managerId, int shopId)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         bool ownsShop = await _db.Shop.AnyAsync(s =>
-            s.ShopId == shopId &&
-            s.ManagerId == managerId);
+            s.ShopId == shopId);
 
         if (!ownsShop)
             return null;
@@ -705,13 +724,15 @@ public class ManagerService : IManagerService
     public async Task<object?> GetTechnicianAsync(
         int managerId, int shopId, int technicianId)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         return await _db.TechnicianShop
             .AsNoTracking()
             .Where(ts =>
                 ts.ShopId == shopId &&
                 ts.TechnicianId == technicianId &&
                 ts.LeftAt == null &&
-                ts.Shop.ManagerId == managerId)
+                ts.ShopId == shopId)
             .Select(ts => new
             {
                 ts.TechnicianShopId,
@@ -735,9 +756,10 @@ public class ManagerService : IManagerService
         int shopId,
         AddTechnicianToShopDto dto)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         bool ownsShop = await _db.Shop.AnyAsync(s =>
-            s.ShopId == shopId &&
-            s.ManagerId == managerId);
+            s.ShopId == shopId);
 
         if (!ownsShop)
             return null;
@@ -778,7 +800,7 @@ public class ManagerService : IManagerService
         {
             ShopId = shopId,
             TechnicianId = dto.TechnicianId,
-            Status = (TechnicianShopStatus) dto.Status,
+            Status = (TechnicianShopStatus)dto.Status,
             IsPrimary = dto.IsPrimary,
             JoinedAt = now,
             LeftAt = null,
@@ -806,12 +828,14 @@ public class ManagerService : IManagerService
         int technicianId,
         UpdateTechnicianShopDto dto)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         var link = await _db.TechnicianShop
             .FirstOrDefaultAsync(ts =>
                 ts.ShopId == shopId &&
                 ts.TechnicianId == technicianId &&
                 ts.LeftAt == null &&
-                ts.Shop.ManagerId == managerId);
+                ts.ShopId == shopId);
 
         if (link == null)
             return false;
@@ -830,7 +854,7 @@ public class ManagerService : IManagerService
                     "Kỹ thuật viên đang có cửa hàng chính khác.");
         }
 
-        link.Status = (TechnicianShopStatus) dto.Status;
+        link.Status = (TechnicianShopStatus)dto.Status;
         link.IsPrimary = dto.IsPrimary;
 
         await _db.SaveChangesAsync();
@@ -841,12 +865,14 @@ public class ManagerService : IManagerService
     public async Task<bool> RemoveTechnicianAsync(
         int managerId, int shopId, int technicianId)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         var link = await _db.TechnicianShop
             .FirstOrDefaultAsync(ts =>
                 ts.ShopId == shopId &&
                 ts.TechnicianId == technicianId &&
                 ts.LeftAt == null &&
-                ts.Shop.ManagerId == managerId);
+                ts.ShopId == shopId);
 
         if (link == null)
             return false;
@@ -861,24 +887,12 @@ public class ManagerService : IManagerService
 
     #endregion
 
-    #region T07 - Xem danh sach yeu cau sua chua
+    #region Xem danh sách và chi tiết yêu cầu sửa chữa
 
-    public async Task<object?> GetRepairRequestsAsync(
-        int managerId,
-        int shopId)
+    public async Task<object?> GetRepairRequestsAsync(int userId, int shopId)
     {
-        // Chi xem yeu cau cua cua hang do Manager quan ly
-        bool ownsShop = await _db.Shop
-            .AsNoTracking()
-            .AnyAsync(s =>
-                s.ShopId == shopId &&
-                s.ManagerId == managerId);
-
-        if (!ownsShop)
-            return null;
-
-        var requests = await _db.RepairRequest
-            .AsNoTracking()
+        await EnsureShopAccessAsync(userId, shopId);
+        return await _db.RepairRequest.AsNoTracking()
             .Where(r => r.ShopId == shopId)
             .OrderByDescending(r => r.CreatedAt)
             .Select(r => new
@@ -894,176 +908,203 @@ public class ManagerService : IManagerService
                 r.PreferredTimeTo,
                 r.Status,
                 r.Priority,
-                r.CreatedAt
+                r.CreatedAt,
+                r.UpdatedAt,
+                Services = r.RepairRequestService.Select(sv => new
+                {
+                    sv.ServiceId,
+                    sv.Service.ServiceName
+                }).ToList()
             })
             .ToListAsync();
-
-        return requests;
     }
 
-    #endregion
-
-    #region T08 - Tiep nhan yeu cau
-
-    public async Task<ManagerActionResult>
-        AcceptRepairRequestAsync(
-            int managerId,
-            int shopId,
-            int repairRequestId,
-            AcceptRepairRequestDto dto)
+    public async Task<object?> GetRepairRequestDetailAsync(
+        int userId, int shopId, int repairRequestId)
     {
-        return await ChangePendingRequestAsync(
-            managerId,
-            shopId,
-            repairRequestId,
-            RepairRequestStatus.Accepted,
-            string.IsNullOrWhiteSpace(dto.Note)
-                ? "Shop tiếp nhận yêu cầu"
-                : dto.Note.Trim());
-    }
-
-    #endregion
-
-    #region T09 - Tu choi yeu cau
-
-    public async Task<ManagerActionResult>
-        RejectRepairRequestAsync(
-            int managerId,
-            int shopId,
-            int repairRequestId,
-            RejectRepairRequestDto dto)
-    {
-        if (string.IsNullOrWhiteSpace(dto.Reason))
-        {
-            return new ManagerActionResult(
-                400,
-                "Vui lòng nhập lý do từ chối.");
-        }
-
-        return await ChangePendingRequestAsync(
-            managerId,
-            shopId,
-            repairRequestId,
-            RepairRequestStatus.Rejected,
-            dto.Reason.Trim());
-    }
-
-    private async Task<ManagerActionResult>
-        ChangePendingRequestAsync(
-            int managerId,
-            int shopId,
-            int repairRequestId,
-            RepairRequestStatus newStatus,
-            string reason)
-    {
-        var manager = await _db.Shop
-            .AsNoTracking()
-            .Where(s =>
-                s.ShopId == shopId &&
-                s.ManagerId == managerId)
-            .Select(s => new
+        await EnsureShopAccessAsync(userId, shopId);
+        return await _db.RepairRequest.AsNoTracking()
+            .Where(r => r.ShopId == shopId && r.RepairRequestId == repairRequestId)
+            .Select(r => new
             {
-                UserId = s.Manager.UserId
+                r.RepairRequestId,
+                r.CustomerId,
+                CustomerUserId = r.Customer.UserId,
+                r.ShopId,
+                r.AddressId,
+                r.RepairMethod,
+                r.Description,
+                r.PreferredDate,
+                r.PreferredTimeFrom,
+                r.PreferredTimeTo,
+                r.Status,
+                r.Priority,
+                r.CreatedAt,
+                r.UpdatedAt,
+                Services = r.RepairRequestService.Select(sv => new
+                {
+                    sv.ServiceId,
+                    sv.Service.ServiceName
+                }).ToList(),
+                Images = r.RepairRequestImage.Select(img => new
+                {
+                    img.RepairRequestImageId,
+                    img.ImageUrl
+                }).ToList(),
+                History = r.RepairRequestStatusHistory
+                    .OrderByDescending(h => h.CreatedAt)
+                    .Select(h => new
+                    {
+                        h.HistoryId,
+                        h.OldStatus,
+                        h.NewStatus,
+                        h.Reason,
+                        h.ChangedByUserId,
+                        h.CreatedAt
+                    }).ToList()
             })
             .FirstOrDefaultAsync();
-
-        if (manager == null)
-        {
-            return new ManagerActionResult(
-                404,
-                "Không tìm thấy cửa hàng thuộc Manager.");
-        }
-
-        await using var transaction =
-            await _db.Database.BeginTransactionAsync(
-                System.Data.IsolationLevel.Serializable);
-
-        int updated = await _db.RepairRequest
-            .Where(r =>
-                r.RepairRequestId == repairRequestId &&
-                r.ShopId == shopId &&
-                r.Status == (int)RepairRequestStatus.Pending)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(
-                    r => r.Status,
-                    (int)newStatus));
-
-        if (updated == 0)
-        {
-            await transaction.RollbackAsync();
-
-            bool exists = await _db.RepairRequest
-                .AsNoTracking()
-                .AnyAsync(r =>
-                    r.RepairRequestId == repairRequestId &&
-                    r.ShopId == shopId);
-
-            return new ManagerActionResult(
-                exists ? 409 : 404,
-                exists
-                    ? "Yêu cầu không còn ở trạng thái PENDING."
-                    : "Không tìm thấy yêu cầu sửa chữa.");
-        }
-
-        var history = await _db.RepairRequestStatusHistory
-            .Where(h =>
-                h.RepairRequestId == repairRequestId &&
-                h.OldStatus == (int)RepairRequestStatus.Pending &&
-                h.NewStatus == (int)newStatus)
-            .OrderByDescending(h => h.HistoryId)
-            .FirstOrDefaultAsync();
-
-        if (history != null)
-        {
-            history.ChangedByUserId = manager.UserId;
-            history.Reason = reason;
-
-            await _db.SaveChangesAsync();
-        }
-
-        await transaction.CommitAsync();
-
-        return new ManagerActionResult(
-            200,
-            newStatus == RepairRequestStatus.Accepted
-                ? "Tiếp nhận yêu cầu thành công."
-                : "Từ chối yêu cầu thành công.",
-            new
-            {
-                RepairRequestId = repairRequestId,
-                OldStatus = (int)RepairRequestStatus.Pending,
-                NewStatus = (int)newStatus,
-                Reason = reason
-            });
     }
 
     #endregion
 
-    #region T10 - Phan cong ky thuat vien
+    #region Tiếp nhận hoặc từ chối yêu cầu sửa chữa
 
+    public Task<ManagerActionResult> AcceptRepairRequestAsync(
+        int userId, int shopId, int repairRequestId, AcceptRepairRequestDto dto)
+        => ChangePendingRequestAsync(userId, shopId, repairRequestId,
+            RepairRequestStatus.Accepted,
+            string.IsNullOrWhiteSpace(dto.Note)
+                ? "Cửa hàng đã tiếp nhận yêu cầu."
+                : dto.Note.Trim());
+
+    public Task<ManagerActionResult> RejectRepairRequestAsync(
+        int userId, int shopId, int repairRequestId, RejectRepairRequestDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Reason))
+            return Task.FromResult(new ManagerActionResult(400,
+                "Vui lòng nhập lý do từ chối."));
+        return ChangePendingRequestAsync(userId, shopId, repairRequestId,
+            RepairRequestStatus.Rejected, dto.Reason.Trim());
+    }
+
+    private async Task<ManagerActionResult> ChangePendingRequestAsync(
+        int userId, int shopId, int repairRequestId,
+        RepairRequestStatus newStatus, string reason)
+    {
+        await EnsureShopAccessAsync(userId, shopId);
+        await using var transaction = await _db.Database.BeginTransactionAsync(
+            System.Data.IsolationLevel.Serializable);
+        try
+        {
+            // Chặn xử lý lặp bằng điều kiện Pending ngay tại UPDATE.
+            int updated = await _db.RepairRequest
+                .Where(r => r.RepairRequestId == repairRequestId
+                    && r.ShopId == shopId
+                    && r.Status == (int)RepairRequestStatus.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(r => r.Status, (int)newStatus)
+                    .SetProperty(r => r.UpdatedAt, DateTime.UtcNow));
+
+            if (updated == 0)
+            {
+                var exists = await _db.RepairRequest.AsNoTracking()
+                    .AnyAsync(r => r.RepairRequestId == repairRequestId
+                        && r.ShopId == shopId);
+                await transaction.RollbackAsync();
+                return new ManagerActionResult(exists ? 409 : 404,
+                    exists ? "Yêu cầu không còn Pending." : "Không tìm thấy yêu cầu.");
+            }
+
+            // SQL trigger đã chèn lịch sử. Không INSERT thêm để tránh trùng.
+            var history = await _db.RepairRequestStatusHistory
+                .Where(h => h.RepairRequestId == repairRequestId
+                    && h.OldStatus == (int)RepairRequestStatus.Pending
+                    && h.NewStatus == (int)newStatus)
+                .OrderByDescending(h => h.HistoryId)
+                .FirstOrDefaultAsync();
+            if (history != null)
+            {
+                history.ChangedByUserId = userId;
+                history.Reason = reason;
+            }
+
+            // Customer luôn được thông báo khi Manager tiếp nhận / từ chối.
+            var info = await _db.RepairRequest.AsNoTracking()
+                .Where(r => r.RepairRequestId == repairRequestId)
+                .Select(r => new
+                {
+                    CustomerUserId = r.Customer.UserId,
+                    r.Shop.ShopName
+                })
+                .SingleAsync();
+            string code = newStatus == RepairRequestStatus.Accepted
+                ? "REPAIR_REQUEST_ACCEPTED" : "REPAIR_REQUEST_REJECTED";
+            await AddNotificationAsync(
+                code, info.CustomerUserId, repairRequestId,
+                new Dictionary<string, string>
+                {
+                    ["ShopName"] = info.ShopName,
+                    ["RequestId"] = repairRequestId.ToString(),
+                    ["Reason"] = reason
+                });
+
+            // Chỉ gửi đến KTV nếu thực sự đã có phân công còn hiệu lực.
+            // Quy trình thông thường: phân công diễn ra sau khi Accept,
+            // vì thế ASSIGNMENT_OFFERED sẽ thông báo đến KTV ở bước phân công.
+            if (newStatus == RepairRequestStatus.Accepted)
+            {
+                var assignedUsers = await _db.RepairAssignment.AsNoTracking()
+                    .Where(a => a.RepairRequestId == repairRequestId
+                        && (a.AssignmentStatus == (int)RepairAssignmentStatus.Offered
+                            || a.AssignmentStatus == (int)RepairAssignmentStatus.Accepted))
+                    .Select(a => a.Technician.UserId)
+                    .Distinct().ToListAsync();
+                foreach (int technicianUserId in assignedUsers)
+                {
+                    await AddNotificationAsync("ASSIGNMENT_OFFERED",
+                        technicianUserId, repairRequestId,
+                        new Dictionary<string, string>
+                        {
+                            ["ShopName"] = info.ShopName,
+                            ["RequestId"] = repairRequestId.ToString()
+                        });
+                }
+            }
+
+            await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return new ManagerActionResult(200,
+                newStatus == RepairRequestStatus.Accepted
+                    ? "Tiếp nhận yêu cầu thành công."
+                    : "Từ chối yêu cầu thành công.",
+                new
+                {
+                    RepairRequestId = repairRequestId,
+                    OldStatus = (int)RepairRequestStatus.Pending,
+                    NewStatus = (int)newStatus,
+                    Reason = reason
+                });
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Phân công kỹ thuật viên
     public async Task<ManagerActionResult>
         AssignRepairTechnicianAsync(
             int managerId,
             int shopId,
             AssignTechnicianDto dto)
     {
-        var manager = await _db.Shop
-            .AsNoTracking()
-            .Where(s =>
-                s.ShopId == shopId &&
-                s.ManagerId == managerId)
-            .Select(s => new
-            {
-                UserId = s.Manager.UserId
-            })
-            .FirstOrDefaultAsync();
-
-        if (manager == null)
-        {
-            return new ManagerActionResult(
-                404,
-                "Không tìm thấy cửa hàng thuộc Manager.");
-        }
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
+        var manager = new { UserId = managerId };
 
         await using var transaction =
             await _db.Database.BeginTransactionAsync(
@@ -1131,6 +1172,19 @@ public class ManagerService : IManagerService
 
         _db.RepairAssignment.Add(assignment);
 
+        var notificationInfo = await _db.RepairRequest.AsNoTracking()
+            .Where(r => r.RepairRequestId == dto.RepairRequestId)
+            .Select(r => new { r.Shop.ShopName }).SingleAsync();
+        var technicianUserId = await _db.TechnicianProfile.AsNoTracking()
+            .Where(t => t.TechnicianId == dto.TechnicianId)
+            .Select(t => t.UserId).SingleAsync();
+        await AddNotificationAsync("ASSIGNMENT_OFFERED", technicianUserId,
+            dto.RepairRequestId, new Dictionary<string, string>
+            {
+                ["ShopName"] = notificationInfo.ShopName,
+                ["RequestId"] = dto.RepairRequestId.ToString()
+            });
+
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
@@ -1150,8 +1204,7 @@ public class ManagerService : IManagerService
 
     #endregion
 
-    #region T11 - Doi ky thuat vien
-
+    #region Đổi kỹ thuật viên
     public async Task<ManagerActionResult>
         ReassignRepairTechnicianAsync(
             int managerId,
@@ -1159,6 +1212,8 @@ public class ManagerService : IManagerService
             int assignmentId,
             ReassignTechnicianDto dto)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         if (string.IsNullOrWhiteSpace(dto.Reason))
         {
             return new ManagerActionResult(
@@ -1166,23 +1221,8 @@ public class ManagerService : IManagerService
                 "Vui lòng nhập lý do đổi kỹ thuật viên.");
         }
 
-        var manager = await _db.Shop
-            .AsNoTracking()
-            .Where(s =>
-                s.ShopId == shopId &&
-                s.ManagerId == managerId)
-            .Select(s => new
-            {
-                UserId = s.Manager.UserId
-            })
-            .FirstOrDefaultAsync();
-
-        if (manager == null)
-        {
-            return new ManagerActionResult(
-                404,
-                "Không tìm thấy cửa hàng thuộc Manager.");
-        }
+        await EnsureShopAccessAsync(managerId, shopId);
+        var manager = new { UserId = managerId };
 
         await using var transaction =
             await _db.Database.BeginTransactionAsync(
@@ -1306,6 +1346,19 @@ public class ManagerService : IManagerService
 
         _db.RepairAssignment.Add(newAssignment);
 
+        var newTechnicianUserId = await _db.TechnicianProfile.AsNoTracking()
+            .Where(t => t.TechnicianId == dto.TechnicianId)
+            .Select(t => t.UserId).SingleAsync();
+        var shopName = await _db.Shop.AsNoTracking()
+            .Where(s => s.ShopId == shopId)
+            .Select(s => s.ShopName).SingleAsync();
+        await AddNotificationAsync("ASSIGNMENT_OFFERED", newTechnicianUserId,
+            oldAssignment.RepairRequestId, new Dictionary<string, string>
+            {
+                ["ShopName"] = shopName,
+                ["RequestId"] = oldAssignment.RepairRequestId.ToString()
+            });
+
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
@@ -1327,18 +1380,19 @@ public class ManagerService : IManagerService
 
     #endregion
 
-    #region T12 - Xem va tao lich sua chua
+    #region Xem va tao lich sua chua
 
     public async Task<object?> GetManagerRepairSchedulesAsync(
         int managerId,
         int shopId,
         bool includeHistory)
     {
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
         bool ownsShop = await _db.Shop
             .AsNoTracking()
             .AnyAsync(s =>
-                s.ShopId == shopId &&
-                s.ManagerId == managerId);
+                s.ShopId == shopId);
 
         if (!ownsShop)
             return null;
@@ -1376,23 +1430,9 @@ public class ManagerService : IManagerService
             int shopId,
             CreateRepairScheduleDto dto)
     {
-        var manager = await _db.Shop
-            .AsNoTracking()
-            .Where(s =>
-                s.ShopId == shopId &&
-                s.ManagerId == managerId)
-            .Select(s => new
-            {
-                UserId = s.Manager.UserId
-            })
-            .FirstOrDefaultAsync();
-
-        if (manager == null)
-        {
-            return new ManagerActionResult(
-                404,
-                "Không tìm thấy cửa hàng thuộc Manager.");
-        }
+        // managerId is the authenticated UserId supplied by the controller.
+        await EnsureShopAccessAsync(managerId, shopId);
+        var manager = new { UserId = managerId };
 
         if (dto.StartTime == default ||
             dto.EndTime == default ||
@@ -1523,5 +1563,41 @@ public class ManagerService : IManagerService
     }
 
 
+
+    // Tạo Notification và UserNotification theo template có sẵn trong DB.
+    // Phải gọi bên trong transaction nghiệp vụ; bên gọi thực hiện SaveChanges.
+    private async Task AddNotificationAsync(
+        string templateCode, int recipientUserId, int repairRequestId,
+        IReadOnlyDictionary<string, string> values)
+    {
+        var template = await _db.NotificationTemplate.AsNoTracking()
+            .SingleOrDefaultAsync(t => t.TemplateCode == templateCode);
+        if (template == null)
+            throw new InvalidOperationException(
+                $"Thiếu NotificationTemplate: {templateCode}. Hãy kiểm tra DataFixNear.sql.");
+
+        string body = template.BodyTemplate ?? string.Empty;
+        foreach (var pair in values)
+            body = body.Replace("{" + pair.Key + "}", pair.Value);
+
+        var notification = new Notification
+        {
+            TemplateId = template.NotificationTemplateId,
+            Title = template.Title,
+            Body = body,
+            // vì enum hiện tại mới khai báo TechnicianShopInvitation.
+            RefType = (int)NotificationRefType.RepairRequest,
+            RefId = repairRequestId,
+            CreatedAt = DateTime.UtcNow
+        };
+        _db.Notification.Add(notification);
+        _db.UserNotification.Add(new UserNotification
+        {
+            UserId = recipientUserId,
+            Notification = notification,
+            IsRead = false,
+            CreatedAt = DateTime.UtcNow
+        });
+    }
 
 }

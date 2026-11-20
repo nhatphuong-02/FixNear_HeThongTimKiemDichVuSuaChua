@@ -29,6 +29,10 @@ public partial class Shop
 
     public string? TaxCode { get; set; }
 
+    public string? BankBin { get; set; }
+    public string? BankAccountNo { get; set; }
+    public string? BankAccountName { get; set; }
+
     public decimal RatingAverage { get; set; }
 
     public int Status { get; set; }
@@ -49,12 +53,13 @@ public partial class Shop
 
     public virtual ICollection<Review> Review { get; set; } = new List<Review>();
 
-    public virtual ICollection<ShopImage> ShopImage { get; set; }
-    = new List<ShopImage>();
+    public virtual ICollection<ShopImage> ShopImage { get; set; } = new List<ShopImage>();
 
     public virtual ICollection<ShopService> ShopService { get; set; } = new List<ShopService>();
 
     public virtual ICollection<ShopMember> ShopMembers { get; set; } = new List<ShopMember>();
 
     public virtual ICollection<TechnicianShop> TechnicianShop { get; set; } = new List<TechnicianShop>();
+    public virtual ICollection<ShopRepairItem> ShopRepairItems { get; set; } = new List<ShopRepairItem>();
+    public virtual ICollection<ShopRepairPart> ShopRepairParts { get; set; } = new List<ShopRepairPart>();
 }

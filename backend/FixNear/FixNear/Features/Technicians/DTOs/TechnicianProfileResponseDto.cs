@@ -1,10 +1,10 @@
-﻿using FixNear.Features.Technicians.DTOs;
+﻿namespace FixNear.Features.Technicians.DTOs;
 
 public class TechnicianProfileResponseDto
 {
     public int TechnicianId { get; set; }
 
-    public string FullName { get; set; } = null!;
+    public string FullName { get; set; } = string.Empty;
 
     public string? Email { get; set; }
 
@@ -22,5 +22,7 @@ public class TechnicianProfileResponseDto
 
     public decimal RatingAverage { get; set; }
 
-    public List<TechnicianSpecializationResponseDto> Specializations { get; set; } = new();
+    public List<TechnicianSpecializationResponseDto>
+        Specializations
+    { get; set; } = new();
 }

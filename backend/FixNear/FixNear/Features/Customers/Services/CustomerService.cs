@@ -1,6 +1,9 @@
 ﻿using FixNear.Domain.Enums;
 using FixNear.Domain.Models.Customers;
 using FixNear.Domain.Models.Locations;
+using FixNear.Domain.Models.Notifications;
+using FixNear.Domain.Models.Repairs;
+using FixNear.Enums;
 using FixNear.Features.Customers.DTOs;
 using FixNear.Features.Customers.Interfaces;
 using FixNear.Infrastructure.Geocoding;
@@ -348,5 +351,263 @@ namespace FixNear.Features.Customers.Services
             customer.DefaultAddressId = address.AddressId;
             await _context.SaveChangesAsync();
         }
+
+
+        //Tạo yêu cầu sửa chữa
+
+        #region Đặt lịch sửa chữa và thông báo cho Shop
+
+        public async Task<int> CreateRepairRequestAsync(
+            int userId,
+            CreateRepairRequestDto request)
+        {
+            if (request == null)
+                throw new ArgumentException(
+                    "Dữ liệu đặt lịch không hợp lệ.");
+
+            // Kiểm tra Customer đăng nhập
+            var customer = await _context.CustomerProfile
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (customer == null)
+                throw new KeyNotFoundException(
+                    "Không tìm thấy hồ sơ khách hàng.");
+
+            if (customer.User.Status != (int)UserStatus.Active)
+                throw new InvalidOperationException(
+                    "Tài khoản khách hàng không hoạt động.");
+
+            // Kiểm tra Shop
+            var shop = await _context.Shop
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s =>
+                    s.ShopId == request.ShopId &&
+                    s.Status == (int)ShopStatus.Active);
+
+            if (shop == null)
+                throw new KeyNotFoundException(
+                    "Cửa hàng không tồn tại hoặc không hoạt động.");
+
+            // Kiểm tra dịch vụ được Shop cung cấp
+            bool validService = await _context.ShopService
+                .AsNoTracking()
+                .AnyAsync(ss =>
+                    ss.ShopId == request.ShopId &&
+                    ss.ServiceId == request.ServiceId &&
+                    ss.IsActive &&
+                    ss.Service.IsActive);
+
+            if (!validService)
+                throw new ArgumentException(
+                    "Cửa hàng không cung cấp dịch vụ này.");
+
+            // Kiểm tra hình thức sửa chữa
+            if (request.RepairMethod != 1 &&
+                request.RepairMethod != 2)
+                throw new ArgumentException(
+                    "Hình thức sửa chữa không hợp lệ.");
+
+            int? addressId = null;
+
+            // 1: Sửa tại nhà
+            if (request.RepairMethod == 1)
+            {
+                if (!request.AddressId.HasValue)
+                    throw new ArgumentException(
+                        "Vui lòng chọn địa chỉ sửa chữa.");
+
+                bool validAddress = await _context.Address
+                    .AsNoTracking()
+                    .AnyAsync(a =>
+                        a.AddressId == request.AddressId.Value &&
+                        a.CustomerId == customer.CustomerId &&
+                        a.OwnerType == (int)RoleType.Customer &&
+                        a.SupersededByAddressId == null &&
+                        !a.IsLocked);
+
+                if (!validAddress)
+                    throw new ArgumentException(
+                        "Địa chỉ không hợp lệ hoặc không thuộc bạn.");
+
+                addressId = request.AddressId.Value;
+            }
+
+            // 2: Sửa tại cửa hàng => AddressId = null
+
+            // Kiểm tra mô tả sự cố
+            string description =
+                request.Description?.Trim() ?? string.Empty;
+
+            if (description.Length < 10 ||
+                description.Length > 2000)
+                throw new ArgumentException(
+                    "Mô tả sự cố phải từ 10 đến 2000 ký tự.");
+
+            // Kiểm tra ngày giờ mong muốn
+            if (!request.PreferredDate.HasValue ||
+                !request.PreferredTimeFrom.HasValue ||
+                !request.PreferredTimeTo.HasValue)
+                throw new ArgumentException(
+                    "Vui lòng chọn đầy đủ ngày và giờ sửa chữa.");
+
+            var date = request.PreferredDate.Value;
+            var timeFrom = request.PreferredTimeFrom.Value;
+            var timeTo = request.PreferredTimeTo.Value;
+
+            if (timeTo <= timeFrom)
+                throw new ArgumentException(
+                    "Giờ kết thúc phải sau giờ bắt đầu.");
+
+            // Ngày giờ địa phương Việt Nam (UTC+7)
+            var vietnamTimeZone =
+                TimeZoneInfo.FindSystemTimeZoneById(
+                    "SE Asia Standard Time");
+
+            var nowVietnam = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.UtcNow, vietnamTimeZone);
+
+            var preferredStart = date.ToDateTime(timeFrom);
+
+            if (preferredStart <= nowVietnam)
+                throw new ArgumentException(
+                    "Thời gian đặt lịch phải ở tương lai.");
+
+            // Kiểm tra người quản lý được nhận thông báo
+            var receiverUserIds = await _context.ShopMember
+                .AsNoTracking()
+                .Where(sm =>
+                    sm.ShopId == shop.ShopId &&
+                    sm.Status == ShopMemberStatus.Active &&
+                    sm.LeftAt == null &&
+                    (sm.ShopRole == ShopRole.Owner ||
+                     sm.ShopRole == ShopRole.Manager) &&
+                    sm.Manager.User.Status == (int)UserStatus.Active)
+                .Select(sm => sm.Manager.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            if (receiverUserIds.Count == 0)
+                throw new InvalidOperationException(
+                    "Cửa hàng hiện chưa có người quản lý hợp lệ.");
+
+            // Lấy mẫu thông báo đã seed trong DB
+            var template = await _context.NotificationTemplate
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t =>
+                    t.TemplateCode == "REPAIR_REQUEST_CREATED");
+
+            if (template == null)
+                throw new InvalidOperationException(
+                    "Chưa có template REPAIR_REQUEST_CREATED.");
+
+            // Transaction lưu yêu cầu + dịch vụ + thông báo
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Gắn UserId vào phiên SQL để trigger ghi lịch sử
+                await _context.Database.ExecuteSqlInterpolatedAsync(
+                    $"EXEC sys.sp_set_session_context @key=N'UserId', @value={userId}");
+
+                var now = DateTime.UtcNow;
+
+                // Tạo yêu cầu sửa chữa
+                var repair = new RepairRequest
+                {
+                    CustomerId = customer.CustomerId,
+                    ShopId = shop.ShopId,
+                    AddressId = addressId,
+                    RepairMethod = request.RepairMethod,
+                    Description = description,
+
+                    PreferredDate = date,
+                    PreferredTimeFrom = timeFrom,
+                    PreferredTimeTo = timeTo,
+
+                    Status = (int)RepairRequestStatus.Pending,
+                    Priority = 2,
+                    CreatedAt = now
+                };
+
+                _context.RepairRequest.Add(repair);
+                await _context.SaveChangesAsync();
+
+                // Liên kết dịch vụ với Repair
+                var repairService = new RepairRequestService
+                {
+                    RepairRequestId = repair.RepairRequestId,
+                    ServiceId = request.ServiceId,
+                    CreatedAt = now
+                };
+
+                _context.RepairRequestService.Add(repairService);
+
+                // Tạo nội dung thông báo từ template
+                var body = (template.BodyTemplate ?? string.Empty)
+                    .Replace(
+                        "{CustomerName}",
+                        customer.User.FullName)
+                    .Replace(
+                        "{ShopName}",
+                        shop.ShopName)
+                    .Replace(
+                        "{RequestId}",
+                        repair.RepairRequestId.ToString());
+
+                // Một thông báo, nhiều người nhận
+                var notification = new Notification
+                {
+                    TemplateId = template.NotificationTemplateId,
+                    Title = template.Title,
+                    Body = body,
+
+                    RefType = (int)NotificationRefType.RepairRequest,
+                    RefId = repair.RepairRequestId,
+
+                    CreatedAt = now
+                };
+
+                foreach (var receiverId in receiverUserIds)
+                {
+                    notification.UserNotification.Add(
+                        new UserNotification
+                        {
+                            UserId = receiverId,
+                            IsRead = false,
+                            CreatedAt = now
+                        });
+                }
+
+                _context.Notification.Add(notification);
+
+                // Lưu dịch vụ và thông báo
+                await _context.SaveChangesAsync();
+
+                // Xóa UserId khỏi SQL session
+                await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC sys.sp_set_session_context @key=N'UserId', @value=NULL");
+
+                await transaction.CommitAsync();
+
+                return repair.RepairRequestId;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+            finally
+            {
+                // Dọn context kể cả khi xảy ra lỗi
+                await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC sys.sp_set_session_context @key=N'UserId', @value=NULL");
+            }
+        }
+
+        #endregion
+
+
     }
 }

@@ -1,7 +1,11 @@
-﻿using FixNear.Domain.Enums;
+﻿
+using System.Data;
+using FixNear.Domain.Enums;
+using FixNear.Domain.Models.Notifications;
 using FixNear.Domain.Models.Quotes;
 using FixNear.Domain.Models.Repairs;
 using FixNear.Domain.Models.ServiceCatalog;
+using FixNear.Enums;
 using FixNear.Features.Quotes.DTOs;
 using FixNear.Features.Quotes.Interfaces;
 using FixNear.Infrastructure.Persistence;
@@ -9,36 +13,40 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FixNear.Features.Quotes.Services;
 
-public class QuoteService : IQuoteService
+public sealed class QuoteService : IQuoteService
 {
-    private readonly FixNearDbContext _context;
+    private readonly FixNearDbContext _db;
 
-    public QuoteService(FixNearDbContext context)
+    public QuoteService(FixNearDbContext db)
     {
-        _context = context;
+        _db = db;
     }
 
-    // X04 - KY THUAT VIEN TAO BAO GIA
+    // Kỹ thuật viên tạo báo giá sau khảo sát
     public async Task<CreateQuoteResult> CreateAsync(
-        int userId,
-        CreateQuoteDto request)
+        int userId, CreateQuoteDto request)
     {
-        // 1. Kiem tra du lieu co ban
-        if (request.RepairRequestId <= 0 ||
+        if (request == null ||
+            request.RepairRequestId <= 0 ||
             request.Details == null ||
-            request.Details.Count == 0)
+            request.Details.Count == 0 ||
+            request.ValidUntil <= DateTime.UtcNow)
         {
-            return Fail(CreateQuoteStatus.InvalidData);
+            // ValidUntil = null vẫn được chấp nhận
+            if (request == null ||
+                request.RepairRequestId <= 0 ||
+                request.Details == null ||
+                request.Details.Count == 0 ||
+                (request.ValidUntil.HasValue &&
+                 request.ValidUntil.Value <= DateTime.UtcNow))
+                return Fail(CreateQuoteStatus.InvalidData);
         }
 
-        if (request.ValidUntil.HasValue &&
-            request.ValidUntil.Value <= DateTime.UtcNow)
-        {
-            return Fail(CreateQuoteStatus.InvalidData);
-        }
+        await using var tx = await _db.Database
+            .BeginTransactionAsync(IsolationLevel.Serializable);
 
-        // 2. Kiem tra cong viec thuoc KTV dang nhap
-        var assignment = await _context.RepairAssignment
+        var assignment = await _db.RepairAssignment
+            .AsNoTracking()
             .Where(a =>
                 a.RepairRequestId == request.RepairRequestId &&
                 a.Technician.UserId == userId)
@@ -48,89 +56,177 @@ public class QuoteService : IQuoteService
         if (assignment == null)
             return Fail(CreateQuoteStatus.NotFound);
 
-        // 3. KTV phai da nhan viec
         if (assignment.AssignmentStatus !=
             (int)RepairAssignmentStatus.Accepted)
-        {
             return Fail(CreateQuoteStatus.AssignmentNotAccepted);
-        }
 
-        // 4. Phai co bao cao khao sat X03
-        bool hasSurvey = await _context.RepairReport
+        var repair = await _db.RepairRequest
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r =>
+                r.RepairRequestId == request.RepairRequestId);
+
+        // Báo giá bổ sung chỉ được lập khi Repair đang tiến hành,
+        // không thay đổi trạng thái Repair và không đụng báo giá gốc.
+        if (repair == null ||
+            (repair.Status != (int)RepairRequestStatus.Inspecting &&
+             repair.Status != (int)RepairRequestStatus.Repairing))
+            return Fail(CreateQuoteStatus.InvalidData);
+
+        bool supplemental = repair.Status == (int)RepairRequestStatus.Repairing;
+        if (supplemental && !await _db.Quote.AnyAsync(q =>
+            q.RepairRequestId == request.RepairRequestId &&
+            !q.IsSupplemental && q.Status == (int)QuoteStatus.Accepted &&
+            q.CustomerResponse == (int)QuoteCustomerResponse.Accepted))
+            return Fail(CreateQuoteStatus.InvalidData);
+
+        bool hasReport = await _db.RepairReport
             .AnyAsync(r =>
                 r.RepairRequestId == request.RepairRequestId &&
                 r.TechnicianId == assignment.TechnicianId);
 
-        if (!hasSurvey)
+        if (!hasReport)
             return Fail(CreateQuoteStatus.SurveyNotFound);
 
-        // 5. Kiem tra tung hang muc va tinh tien
+        bool existingOpenQuote = supplemental
+            ? await _db.Quote.AnyAsync(q =>
+                q.RepairRequestId == request.RepairRequestId &&
+                q.IsSupplemental &&
+                (q.Status == (int)QuoteStatus.Draft ||
+                 q.Status == (int)QuoteStatus.Sent))
+            : await _db.Quote.AnyAsync(q =>
+                q.RepairRequestId == request.RepairRequestId &&
+                !q.IsSupplemental &&
+                q.Status != (int)QuoteStatus.Rejected);
+
+        if (existingOpenQuote)
+            return Fail(CreateQuoteStatus.InvalidData);
+
+        // Kiểm tra từng hạng mục báo giá
         var details = new List<QuoteDetail>();
-        decimal totalAmount = 0m;
+        decimal total = 0;
         var now = DateTime.UtcNow;
+
 
         foreach (var item in request.Details)
         {
-            if (item.Quantity <= 0 || item.UnitPrice < 0)
+            if (item.Quantity <= 0 ||
+                item.Quantity > 9999999999999999.99m ||
+                item.Description?.Length > 500)
                 return Fail(CreateQuoteStatus.InvalidData);
 
-            // Moi ItemType chi duoc co mot tham chieu
-            switch (item.ItemType)
+            decimal? unitPrice = null;
+            bool validReferences = false;
+
+            switch ((QuoteItemType)item.ItemType)
             {
-                case (int)QuoteItemType.Service:
-                    if (!item.ServiceRefId.HasValue ||
-                        item.RepairItemRefId.HasValue ||
-                        item.RepairPartRefId.HasValue)
+                case QuoteItemType.Service:
                     {
-                        return Fail(CreateQuoteStatus.InvalidItem);
+                        validReferences =
+                            item.ServiceRefId.HasValue &&
+                            !item.RepairItemRefId.HasValue &&
+                            !item.RepairPartRefId.HasValue;
+
+                        if (!validReferences)
+                            break;
+
+                        int serviceId = item.ServiceRefId!.Value;
+
+                        // Chỉ lấy giá dịch vụ của Shop đang xử lý
+                        var nowPrice = DateTime.UtcNow;
+
+                        unitPrice = await _db.ServicePrice
+                            .AsNoTracking()
+                            .Where(sp =>
+                                sp.ShopService.ShopId == repair.ShopId &&
+                                sp.ShopService.ServiceId == serviceId &&
+                                sp.ShopService.IsActive &&
+                                sp.ShopService.Service.IsActive &&
+                                sp.IsActive &&
+                                sp.EffectiveFrom <= nowPrice &&
+                                (sp.EffectiveTo == null ||
+                                 sp.EffectiveTo > nowPrice))
+                            .Select(sp => (decimal?)sp.Price)
+                            .FirstOrDefaultAsync();
+
+                        break;
                     }
 
-                    if (await _context
-                        .Set<Service>()
-                        .FindAsync(item.ServiceRefId.Value) == null)
+                case QuoteItemType.RepairItem:
                     {
-                        return Fail(CreateQuoteStatus.InvalidItem);
-                    }
-                    break;
+                        validReferences =
+                            item.RepairItemRefId.HasValue &&
+                            !item.ServiceRefId.HasValue &&
+                            !item.RepairPartRefId.HasValue;
 
-                case (int)QuoteItemType.RepairItem:
-                    if (!item.RepairItemRefId.HasValue ||
-                        item.ServiceRefId.HasValue ||
-                        item.RepairPartRefId.HasValue)
-                    {
-                        return Fail(CreateQuoteStatus.InvalidItem);
-                    }
+                        if (!validReferences)
+                            break;
 
-                    if (await _context
-                        .Set<RepairItem>()
-                        .FindAsync(item.RepairItemRefId.Value) == null)
-                    {
-                        return Fail(CreateQuoteStatus.InvalidItem);
-                    }
-                    break;
+                        int repairItemId = item.RepairItemRefId!.Value;
 
-                case (int)QuoteItemType.RepairPart:
-                    if (!item.RepairPartRefId.HasValue ||
-                        item.ServiceRefId.HasValue ||
-                        item.RepairItemRefId.HasValue)
-                    {
-                        return Fail(CreateQuoteStatus.InvalidItem);
+                        // Giá công sửa chữa do Shop thiết lập
+                        unitPrice = await _db.ShopRepairItem
+                            .AsNoTracking()
+                            .Where(si =>
+                                si.ShopId == repair.ShopId &&
+                                si.RepairItemId == repairItemId &&
+                                si.IsActive &&
+                                si.RepairItem.IsActive)
+                            .Select(si => (decimal?)si.Price)
+                            .FirstOrDefaultAsync();
+
+                        break;
                     }
 
-                    if (await _context
-                        .Set<RepairPart>()
-                        .FindAsync(item.RepairPartRefId.Value) == null)
+                case QuoteItemType.RepairPart:
                     {
-                        return Fail(CreateQuoteStatus.InvalidItem);
+                        validReferences =
+                            item.RepairPartRefId.HasValue &&
+                            !item.ServiceRefId.HasValue &&
+                            !item.RepairItemRefId.HasValue;
+
+                        if (!validReferences)
+                            break;
+
+                        int repairPartId = item.RepairPartRefId!.Value;
+
+                        // Giá linh kiện do Shop thiết lập
+                        unitPrice = await _db.ShopRepairPart
+                            .AsNoTracking()
+                            .Where(sp =>
+                                sp.ShopId == repair.ShopId &&
+                                sp.RepairPartId == repairPartId &&
+                                sp.IsActive &&
+                                sp.RepairPart.IsActive)
+                            .Select(sp => (decimal?)sp.Price)
+                            .FirstOrDefaultAsync();
+
+                        break;
                     }
-                    break;
 
                 default:
                     return Fail(CreateQuoteStatus.InvalidItem);
             }
 
-            decimal amount = item.Quantity * item.UnitPrice;
-            totalAmount += amount;
+            if (!validReferences ||
+                !unitPrice.HasValue ||
+                unitPrice.Value < 0)
+                return Fail(CreateQuoteStatus.InvalidItem);
+
+            decimal amount;
+
+            try
+            {
+                amount = Math.Round(
+                    checked(item.Quantity * unitPrice.Value),
+                    2,
+                    MidpointRounding.AwayFromZero);
+
+                total = checked(total + amount);
+            }
+            catch (OverflowException)
+            {
+                return Fail(CreateQuoteStatus.InvalidData);
+            }
 
             details.Add(new QuoteDetail
             {
@@ -140,111 +236,121 @@ public class QuoteService : IQuoteService
                 RepairPartRefId = item.RepairPartRefId,
                 Description = item.Description?.Trim(),
                 Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice,
-                Amount = amount,
+
+                // Giá được tính ở Backend, không lấy từ request
+                UnitPrice = unitPrice.Value,
+
                 CreatedAt = now
             });
         }
 
-        // 6. Tao thong tin bao gia
+
+        if (total > 9999999999999999.99m)
+            return Fail(CreateQuoteStatus.InvalidData);
+
         var quote = new Quote
         {
             RepairRequestId = request.RepairRequestId,
             TechnicianId = assignment.TechnicianId,
             QuoteNumber = "BG-" +
                 Guid.NewGuid().ToString("N")[..16],
-            TotalAmount = totalAmount,
-
-            // Gia tri mac dinh hien tai cua DB
-            Status = 1,
-
-            CustomerResponse = null,
+            TotalAmount = total,
+            Status = (int)QuoteStatus.Draft,
+            IsSupplemental = supplemental,
             ValidUntil = request.ValidUntil,
             CreatedAt = now
         };
 
-        // 7. Them cac chi tiet bao gia
         foreach (var detail in details)
-        {
             quote.QuoteDetail.Add(detail);
-        }
 
-        // 8. Ghi nhan lich su tao bao gia
         quote.QuoteHistory.Add(new QuoteHistory
         {
             ChangedByUserId = userId,
             OldStatus = null,
-            NewStatus = quote.Status,
-            ChangeNote = "Tao bao gia moi",
-            SnapshotTotalAmount = totalAmount,
+            NewStatus = (int)QuoteStatus.Draft,
+            ChangeNote = supplemental
+                ? "Kỹ thuật viên tạo báo giá phát sinh"
+                : "Kỹ thuật viên tạo báo giá",
+            SnapshotTotalAmount = total,
             CreatedAt = now
         });
 
-        // 9. Luu Quote, QuoteDetail, QuoteHistory
-        // trong mot lan SaveChanges
-        _context.Quote.Add(quote);
-        await _context.SaveChangesAsync();
+        _db.Quote.Add(quote);
+        await _db.SaveChangesAsync();
 
-        // 10. Tra ket qua
+        // Thông báo Manager kiểm tra báo giá
+        var managerIds = await GetShopManagersAsync(repair.ShopId);
+
+        var technicianName = await _db.TechnicianProfile
+            .Where(t => t.TechnicianId == assignment.TechnicianId)
+            .Select(t => t.User.FullName)
+            .FirstAsync();
+
+        await AddNotificationAsync(
+            "QUOTE_CREATED",
+            managerIds,
+            quote.QuoteId,
+            new Dictionary<string, string>
+            {
+                ["TechnicianName"] = technicianName,
+                ["QuoteNumber"] = quote.QuoteNumber,
+                ["RequestId"] = repair.RepairRequestId.ToString(),
+                ["TotalAmount"] = FormatAmount(total)
+            });
+
+        await _db.SaveChangesAsync();
+        await tx.CommitAsync();
+
         return new CreateQuoteResult
         {
             Status = CreateQuoteStatus.Success,
             QuoteId = quote.QuoteId,
-            TotalAmount = totalAmount
+            TotalAmount = total
         };
     }
 
-    private static CreateQuoteResult Fail(
-        CreateQuoteStatus status)
-    {
-        return new CreateQuoteResult
-        {
-            Status = status
-        };
-    }
-
-    // ============================================
-    // X05 - XEM CHI TIET BAO GIA
-    // ============================================
+    // Xem chi tiết báo giá theo quyền người đăng nhập
     public async Task<QuoteResponseDto?> GetByIdAsync(
-        int quoteId,
-        int userId,
-        int roleType)
+        int quoteId, int userId, int roleType)
     {
         if (quoteId <= 0)
             return null;
 
-        // Chi lay bao gia ma nguoi dung co quyen xem
-        var quote = await _context.Quote
+        var query = _db.Quote
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(q => q.QuoteDetail)
             .Include(q => q.QuoteHistory)
-            .AsSplitQuery()
-            .FirstOrDefaultAsync(q =>
-                q.QuoteId == quoteId &&
-                (
-                    // KTV lap bao gia
-                    (roleType == (int)RoleType.Technician &&
-                     q.Technician.UserId == userId)
+            .Where(q => q.QuoteId == quoteId);
 
-                    ||
+        query = roleType switch
+        {
+            (int)RoleType.Technician =>
+                query.Where(q => q.Technician.UserId == userId),
 
-                    // Quan ly Shop cua yeu cau
-                    (roleType == (int)RoleType.Manager &&
-                     q.RepairRequest.Shop.Manager.UserId == userId)
+            (int)RoleType.Manager =>
+                query.Where(q => _db.ShopMember.Any(sm =>
+                    sm.ShopId == q.RepairRequest.ShopId &&
+                    sm.Manager.UserId == userId &&
+                    sm.Status == ShopMemberStatus.Active &&
+                    sm.LeftAt == null &&
+                    (sm.ShopRole == ShopRole.Owner ||
+                     sm.ShopRole == ShopRole.Manager))),
 
-                    ||
+            (int)RoleType.Customer =>
+                query.Where(q =>
+                    q.RepairRequest.Customer.UserId == userId &&
+                    q.Status != (int)QuoteStatus.Draft),
 
-                    // Khach hang: chi xem bao gia da gui
-                    (roleType == (int)RoleType.Customer &&
-                     q.RepairRequest.Customer.UserId == userId &&
-                     q.Status > 1)
-                ));
+            _ => query.Where(q => false)
+        };
+
+        var quote = await query.FirstOrDefaultAsync();
 
         if (quote == null)
             return null;
 
-        // Chuyen Entity thanh DTO
         return new QuoteResponseDto
         {
             QuoteId = quote.QuoteId,
@@ -253,6 +359,7 @@ public class QuoteService : IQuoteService
             QuoteNumber = quote.QuoteNumber,
             TotalAmount = quote.TotalAmount,
             Status = quote.Status,
+            IsSupplemental = quote.IsSupplemental,
             CustomerResponse = quote.CustomerResponse,
             CustomerResponseAt = quote.CustomerResponseAt,
             ValidUntil = quote.ValidUntil,
@@ -282,12 +389,10 @@ public class QuoteService : IQuoteService
                     ChangedByUserId = h.ChangedByUserId,
                     OldStatus = h.OldStatus,
                     NewStatus = h.NewStatus,
-
-                    // Khong tra ghi chu noi bo cho Customer
-                    ChangeNote = roleType == (int)RoleType.Customer
-                        ? null
-                        : h.ChangeNote,
-
+                    ChangeNote =
+                        roleType == (int)RoleType.Customer
+                            ? null
+                            : h.ChangeNote,
                     SnapshotTotalAmount = h.SnapshotTotalAmount,
                     CreatedAt = h.CreatedAt
                 })
@@ -295,275 +400,383 @@ public class QuoteService : IQuoteService
         };
     }
 
-    // ============================================
-    // X06 - MANAGER GUI BAO GIA CHO KHACH HANG
-    // ============================================
+    // Manager kiểm tra và gửi báo giá tới Customer
     public async Task<SendQuoteResult> SendAsync(
-        int quoteId,
-        int userId)
+        int quoteId, int userId)
     {
-        // 1. Kiem tra bao gia thuoc Shop cua Manager
-        var quote = await _context.Quote
-            .AsNoTracking()
-            .Where(q =>
+        await using var tx = await _db.Database
+            .BeginTransactionAsync(IsolationLevel.Serializable);
+
+        var quote = await _db.Quote
+            .Include(q => q.RepairRequest)
+            .FirstOrDefaultAsync(q =>
                 q.QuoteId == quoteId &&
-                q.RepairRequest.Shop.Manager.UserId == userId)
-            .Select(q => new
-            {
-                q.QuoteId,
-                q.Status,
-                q.TotalAmount
-            })
-            .FirstOrDefaultAsync();
+                _db.ShopMember.Any(sm =>
+                    sm.ShopId == q.RepairRequest.ShopId &&
+                    sm.Manager.UserId == userId &&
+                    sm.Status == ShopMemberStatus.Active &&
+                    sm.LeftAt == null &&
+                    (sm.ShopRole == ShopRole.Owner ||
+                     sm.ShopRole == ShopRole.Manager)));
 
         if (quote == null)
             return SendQuoteResult.NotFound;
 
-        // 2. Chi gui bao gia dang o trang thai nhap
-        if (quote.Status != (int)QuoteStatus.Draft)
+        if (quote.Status != (int)QuoteStatus.Draft ||
+            quote.RepairRequest.Status !=
+                (quote.IsSupplemental
+                    ? (int)RepairRequestStatus.Repairing
+                    : (int)RepairRequestStatus.Inspecting) ||
+            (quote.ValidUntil.HasValue &&
+             quote.ValidUntil.Value <= DateTime.UtcNow))
             return SendQuoteResult.InvalidStatus;
+
+        var customerUserId = await _db.CustomerProfile
+            .Where(c => c.CustomerId == quote.RepairRequest.CustomerId)
+            .Select(c => c.UserId)
+            .FirstAsync();
 
         var now = DateTime.UtcNow;
 
-        // 3. Dam bao cap nhat trang thai va lich su
-        // duoc luu cung mot giao dich
-        await using var transaction =
-            await _context.Database.BeginTransactionAsync();
+        quote.Status = (int)QuoteStatus.Sent;
+        quote.UpdatedAt = now;
 
-        // 4. Cap nhat DRAFT -> SENT
-        // Chi cap nhat neu trang thai van la DRAFT
-        var affectedRows = await _context.Quote
-            .Where(q =>
-                q.QuoteId == quoteId &&
-                q.Status == (int)QuoteStatus.Draft &&
-                q.RepairRequest.Shop.Manager.UserId == userId)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(
-                    q => q.Status,
-                    (int)QuoteStatus.Sent)
-                .SetProperty(
-                    q => q.UpdatedAt,
-                    now));
-
-        if (affectedRows != 1)
+        quote.QuoteHistory.Add(new QuoteHistory
         {
-            await transaction.RollbackAsync();
-            return SendQuoteResult.InvalidStatus;
-        }
-
-        // 5. Ghi lich su gui bao gia
-        var history = new QuoteHistory
-        {
-            QuoteId = quoteId,
             ChangedByUserId = userId,
             OldStatus = (int)QuoteStatus.Draft,
             NewStatus = (int)QuoteStatus.Sent,
-            ChangeNote = "Manager gui bao gia cho khach hang",
+            ChangeNote = "Manager gửi báo giá cho khách hàng",
             SnapshotTotalAmount = quote.TotalAmount,
             CreatedAt = now
-        };
+        });
 
-        _context.QuoteHistory.Add(history);
+        // Ghi người thao tác cho trigger Repair
+        await SetHistoryUserAsync(userId);
 
-        // 6. Luu lich su va hoan tat giao dich
-        await _context.SaveChangesAsync();
-        await transaction.CommitAsync();
+        try
+        {
+            if (!quote.IsSupplemental)
+            {
+                quote.RepairRequest.Status =
+                    (int)RepairRequestStatus.Quoted;
+                quote.RepairRequest.UpdatedAt = now;
+            }
 
-        return SendQuoteResult.Success;
+            await AddNotificationAsync(
+                "QUOTE_UPDATED",
+                new[] { customerUserId },
+                quote.QuoteId,
+                QuoteValues(quote));
 
+            await _db.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            return SendQuoteResult.Success;
+        }
+        finally
+        {
+            await ClearHistoryUserAsync();
+        }
     }
 
-    // ============================================
-    // X07 - CUSTOMER CHAP NHAN BAO GIA
-    // ============================================
+    // Customer chấp nhận báo giá
     public async Task<AcceptQuoteResult> AcceptQuoteAsync(
-        int quoteId,
-        int userId)
+        int quoteId, int userId)
     {
-        // 1. Kiem tra bao gia thuoc Customer dang dang nhap
-        var quote = await _context.Quote
-            .AsNoTracking()
-            .Where(q =>
+        await using var tx = await _db.Database
+            .BeginTransactionAsync(IsolationLevel.Serializable);
+
+        var quote = await _db.Quote
+            .Include(q => q.RepairRequest)
+            .FirstOrDefaultAsync(q =>
                 q.QuoteId == quoteId &&
-                q.RepairRequest.Customer.UserId == userId)
-            .Select(q => new
-            {
-                q.Status,
-                q.CustomerResponse,
-                q.ValidUntil,
-                q.TotalAmount
-            })
-            .FirstOrDefaultAsync();
+                q.RepairRequest.Customer.UserId == userId);
 
         if (quote == null)
             return AcceptQuoteResult.NotFound;
 
-        // 2. Chi chap nhan bao gia da gui va chua phan hoi
         if (quote.Status != (int)QuoteStatus.Sent ||
-            quote.CustomerResponse.HasValue)
-        {
+            quote.CustomerResponse.HasValue ||
+            quote.RepairRequest.Status !=
+                (quote.IsSupplemental
+                    ? (int)RepairRequestStatus.Repairing
+                    : (int)RepairRequestStatus.Quoted))
             return AcceptQuoteResult.InvalidStatus;
-        }
 
         var now = DateTime.UtcNow;
 
-        // 3. Kiem tra bao gia het han
         if (quote.ValidUntil.HasValue &&
             quote.ValidUntil.Value <= now)
-        {
             return AcceptQuoteResult.Expired;
-        }
 
-        // 4. Mo giao dich
-        await using var transaction =
-            await _context.Database.BeginTransactionAsync();
+        quote.Status = (int)QuoteStatus.Accepted;
+        quote.CustomerResponse =
+            (int)QuoteCustomerResponse.Accepted;
+        quote.CustomerResponseAt = now;
+        quote.UpdatedAt = now;
 
-        // 5. Cap nhat bao gia neu van du dieu kien
-        var affectedRows = await _context.Quote
-            .Where(q =>
-                q.QuoteId == quoteId &&
-                q.RepairRequest.Customer.UserId == userId &&
-                q.Status == (int)QuoteStatus.Sent &&
-                q.CustomerResponse == null &&
-                (!q.ValidUntil.HasValue ||
-                 q.ValidUntil.Value > now))
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(
-                    q => q.Status,
-                    (int)QuoteStatus.Accepted)
-                .SetProperty(
-                    q => q.CustomerResponse,
-                    (int)QuoteCustomerResponse.Accepted)
-                .SetProperty(
-                    q => q.CustomerResponseAt,
-                    now)
-                .SetProperty(
-                    q => q.UpdatedAt,
-                    now));
-
-        if (affectedRows != 1)
+        quote.QuoteHistory.Add(new QuoteHistory
         {
-            await transaction.RollbackAsync();
-            return AcceptQuoteResult.InvalidStatus;
-        }
-
-        // 6. Luu lich su chap nhan bao gia
-        var history = new QuoteHistory
-        {
-            QuoteId = quoteId,
             ChangedByUserId = userId,
             OldStatus = (int)QuoteStatus.Sent,
             NewStatus = (int)QuoteStatus.Accepted,
-            ChangeNote = "Khach hang chap nhan bao gia",
+            ChangeNote = "Customer chấp nhận báo giá",
             SnapshotTotalAmount = quote.TotalAmount,
             CreatedAt = now
-        };
+        });
 
-        _context.QuoteHistory.Add(history);
+        var recipients = await GetShopManagersAsync(
+            quote.RepairRequest.ShopId);
 
-        // 7. Luu va hoan tat giao dich
-        await _context.SaveChangesAsync();
-        await transaction.CommitAsync();
+        var technicianUserId = await _db.TechnicianProfile
+            .Where(t => t.TechnicianId == quote.TechnicianId)
+            .Select(t => t.UserId)
+            .FirstAsync();
 
-        return AcceptQuoteResult.Success;
+        recipients.Add(technicianUserId);
+
+        var customerName = await _db.CustomerProfile
+            .Where(c => c.UserId == userId)
+            .Select(c => c.User.FullName)
+            .FirstAsync();
+
+        await SetHistoryUserAsync(userId);
+
+        try
+        {
+            if (!quote.IsSupplemental)
+            {
+                quote.RepairRequest.Status =
+                    (int)RepairRequestStatus.QuoteApproved;
+                quote.RepairRequest.UpdatedAt = now;
+            }
+
+            var values = QuoteValues(quote);
+            values["CustomerName"] = customerName;
+
+            await AddNotificationAsync(
+                "QUOTE_ACCEPTED",
+                recipients,
+                quote.QuoteId,
+                values);
+
+            await _db.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            return AcceptQuoteResult.Success;
+        }
+        finally
+        {
+            await ClearHistoryUserAsync();
+        }
     }
 
-    // ============================================
-    // X08 - CUSTOMER TU CHOI BAO GIA
-    // ============================================
+    // Customer từ chối báo giá
     public async Task<RejectQuoteResult> RejectQuoteAsync(
-        int quoteId,
-        int userId)
+        int quoteId, int userId)
     {
-        // 1. Kiem tra bao gia thuoc Customer dang dang nhap
-        var quote = await _context.Quote
-            .AsNoTracking()
-            .Where(q =>
+        await using var tx = await _db.Database
+            .BeginTransactionAsync(IsolationLevel.Serializable);
+
+        var quote = await _db.Quote
+            .Include(q => q.RepairRequest)
+            .FirstOrDefaultAsync(q =>
                 q.QuoteId == quoteId &&
-                q.RepairRequest.Customer.UserId == userId)
-            .Select(q => new
-            {
-                q.Status,
-                q.CustomerResponse,
-                q.ValidUntil,
-                q.TotalAmount
-            })
-            .FirstOrDefaultAsync();
+                q.RepairRequest.Customer.UserId == userId);
 
         if (quote == null)
             return RejectQuoteResult.NotFound;
 
-        // 2. Chi tu choi bao gia da gui, chua phan hoi
         if (quote.Status != (int)QuoteStatus.Sent ||
-            quote.CustomerResponse.HasValue)
-        {
+            quote.CustomerResponse.HasValue ||
+            quote.RepairRequest.Status !=
+                (quote.IsSupplemental
+                    ? (int)RepairRequestStatus.Repairing
+                    : (int)RepairRequestStatus.Quoted))
             return RejectQuoteResult.InvalidStatus;
+
+        var now = DateTime.UtcNow;
+
+        if (quote.ValidUntil.HasValue &&
+            quote.ValidUntil.Value <= now)
+            return RejectQuoteResult.Expired;
+
+        quote.Status = (int)QuoteStatus.Rejected;
+        quote.CustomerResponse =
+            (int)QuoteCustomerResponse.Rejected;
+        quote.CustomerResponseAt = now;
+        quote.UpdatedAt = now;
+
+        quote.QuoteHistory.Add(new QuoteHistory
+        {
+            ChangedByUserId = userId,
+            OldStatus = (int)QuoteStatus.Sent,
+            NewStatus = (int)QuoteStatus.Rejected,
+            ChangeNote = "Customer từ chối báo giá",
+            SnapshotTotalAmount = quote.TotalAmount,
+            CreatedAt = now
+        });
+
+        var recipients = await GetShopManagersAsync(
+            quote.RepairRequest.ShopId);
+
+        var technicianUserId = await _db.TechnicianProfile
+            .Where(t => t.TechnicianId == quote.TechnicianId)
+            .Select(t => t.UserId)
+            .FirstAsync();
+
+        recipients.Add(technicianUserId);
+
+        var customerName = await _db.CustomerProfile
+            .Where(c => c.UserId == userId)
+            .Select(c => c.User.FullName)
+            .FirstAsync();
+
+        await SetHistoryUserAsync(userId);
+
+        try
+        {
+            // Cho phép KTV lập báo giá thay thế.
+            // Báo cáo khảo sát trước đó vẫn được giữ.
+            if (!quote.IsSupplemental)
+            {
+                quote.RepairRequest.Status =
+                    (int)RepairRequestStatus.Inspecting;
+                quote.RepairRequest.UpdatedAt = now;
+            }
+
+            var values = QuoteValues(quote);
+            values["CustomerName"] = customerName;
+
+            await AddNotificationAsync(
+                "QUOTE_REJECTED",
+                recipients,
+                quote.QuoteId,
+                values);
+
+            await _db.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            return RejectQuoteResult.Success;
+        }
+        finally
+        {
+            await ClearHistoryUserAsync();
+        }
+    }
+
+    // Tạo thông báo từ template có sẵn
+    private async Task AddNotificationAsync(
+        string templateCode,
+        IEnumerable<int> recipients,
+        int quoteId,
+        IReadOnlyDictionary<string, string> values)
+    {
+        var receiverIds = recipients.Distinct().ToList();
+
+        if (receiverIds.Count == 0)
+            throw new InvalidOperationException(
+                "Không có người nhận thông báo.");
+
+        var template = await _db.NotificationTemplate
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t =>
+                t.TemplateCode == templateCode);
+
+        if (template == null)
+            throw new InvalidOperationException(
+                $"Thiếu NotificationTemplate: {templateCode}");
+
+        var title = template.Title;
+        var body = template.BodyTemplate ?? "";
+
+        foreach (var item in values)
+        {
+            title = title.Replace(
+                "{" + item.Key + "}", item.Value);
+
+            body = body.Replace(
+                "{" + item.Key + "}", item.Value);
         }
 
         var now = DateTime.UtcNow;
 
-        // 3. Kiem tra thoi han bao gia
-        if (quote.ValidUntil.HasValue &&
-            quote.ValidUntil.Value <= now)
+        var notification = new Notification
         {
-            return RejectQuoteResult.Expired;
-        }
-
-        // 4. Mo transaction de luu nhat quan
-        await using var transaction =
-            await _context.Database.BeginTransactionAsync();
-
-        // 5. Cap nhat SENT -> REJECTED
-        var affectedRows = await _context.Quote
-            .Where(q =>
-                q.QuoteId == quoteId &&
-                q.RepairRequest.Customer.UserId == userId &&
-                q.Status == (int)QuoteStatus.Sent &&
-                q.CustomerResponse == null &&
-                (!q.ValidUntil.HasValue ||
-                 q.ValidUntil.Value > now))
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(
-                    q => q.Status,
-                    (int)QuoteStatus.Rejected)
-                .SetProperty(
-                    q => q.CustomerResponse,
-                    (int)QuoteCustomerResponse.Rejected)
-                .SetProperty(
-                    q => q.CustomerResponseAt,
-                    now)
-                .SetProperty(
-                    q => q.UpdatedAt,
-                    now));
-
-        if (affectedRows != 1)
-        {
-            await transaction.RollbackAsync();
-            return RejectQuoteResult.InvalidStatus;
-        }
-
-        // 6. Ghi lich su Customer tu choi
-        var history = new QuoteHistory
-        {
-            QuoteId = quoteId,
-            ChangedByUserId = userId,
-            OldStatus = (int)QuoteStatus.Sent,
-            NewStatus = (int)QuoteStatus.Rejected,
-            ChangeNote = "Khach hang tu choi bao gia",
-            SnapshotTotalAmount = quote.TotalAmount,
+            TemplateId = template.NotificationTemplateId,
+            Title = title,
+            Body = body,
+            RefType = (int)NotificationRefType.Quote,
+            RefId = quoteId,
             CreatedAt = now
         };
 
-        _context.QuoteHistory.Add(history);
+        foreach (var receiverId in receiverIds)
+        {
+            notification.UserNotification.Add(
+                new UserNotification
+                {
+                    UserId = receiverId,
+                    IsRead = false,
+                    CreatedAt = now
+                });
+        }
 
-        // 7. Luu lich su va hoan tat transaction
-        await _context.SaveChangesAsync();
-        await transaction.CommitAsync();
-
-        return RejectQuoteResult.Success;
+        _db.Notification.Add(notification);
     }
 
+    // Lấy toàn bộ Owner và Manager hợp lệ của Shop
+    private async Task<List<int>> GetShopManagersAsync(int shopId)
+    {
+        return await _db.ShopMember
+            .AsNoTracking()
+            .Where(sm =>
+                sm.ShopId == shopId &&
+                sm.Status == ShopMemberStatus.Active &&
+                sm.LeftAt == null &&
+                (sm.ShopRole == ShopRole.Owner ||
+                 sm.ShopRole == ShopRole.Manager) &&
+                sm.Manager.User.Status == 1)
+            .Select(sm => sm.Manager.UserId)
+            .Distinct()
+            .ToListAsync();
+    }
 
+    // Chuẩn bị biến cho Notification Template
+    private static Dictionary<string, string> QuoteValues(
+        Quote quote)
+    {
+        return new Dictionary<string, string>
+        {
+            ["QuoteNumber"] = quote.QuoteNumber,
+            ["RequestId"] = quote.RepairRequestId.ToString(),
+            ["TotalAmount"] = FormatAmount(quote.TotalAmount)
+        };
+    }
 
+    private static string FormatAmount(decimal amount)
+    {
+        return amount.ToString(
+            "N0",
+            System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
+            + " đ";
+    }
 
+    private async Task SetHistoryUserAsync(int userId)
+    {
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"EXEC sys.sp_set_session_context @key=N'UserId', @value={userId}");
+    }
+
+    private async Task ClearHistoryUserAsync()
+    {
+        await _db.Database.ExecuteSqlRawAsync(
+            "EXEC sys.sp_set_session_context @key=N'UserId', @value=NULL");
+    }
+
+    private static CreateQuoteResult Fail(CreateQuoteStatus status)
+    {
+        return new CreateQuoteResult { Status = status };
+    }
 }
