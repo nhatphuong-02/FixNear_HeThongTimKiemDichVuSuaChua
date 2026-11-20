@@ -39,6 +39,98 @@ public class ManagerService : IManagerService
             throw new UnauthorizedAccessException(
                 "Bạn không có quyền quản lý cửa hàng này.");
     }
+    #region T01 - Xem thông tin cửa hàng
+
+    public async Task<object> GetShopsAsync(int managerId)
+    {
+        var shops = await _db.Shop
+            .AsNoTracking()
+            .Where(s => s.ManagerId == managerId)
+            .OrderByDescending(s => s.CreatedAt)
+            .Select(s => new
+            {
+                s.ShopId,
+                s.ManagerId,
+                s.ShopName,
+                s.Description,
+                s.Phone,
+                s.Email,
+                s.LogoUrl,
+                s.RatingAverage,
+                s.Status,
+                s.IsVerified,
+                s.CreatedAt
+            })
+            .ToListAsync();
+
+        return shops;
+    }
+
+    public async Task<object?> GetShopAsync(
+        int managerId,
+        int shopId)
+    {
+        return await _db.Shop
+            .AsNoTracking()
+            .Where(s =>
+                s.ManagerId == managerId &&
+                s.ShopId == shopId)
+            .Select(s => new
+            {
+                s.ShopId,
+                s.ManagerId,
+                s.AddressId,
+                s.ShopName,
+                s.Description,
+                s.Phone,
+                s.Email,
+                s.LogoUrl,
+                s.TaxCode,
+                s.RatingAverage,
+                s.Status,
+                s.IsVerified,
+                s.CreatedAt,
+                s.UpdatedAt
+            })
+            .FirstOrDefaultAsync();
+    }
+
+    #endregion
+
+    #region T02 - Cập nhật thông tin cửa hàng
+
+    public async Task<bool> UpdateShopAsync(
+        int managerId,
+        int shopId,
+        UpdateShopDto dto)
+    {
+        var shop = await _db.Shop
+            .FirstOrDefaultAsync(s =>
+                s.ManagerId == managerId &&
+                s.ShopId == shopId);
+
+        if (shop == null)
+            return false;
+
+        if (string.IsNullOrWhiteSpace(dto.ShopName))
+        {
+            throw new ArgumentException(
+                "Tên cửa hàng không được để trống.");
+        }
+
+        shop.ShopName = dto.ShopName.Trim();
+        shop.Description = dto.Description?.Trim();
+        shop.Phone = dto.Phone?.Trim();
+        shop.Email = dto.Email?.Trim();
+        shop.LogoUrl = dto.LogoUrl?.Trim();
+        shop.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+
+        return true;
+    }
+
+    #endregion
 
     #region Quản lý nhiều ảnh cửa hàng
 

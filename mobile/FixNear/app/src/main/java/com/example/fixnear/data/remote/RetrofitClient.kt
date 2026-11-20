@@ -30,4 +30,18 @@ object RetrofitClient {
             .build()
             .create(LocationApi::class.java)
     }
+    val shopApi: ShopApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ShopApi::class.java)
+    }
+    val managerServiceApi: ManagerServiceApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ManagerServiceApi::class.java)
+    }
 }
