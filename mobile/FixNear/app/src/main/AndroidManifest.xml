@@ -66,6 +66,9 @@
         <activity
             android:name=".ui.home.CustomerCatalogActivity"
             android:exported="false"/>
+        <activity
+            android:name=".ui.manager.ManagerRepairRequestsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

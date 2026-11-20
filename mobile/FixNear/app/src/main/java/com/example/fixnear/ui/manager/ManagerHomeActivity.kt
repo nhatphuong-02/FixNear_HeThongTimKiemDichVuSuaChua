@@ -364,4 +364,16 @@ class ManagerHomeActivity : AppCompatActivity() {
             Toast.LENGTH_SHORT
         ).show()
     }
+    private fun openRepairRequests() {
+        val shop = shops.firstOrNull()
+
+        startActivity(
+            Intent(
+                this,
+                ManagerRepairRequestsActivity::class.java
+            ).apply {
+                putExtra("SHOP_ID", shop?.shopId ?: -1)
+            }
+        )
+    }
 }
