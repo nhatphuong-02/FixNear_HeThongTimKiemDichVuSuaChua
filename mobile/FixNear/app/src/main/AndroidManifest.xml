@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".FixNearApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -14,35 +15,72 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Fixnear"
         android:usesCleartextTraffic="true">
+
+        <!-- UI01 - Danh sach cong viec -->
+        <activity
+            android:name=".ui.assignment.AssignmentActivity"
+            android:exported="false" />
+
+        <!-- UI02 - Chi tiet cong viec va khao sat -->
+        <activity
+            android:name=".ui.assignment.AssignmentDetailActivity"
+            android:exported="false" />
+
+        <!-- UI03 - Tao bao gia -->
+        <activity
+            android:name=".ui.quote.CreateQuoteActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.quote.QuoteDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.repair.RepairProgressActivity"
+            android:exported="false" />
+        <!-- Splash -->
         <activity
             android:name=".ui.splash.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.Fixnear.Starting">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
+            <intent-filter>
+                <action
+                    android:name="android.intent.action.MAIN" />
+
+                <category
+                    android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Home -->
         <activity
             android:name=".ui.home.HomeActivity"
             android:exported="false" />
+
+        <!-- Login -->
         <activity
             android:name=".ui.auth.LoginActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize"></activity>
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Register -->
         <activity
             android:name=".ui.auth.RegisterActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Profile -->
         <activity
             android:name=".ui.profile.ProfileActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Choose Register Role -->
         <activity
             android:name=".ui.auth.ChooseRegisterRoleActivity"
             android:exported="false" />
 
+        <!-- Role Register -->
         <activity
             android:name=".ui.auth.RoleRegisterActivity"
             android:exported="false" />

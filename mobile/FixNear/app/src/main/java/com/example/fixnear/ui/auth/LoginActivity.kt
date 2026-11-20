@@ -14,7 +14,7 @@ import com.example.fixnear.helper.setupPasswordToggle
 import com.example.fixnear.ui.home.HomeActivity
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-
+import com.example.fixnear.ui.assignment.AssignmentActivity
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
@@ -155,10 +155,16 @@ class LoginActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    // Chuyển sang màn hình Home
+                    // Điều hướng theo quyền người dùng
+                    val targetActivity = if (loginData.roleType == 3) {
+                        AssignmentActivity::class.java
+                    } else {
+                        HomeActivity::class.java
+                    }
+
                     val intent = Intent(
                         this@LoginActivity,
-                        HomeActivity::class.java
+                        targetActivity
                     )
 
                     intent.flags =

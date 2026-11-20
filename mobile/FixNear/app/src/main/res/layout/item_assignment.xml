@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="14dp"
+    app:cardBackgroundColor="@color/card_cream"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="3dp"
+    app:strokeColor="@color/border_card"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <!-- STATUS -->
+        <TextView
+            android:id="@+id/tvAssignmentStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_header_role"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="7dp"
+            android:text="● CHỜ NHẬN VIỆC"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/accent_gold" />
+
+        <!-- CUSTOMER -->
+        <TextView
+            android:id="@+id/tvCustomerName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tên khách hàng"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary_card"
+            android:layout_marginTop="14dp" />
+
+        <!-- SHOP -->
+        <TextView
+            android:id="@+id/tvShopName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tên cửa hàng"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary_card"
+            android:layout_marginTop="6dp" />
+
+        <!-- DIVIDER -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="12dp"
+            android:background="@color/border_card" />
+
+        <!-- SERVICES -->
+        <TextView
+            android:id="@+id/tvAssignmentServices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Dịch vụ sửa chữa"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/accent_brown"
+            android:layout_marginTop="2dp" />
+
+        <!-- DESCRIPTION -->
+        <TextView
+            android:id="@+id/tvAssignmentDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mô tả yêu cầu sửa chữa"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary_card"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:lineSpacingExtra="3dp"
+            android:layout_marginTop="10dp" />
+
+        <!-- DATE -->
+        <TextView
+            android:id="@+id/tvAssignmentDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📅 Ngày hẹn sửa chữa"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary_card"
+            android:layout_marginTop="14dp" />
+
+        <!-- REPAIR TYPE -->
+        <TextView
+            android:id="@+id/tvRepairType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔧 Hình thức sửa chữa"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary_card"
+            android:layout_marginTop="8dp" />
+
+        <!-- ACTION BUTTONS -->
+        <LinearLayout
+            android:id="@+id/layoutAssignmentActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="18dp">
+
+            <!-- ACCEPT -->
+            <Button
+                android:id="@+id/btnAcceptAssignment"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Nhận công việc"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary_card"
+                android:textStyle="bold"
+                android:backgroundTint="@color/accent_gold"
+                android:stateListAnimator="@null" />
+
+            <!-- REJECT -->
+            <Button
+                android:id="@+id/btnRejectAssignment"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Từ chối công việc"
+                android:textSize="14sp"
+                android:textColor="@color/status_cancelled"
+                android:textStyle="bold"
+                android:backgroundTint="@color/card_cream_variant"
+                android:layout_marginTop="8dp"
+                android:stateListAnimator="@null" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
