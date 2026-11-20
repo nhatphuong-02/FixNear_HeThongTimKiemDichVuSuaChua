@@ -1,4 +1,4 @@
-﻿using FixNear.Features.Reviews.DTOs;
+using FixNear.Features.Reviews.DTOs;
 
 namespace FixNear.Features.Reviews.Interfaces
 {
@@ -13,6 +13,7 @@ namespace FixNear.Features.Reviews.Interfaces
             int shopId,
             int page,
             int pageSize);
+        Task<GetTechnicianReviewsResult> GetByTechnicianAsync(int technicianId, int page, int pageSize);
         // X18 - Manager phan hoi danh gia
         Task<CreateReviewReplyResult> ReplyAsync(
             int reviewId,
@@ -78,4 +79,14 @@ namespace FixNear.Features.Reviews.Interfaces
         public string? ReplyContent { get; set; }
     }
 
+}
+
+namespace FixNear.Features.Reviews.Interfaces
+{
+    public enum GetTechnicianReviewsStatus { Success, InvalidInput, TechnicianNotFound }
+    public sealed class GetTechnicianReviewsResult
+    {
+        public GetTechnicianReviewsStatus Status { get; set; }
+        public FixNear.Features.Reviews.DTOs.TechnicianReviewsResponseDto? Data { get; set; }
+    }
 }

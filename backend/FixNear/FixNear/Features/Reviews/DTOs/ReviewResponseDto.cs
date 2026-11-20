@@ -1,10 +1,12 @@
-﻿namespace FixNear.Features.Reviews.DTOs
+namespace FixNear.Features.Reviews.DTOs
 {
     public class ReviewResponseDto
     {
         public int ReviewId { get; set; }
 
         public int ShopId { get; set; }
+
+        public int ReviewType { get; set; }
 
         public int? TechnicianId { get; set; }
 
@@ -31,6 +33,8 @@
     {
         public int ShopId { get; set; }
 
+        public int ReviewType { get; set; }
+
         public int TotalCount { get; set; }
 
         public int Page { get; set; }
@@ -39,5 +43,17 @@
 
         public List<ReviewResponseDto> Reviews { get; set; }
             = new();
+    }
+}
+
+namespace FixNear.Features.Reviews.DTOs
+{
+    public sealed class TechnicianReviewsResponseDto
+    {
+        public int TechnicianId { get; set; }
+        public int TotalCount { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public List<ReviewResponseDto> Reviews { get; set; } = new();
     }
 }

@@ -1,0 +1,3535 @@
+{
+  "info": {
+    "_postman_id": "58dba95f-ab6c-4d27-915b-673bed62ffa6",
+    "name": "FixNear",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "59219786",
+    "_collection_link": "https://go.postman.co/collection/59219786-58dba95f-ab6c-4d27-915b-673bed62ffa6?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "AccountSecurity",
+      "item": [
+        {
+          "name": "Request Change Password OTP",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_04z1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/account-security/password/request-otp",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "account-security",
+                "password",
+                "request-otp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_04z1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"currentPassword\": \"12345678\",\r\n  \"newPassword\": \"123456789\",\r\n  \"otp\": \"506527\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/account-security/password",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "account-security",
+                "password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Change Email OTP",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0386}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"newEmail\": \"vanthinh24122006@gmail.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/account-security/email/request-otp",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "account-security",
+                "email",
+                "request-otp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Email",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0386}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"newEmail\": \"vanthinh24122006@gmail.com\",\r\n  \"otp\": \"746595\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/account-security/email",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "account-security",
+                "email"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Change Phone",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0386}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/account-security/phone/request-otp",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "account-security",
+                "phone",
+                "request-otp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Phone",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0386}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"newPhone\": \"0907778899\",\r\n  \"otp\": \"826249\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/account-security/phone",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "account-security",
+                "phone"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Customer Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"fullName\": \"Nguyễn Minh Khách\",\r\n  \"email\": \"phuongquachnhat@gmail.com\",\r\n  \"phone\": \"0901112233\",\r\n  \"dateOfBirth\": \"2001-05-12\",\r\n  \"gender\": 1,\r\n  \"password\": \"12345678\",\r\n  \"provinceId\": 6,\r\n  \"wardId\": 434,\r\n  \"addressLine\": \"Đường Bạch Đằng, Hải Châu, Đà Nẵng\",\r\n  \"recipientName\": \"Nguyễn Minh Khách\",\r\n  \"recipientPhone\": \"0901112233\"\r\n}\r\n  ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/auth/register/customer",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "auth",
+                "register",
+                "customer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Shop Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"fullName\": \"Trần Văn Minh\",\r\n  \"email\": \"hovanhoang959@gmail.com\",\r\n  \"phone\": \"0905123456\",\r\n  \"dateOfBirth\": \"1995-06-15\",\r\n  \"gender\": 1,\r\n  \"password\": \"12345678\",\r\n  \"shopName\": \"FixNear Đà Nẵng\",\r\n  \"description\": \"Cửa hàng sửa chữa điện thoại, thiết bị điện và điện nước tại Đà Nẵng.\",\r\n  \"shopPhone\": \"0905123456\",\r\n  \"shopEmail\": \"hovanhoang959@gmail.com\",\r\n  \"taxCode\": null,\r\n  \"provinceId\": 6,\r\n  \"wardId\": 434,\r\n  \"addressLine\": \"Đường Trần Hưng Đạo, Đà Nẵng\",\r\n  \"recipientName\": \"Trần Văn Minh\",\r\n  \"recipientPhone\": \"0905123456\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/auth/register/shop",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "auth",
+                "register",
+                "shop"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Technician Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"fullName\": \"Lê Văn Kỹ\",\r\n  \"email\": \"quang21042006@gmail.com\",\r\n  \"phone\": \"0903334455\",\r\n  \"dateOfBirth\": \"1998-08-20\",\r\n  \"gender\": 1,\r\n  \"password\": \"12345678\",\r\n  \"experienceYears\": 5,\r\n  \"introduction\": \"Kỹ thuật viên có 5 năm kinh nghiệm sửa chữa điện thoại, thiết bị điện và điện nước tại Đà Nẵng.\",\r\n  \"serviceIds\": [1]\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/auth/register/technician",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "auth",
+                "register",
+                "technician"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"quang21042006@gmail.com\",\r\n  \"otp\": \"579202\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/auth/verify-email",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "auth",
+                "verify-email"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"hovanhoang959@gmail.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/auth/resend-otp",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "auth",
+                "resend-otp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"hovanhoang959@gmail.com\",\r\n    \"password\": \"12345678\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Customer",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0386}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/customers/me/profile",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Put Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_04z1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"fullName\": \"Nguyễn Minh Khách\",\r\n  \"dateOfBirth\": \"2001-05-12\",\r\n  \"gender\": 1,\r\n  \"avatarUrl\": null\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/customers/me/profile",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_04z1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/customers/me/addresses",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "addresses"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_04z1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"provinceId\": 6,\r\n  \"wardId\": 434,\r\n  \"addressLine\": \"Đường Trần Hưng Đạo, Hải Châu, Đà Nẵng\",\r\n  \"recipientName\": \"Nguyễn Minh Khách\",\r\n  \"recipientPhone\": \"0901112233\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/customers/me/addresses",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "addresses"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Default Address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_04z1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/customers/me/addresses/1/default",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "addresses",
+                "1",
+                "default"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Customer Address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_04z1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"provinceId\": 6,\r\n  \"wardId\": 434,\r\n  \"addressLine\": \"25 Trần Hưng Đạo, Phường Hải Châu, Đà Nẵng\",\r\n  \"recipientName\": \"Nguyễn Minh Khách Test\",\r\n  \"recipientPhone\": \"0901112233\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/customers/me/addresses/3",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "addresses",
+                "3"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Repair Request",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_12pb}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"shopId\": 1,\r\n  \"serviceId\": 1,\r\n  \"repairMethod\": 1,\r\n  \"addressId\": 4,\r\n  \"description\": \"Điện thoại bị mất nguồn đột ngột, không thể khởi động dù đã sạc pin. Cần kỹ thuật viên đến kiểm tra và sửa chữa tại nhà.\",\r\n  \"preferredDate\": \"2026-11-23\",\r\n  \"preferredTimeFrom\": \"09:00:00\",\r\n  \"preferredTimeTo\": \"11:00:00\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/customers/me/repair-requests",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "repair-requests"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Customer Repair Requests",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0386}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/customers/me/repair-requests?page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "repair-requests"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Accept Quote",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0y93}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/quotes/2/accept",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "quotes",
+                "2",
+                "accept"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Invoice Detail",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0m7d}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/invoices/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "invoices",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bank Transfer QR",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0m7d}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/invoices/1/bank-transfer",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "invoices",
+                "1",
+                "bank-transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Payment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0m7d}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"invoiceId\": 1,\r\n  \"paymentMethod\": 3\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/payments",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "payments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Review",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0m7d}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"repairRequestId\": 1,\r\n  \"rating\": 5,\r\n  \"comment\": \"Cửa hàng sửa chữa nhanh chóng, kỹ thuật viên nhiệt tình, báo giá rõ ràng và đúng hẹn. Rất hài lòng với dịch vụ FixNear!\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/reviews",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "reviews"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Review Technician",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0m7d}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"repairRequestId\": 1,\r\n  \"reviewType\": 2,\r\n  \"technicianId\": 1,\r\n  \"rating\": 5,\r\n  \"comment\": \"Kỹ thuật viên sửa chữa rất tốt, nhiệt tình và đúng giờ.\",\r\n  \"imageUrls\": []\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/reviews",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "reviews"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Shop",
+      "item": [
+        {
+          "name": "Service Catalog",
+          "item": [
+            {
+              "name": "Get Shop Services",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/shops/1/services",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "shops",
+                    "1",
+                    "services"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add Shop Service",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"serviceId\": 1,\r\n  \"description\": \"Kiểm tra, tư vấn và sửa chữa thiết bị cho khách hàng tại Đà Nẵng.\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/shops/1/services",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "shops",
+                    "1",
+                    "services"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get System Services",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/services",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "services"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Service Price",
+          "item": [
+            {
+              "name": "Update Service Price",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"price\": 180000,\r\n  \"minPrice\": 120000,\r\n  \"maxPrice\": 350000,\r\n  \"priceUnit\": \"lan\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/service-prices/1?shopId=1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "service-prices",
+                    "1"
+                  ],
+                  "query": [
+                    {
+                      "key": "shopId",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add Service Price",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"shopServiceId\": 1,\r\n  \"price\": 150000,\r\n  \"minPrice\": 100000,\r\n  \"maxPrice\": 300000,\r\n  \"priceUnit\": \"lan\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/service-prices?shopId=1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "service-prices"
+                  ],
+                  "query": [
+                    {
+                      "key": "shopId",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Service Prices",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/service-prices?shopId=1&includeHistory=false",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "service-prices"
+                  ],
+                  "query": [
+                    {
+                      "key": "shopId",
+                      "value": "1"
+                    },
+                    {
+                      "key": "includeHistory",
+                      "value": "false"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Service Price History",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/service-prices?shopId=1&includeHistory=true",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "service-prices"
+                  ],
+                  "query": [
+                    {
+                      "key": "shopId",
+                      "value": "1"
+                    },
+                    {
+                      "key": "includeHistory",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Repair Item Catalog",
+          "item": [
+            {
+              "name": "Repair Item Catalog",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/repair-items/catalog?page=1&pageSize=10",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "repair-items",
+                    "catalog"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "pageSize",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add Shop Repair Item",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"repairItemId\": 1,\r\n  \"price\": 120000\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/repair-items",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "repair-items"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Shop Repair Item",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/repair-items?page=1&pageSize=10",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "repair-items"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "pageSize",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Shop Repair Item",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"price\": 150000,\r\n  \"isActive\": true\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/repair-items/1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "repair-items",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Repair Part Catalog",
+          "item": [
+            {
+              "name": "Repair Part Catalog",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/repair-parts/catalog?page=1&pageSize=10",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "repair-parts",
+                    "catalog"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "pageSize",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add Shop Repair Part",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"repairPartId\": 1,\r\n  \"price\": 180000\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/repair-parts",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "repair-parts"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Shop Repair Part",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/repair-parts?page=1&pageSize=10",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "repair-parts"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "pageSize",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Shop Repair Part",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"price\": 220000,\r\n  \"isActive\": true\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/repair-parts/1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "repair-parts",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Manage Technician",
+          "item": [
+            {
+              "name": "Invite Technician",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"quang21042006@gmail.com\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/technician-invitations",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "technician-invitations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Technician Invitations",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02ys}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/technician-invitations",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "technician-invitations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Technician",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_063v}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/technicians",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "technicians"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Repair Manage",
+          "item": [
+            {
+              "name": "Get Shop Repair Requests",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_063v}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/repair-requests?shopId=1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "repair-requests"
+                  ],
+                  "query": [
+                    {
+                      "key": "shopId",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Repair Request Detail",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_063v}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/repair-requests/1?shopId=1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "repair-requests",
+                    "1"
+                  ],
+                  "query": [
+                    {
+                      "key": "shopId",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Accept Repair Request",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_063v}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"note\": \"FixNear Đà Nẵng đã tiếp nhận yêu cầu sửa chữa điện thoại. Cửa hàng sẽ phân công kỹ thuật viên kiểm tra thiết bị theo lịch hẹn.\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/repair-requests/1/accept?shopId=1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "repair-requests",
+                    "1",
+                    "accept"
+                  ],
+                  "query": [
+                    {
+                      "key": "shopId",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Assign Repair Technician",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_063v}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "\r\n{\r\n  \"repairRequestId\": 1,\r\n  \"technicianId\": 1,\r\n  \"note\": \"Phân công kỹ thuật viên kiểm tra điện thoại mất nguồn tại nhà khách hàng vào ngày 23/11/2026, từ 09:00 đến 11:00.\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/manager/repair-assignments?shopId=1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "manager",
+                    "repair-assignments"
+                  ],
+                  "query": [
+                    {
+                      "key": "shopId",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Send Quote to Customer",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_0u3p}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/quotes/2/send",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "quotes",
+                    "2",
+                    "send"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Quote Detail",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_0u3p}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/quotes/1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "quotes",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Accept Repair Completion",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_01bv}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/shops/1/repairs/1/accept-completion",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "shops",
+                    "1",
+                    "repairs",
+                    "1",
+                    "accept-completion"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Invoice",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_01bv}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"repairRequestId\": 1,\r\n  \"quoteId\": 1\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/invoices",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "invoices"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Confirm Bank Transfer",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_01bv}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"bankTransactionCode\": \"TEST-FIXNEAR-RR1-001\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/payments/1/confirm-bank-transfer",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "payments",
+                    "1",
+                    "confirm-bank-transfer"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Get My Shops",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_02ys}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/shops/me",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "shops",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Shop Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_02ys}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"shopName\": \"FixNear Đà Nẵng\",\r\n  \"description\": \"Chuyên sửa chữa điện thoại, thiết bị điện và điện nước tại Đà Nẵng. Hỗ trợ kiểm tra, tư vấn và sửa chữa tận nơi.\",\r\n  \"logoUrl\": null,\r\n  \"taxCode\": null\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/shops/1/profile",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "shops",
+                "1",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Shop Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_01bv}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/shops/1/profile",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "shops",
+                "1",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Shop Payment Account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_01bv}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"bankBin\": \"970436\",\r\n  \"bankAccountNo\": \"1234567890\",\r\n  \"bankAccountName\": \"TRAN VAN MINH\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/shops/1/payment-account",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "shops",
+                "1",
+                "payment-account"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Shop Review",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/shops/1/reviews?page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "shops",
+                "1",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reply Review",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_01bv}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n{\r\n  \"replyContent\": \"FixNear Đà Nẵng chân thành cảm ơn quý khách đã tin tưởng sử dụng dịch vụ. Chúng tôi rất vui khi quý khách hài lòng với chất lượng sửa chữa và sẽ tiếp tục nâng cao chất lượng phục vụ!\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/reviews/1/reply",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "reviews",
+                "1",
+                "reply"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/conversations/1/messages?page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "conversations",
+                "1",
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Customer Search",
+      "item": [
+        {
+          "name": "Search Service By Keyword",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/services/search?keyword=điện&page=1&pageSize=5",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "services",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "điện"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Service By id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/services/search?categoryId=1&page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "services",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "categoryId",
+                  "value": "1"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search All Service",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/services/search?page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "services",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Nearby Shops",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/shops/nearby?latitude=16.076532&longitude=108.224131&radiusKm=10&page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "shops",
+                "nearby"
+              ],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "16.076532"
+                },
+                {
+                  "key": "longitude",
+                  "value": "108.224131"
+                },
+                {
+                  "key": "radiusKm",
+                  "value": "10"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "NearBy Shops By id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/services/1/shops?latitude=16.076532&longitude=108.224131&radiusKm=10&page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "services",
+                "1",
+                "shops"
+              ],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "16.076532"
+                },
+                {
+                  "key": "longitude",
+                  "value": "108.224131"
+                },
+                {
+                  "key": "radiusKm",
+                  "value": "10"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Public Shop Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/shops/1/public-profile",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "shops",
+                "1",
+                "public-profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Public Shop Service",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/shops/1/public-services?page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "shops",
+                "1",
+                "public-services"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Shop Review",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/shops/1/reviews?page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "shops",
+                "1",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notification",
+      "item": [
+        {
+          "name": "Notification",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_02c3}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/notifications/me?page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "notifications",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unread Notification",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0m7d}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/notifications/me/unread-count",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "notifications",
+                "me",
+                "unread-count"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unread Notifications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0iid}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/notifications/me?isRead=false&page=1&pageSize=20",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "notifications",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "isRead",
+                  "value": "false"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notification As Read",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0iid}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/notifications/me/3/read",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "notifications",
+                "me",
+                "3",
+                "read"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark All Notifications As Read",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0iid}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/notifications/me/read-all",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "notifications",
+                "me",
+                "read-all"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Schedule",
+      "item": [
+        {
+          "name": "Upcoming Repair",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0386}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/customers/me/upcoming-schedules",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "upcoming-schedules"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Messaging",
+      "item": [
+        {
+          "name": "Get List Messaging",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0386}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/conversations?page=1&pageSize=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "conversations"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Conversation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0iid}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"repairRequestId\": 1\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/conversations",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "conversations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0iid}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n{\r\n  \"content\": \"Xin chào Shop FixNear! Cảm ơn cửa hàng và kỹ thuật viên đã hoàn thành sửa chữa thiết bị của mình.\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/conversations/1/messages",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "conversations",
+                "1",
+                "messages"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Technician",
+      "item": [
+        {
+          "name": "Invitation",
+          "item": [
+            {
+              "name": "My Invitations",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02c3}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/technician/me/invitations?page=1&pageSize=10",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "technician",
+                    "me",
+                    "invitations"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "pageSize",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List My Shops",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02c3}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/technician/me/shops",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "technician",
+                    "me",
+                    "shops"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Accept Invitation",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_02c3}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:5150/api/technician/me/invitations/1/accept",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "technician",
+                    "me",
+                    "invitations",
+                    "1",
+                    "accept"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Supplemental Quote",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_1e4e}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"repairRequestId\": 1,\r\n  \"validUntil\": null,\r\n  \"details\": [\r\n    {\r\n      \"itemType\": 2,\r\n      \"repairItemRefId\": 1,\r\n      \"description\": \"Phát sinh thêm công đoạn xử lý và kiểm tra mạch cấp nguồn sau khi thay linh kiện.\",\r\n      \"quantity\": 1\r\n    }\r\n  ]\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:5150/api/quotes",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "5150",
+                  "path": [
+                    "api",
+                    "quotes"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Get My Assignment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_02c3}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/technician/assignments",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "technician",
+                "assignments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Accept Assignment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_02c3}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/technician/assignments/1/accept",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "technician",
+                "assignments",
+                "1",
+                "accept"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Start Survey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_02c3}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/technician/repairs/1/start-survey",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "technician",
+                "repairs",
+                "1",
+                "start-survey"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Complete Survey",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_02c3}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"diagnosis\": \"Điện thoại không lên nguồn do pin suy giảm và mạch cấp nguồn hoạt động không ổn định. Cần kiểm tra và thay thế linh kiện phù hợp.\",\r\n  \"recommendation\": \"Đề xuất thay pin, kiểm tra mạch nguồn và thực hiện các công việc sửa chữa sau khi Customer đồng ý báo giá.\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/technician/repairs/1/survey",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "technician",
+                "repairs",
+                "1",
+                "survey"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Quote",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_02c3}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n{\r\n  \"repairRequestId\": 1,\r\n  \"validUntil\": \"2026-11-25T17:00:00\",\r\n  \"details\": [\r\n    {\r\n      \"itemType\": 1,\r\n      \"serviceRefId\": 1,\r\n      \"description\": \"Dịch vụ kiểm tra và sửa chữa điện thoại mất nguồn\",\r\n      \"quantity\": 1\r\n    },\r\n    {\r\n      \"itemType\": 2,\r\n      \"repairItemRefId\": 1,\r\n      \"description\": \"Công kiểm tra và xử lý mạch nguồn\",\r\n      \"quantity\": 1\r\n    },\r\n    {\r\n      \"itemType\": 3,\r\n      \"repairPartRefId\": 1,\r\n      \"description\": \"Linh kiện thay thế cho thiết bị\",\r\n      \"quantity\": 1\r\n    }\r\n  ]\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/quotes",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "quotes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Quote Detail",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_1e4e}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/quotes/2",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "quotes",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Start Repair",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_1e4e}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5150/api/technician/repairs/1/start-repair",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "technician",
+                "repairs",
+                "1",
+                "start-repair"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Record Repair Part Usage",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_1e4e}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"repairRequestId\": 1,\r\n  \"repairPartId\": 1,\r\n  \"quantity\": 1,\r\n  \"note\": \"Đã thay linh kiện theo báo giá gốc được Customer chấp nhận. Kiểm tra thiết bị hoạt động ổn định.\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/technician/repairs/1/parts",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "technician",
+                "repairs",
+                "1",
+                "parts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Complete Repair",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{json_web_token_0qij}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"result\": \"Đã hoàn thành sửa chữa điện thoại mất nguồn. Thiết bị đã khởi động và hoạt động ổn định.\",\r\n  \"workDescription\": \"Đã kiểm tra mạch nguồn, thay linh kiện theo báo giá gốc và thực hiện xử lý bổ sung theo báo giá đã được khách hàng chấp nhận.\",\r\n  \"recommendation\": \"Khách hàng nên sử dụng bộ sạc phù hợp và theo dõi tình trạng thiết bị trong những ngày đầu.\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5150/api/technician/repairs/1/complete",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5150",
+              "path": [
+                "api",
+                "technician",
+                "repairs",
+                "1",
+                "complete"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "json_web_token_0zbs",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_07km",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0lva",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_04z1",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0386",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_02ys",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_063v",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_02c3",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_12pb",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_1e4e",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0u3p",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0y93",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0qij",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_01bv",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0m7d",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0iid",
+      "secret": true
+    }
+  ]
+}
