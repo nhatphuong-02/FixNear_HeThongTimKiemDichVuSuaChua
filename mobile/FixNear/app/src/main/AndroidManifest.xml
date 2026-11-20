@@ -53,6 +53,12 @@
         <activity
             android:name=".ui.manager.ShopProfileActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.manager.ShopMembersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.manager.ShopServicesActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -503,7 +503,36 @@
                 android:textSize="15sp"
                 android:clickable="true"
                 android:focusable="true"/>
-
+            <TextView
+                android:id="@+id/btnManageMembers"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/fixnear_manager_cream_card"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:text="♙   Quản lý thành viên     ›"
+                android:textColor="#66442F"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+            <TextView
+                android:id="@+id/btnManageServices"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/fixnear_manager_cream_card"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:text="⚙   Quản lý dịch vụ &amp; giá     ›"
+                android:textColor="#66442F"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"/>
             <TextView
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"

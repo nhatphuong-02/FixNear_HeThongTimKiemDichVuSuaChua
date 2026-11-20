@@ -195,6 +195,44 @@ class ManagerHomeActivity : AppCompatActivity() {
             sessionManager.clearSession()
             goToLogin()
         }
+        binding.btnManageMembers.setOnClickListener {
+            openShopMembers()
+        }
+        binding.btnManageServices.setOnClickListener {
+            openShopServices()
+        }
+    }
+    private fun openShopMembers() {
+        if (shops.isEmpty()) {
+            showMessage("Chưa tải được cửa hàng")
+            return
+        }
+
+        val shop = shops.first()
+
+        val intent = Intent(
+            this,
+            ShopMembersActivity::class.java
+        ).apply {
+            putExtra("SHOP_ID", shop.shopId)
+            putExtra("SHOP_ROLE", shop.currentUserRole)
+        }
+
+        startActivity(intent)
+    }
+    private fun openShopServices() {
+        val shop = shops.firstOrNull()
+
+        val intent = Intent(
+            this,
+            ShopServicesActivity::class.java
+        ).apply {
+            putExtra("SHOP_ID", shop?.shopId ?: -1)
+            putExtra("SHOP_ROLE", shop?.currentUserRole ?: 0)
+            putExtra("MANAGER_ID", -1)
+        }
+
+        startActivity(intent)
     }
 
     private fun loadShops() {
