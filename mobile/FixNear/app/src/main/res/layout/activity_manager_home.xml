@@ -512,7 +512,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="18dp"
                 android:paddingEnd="18dp"
-                android:text="♙   Quản lý thành viên     ›"
+                android:text="♙   Quản lý kỹ thuật viên     ›"
                 android:textColor="#66442F"
                 android:textSize="15sp"
                 android:textStyle="bold"

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/fixnear_customer_cream"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="15dp"
+    android:paddingEnd="15dp"
+    android:paddingTop="14dp"
+    android:paddingBottom="14dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- ICON -->
+    <TextView
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:gravity="center"
+        android:text="⚙"
+        android:textColor="#A5652B"
+        android:textSize="23sp"/>
+
+    <!-- NỘI DUNG DỊCH VỤ -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="10dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvServiceName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tên dịch vụ"
+            android:textColor="#251A14"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"/>
+
+        <TextView
+            android:id="@+id/tvServiceCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Danh mục"
+            android:textColor="#A5652B"
+            android:textSize="12sp"/>
+
+        <TextView
+            android:id="@+id/tvServiceDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Mô tả dịch vụ"
+            android:textColor="#8B7160"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+    </LinearLayout>
+
+    <!-- MŨI TÊN -->
+    <TextView
+        android:layout_width="28dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="›"
+        android:textColor="#A5652B"
+        android:textSize="27sp"/>
+
+</LinearLayout>
