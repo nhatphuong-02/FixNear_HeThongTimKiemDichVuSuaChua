@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="#151210"
+    android:fitsSystemWindows="true" android:padding="18dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="54dp"
+        android:gravity="center_vertical" android:orientation="horizontal">
+        <TextView android:id="@+id/btnBack" android:layout_width="48dp" android:layout_height="48dp"
+            android:gravity="center" android:text="‹" android:textSize="32sp" android:textColor="#FFF4EA"/>
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:gravity="center" android:text="Chi tiết báo giá" android:textStyle="bold"
+            android:textSize="19sp" android:textColor="#D8975B"/>
+        <TextView android:id="@+id/btnRefresh" android:layout_width="52dp" android:layout_height="48dp"
+            android:gravity="center" android:text="↻" android:textSize="27sp" android:textColor="#FFF4EA"/>
+    </LinearLayout>
+    <ProgressBar android:id="@+id/progress" android:layout_width="match_parent" android:layout_height="3dp"
+        android:indeterminateTint="#D8975B" android:visibility="gone"/>
+    <TextView android:id="@+id/tvState" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="14dp" android:layout_marginBottom="12dp"
+        android:textColor="#C7B9AF" android:textSize="13sp" android:text="Đang tải..."/>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:fillViewport="true">
+        <LinearLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:paddingBottom="22dp"/>
+    </ScrollView>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+    <Button android:id="@+id/btnReject" android:layout_width="0dp" android:layout_weight="1" android:layout_height="52dp"
+        android:text="Từ chối" android:textAllCaps="false" android:textColor="#FFF4EA"
+        android:backgroundTint="#6B3F38" android:visibility="gone"/>
+    <Space android:layout_width="10dp" android:layout_height="1dp"/>
+    <Button android:id="@+id/btnAccept" android:layout_width="0dp" android:layout_weight="1" android:layout_height="52dp"
+        android:text="Chấp nhận" android:textAllCaps="false" android:textColor="#20160D"
+        android:backgroundTint="#D8975B" android:visibility="gone"/>
+</LinearLayout>
+</LinearLayout>

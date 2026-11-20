@@ -1,9 +1,12 @@
-
 package com.example.fixnear.ui.home
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -53,7 +56,30 @@ class HomeActivity : AppCompatActivity() {
         loadCustomerProfile()
     }
 
+    override fun onResume() {
+        super.onResume()
+        loadNotificationCount()
+    }
+
+    private fun loadNotificationCount() {
+        val raw = sessionManager.getToken()?.takeIf { it.isNotBlank() } ?: return
+        val token = if (raw.startsWith("Bearer ", true)) raw else "Bearer $raw"
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.customerNotificationsApi.unreadCount(token)
+                if (response.isSuccessful) {
+                    val count = response.body()?.unreadCount ?: 0
+                    binding.tvNotificationBadge.text = if (count > 99) "99+" else count.toString()
+                    binding.tvNotificationBadge.visibility = if (count > 0) View.VISIBLE else View.GONE
+                }
+            } catch (_: Exception) { }
+        }
+    }
+
     private fun setupNavigation() {
+        binding.btnNotifications.setOnClickListener {
+            startActivity(Intent(this, CustomerNotificationsActivity::class.java))
+        }
         binding.navHome.setOnClickListener {
             binding.homeScroll.smoothScrollTo(0, 0)
         }
@@ -68,8 +94,7 @@ class HomeActivity : AppCompatActivity() {
             openCatalog()
         }
 
-        binding.edtSearchService.setOnEditorActionListener {
-                _, _, _ ->
+        binding.edtSearchService.setOnEditorActionListener { _, _, _ ->
             openCatalog(
                 searchQuery = binding.edtSearchService.text.toString()
             )
@@ -88,6 +113,13 @@ class HomeActivity : AppCompatActivity() {
             showServicePicker()
         }
 
+        binding.btnMyRequests.setOnClickListener {
+            startActivity(Intent(this, CustomerRepairRequestsActivity::class.java))
+        }
+        binding.btnUpcomingSchedules.setOnClickListener {
+            startActivity(Intent(this, CustomerUpcomingSchedulesActivity::class.java))
+        }
+
         binding.navAccount.setOnClickListener {
             openProfile()
         }
@@ -97,11 +129,7 @@ class HomeActivity : AppCompatActivity() {
         }
 
         binding.navMessages.setOnClickListener {
-            Toast.makeText(
-                this,
-                "Chức năng tin nhắn đang phát triển",
-                Toast.LENGTH_SHORT
-            ).show()
+            startActivity(Intent(this, CustomerConversationsActivity::class.java))
         }
     }
 
@@ -118,20 +146,16 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun openProfile() {
-        startActivity(
-            Intent(this, ProfileActivity::class.java)
-        )
+        startActivity(Intent(this, ProfileActivity::class.java))
     }
 
     private fun setupGreeting() {
         val name = sessionManager.getFullName()
-
-        binding.tvGreeting.text =
-            if (name.isNullOrBlank()) {
-                "Xin chào!"
-            } else {
-                "Xin chào, $name!"
-            }
+        binding.tvGreeting.text = if (name.isNullOrBlank()) {
+            "Xin chào!"
+        } else {
+            "Xin chào, $name!"
+        }
     }
 
     private fun loadCategories() {
@@ -140,27 +164,17 @@ class HomeActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val response =
-                    RetrofitClient.customerCatalogApi.getCategories()
-
+                val response = RetrofitClient.customerCatalogApi.getCategories()
                 if (response.isSuccessful) {
                     val categories = response.body().orEmpty()
-
                     categoryBannerAdapter.submitCategories(categories)
-
-                    binding.tvCategoryState.visibility =
-                        if (categories.isEmpty())
-                            View.VISIBLE else View.GONE
-
-                    binding.tvCategoryState.text =
-                        "Chưa có danh mục trên hệ thống"
+                    binding.tvCategoryState.visibility = if (categories.isEmpty()) View.VISIBLE else View.GONE
+                    binding.tvCategoryState.text = "Chưa có danh mục trên hệ thống"
                 } else {
-                    binding.tvCategoryState.text =
-                        "Lỗi HTTP ${response.code()}"
+                    binding.tvCategoryState.text = "Lỗi HTTP ${response.code()}"
                 }
             } catch (e: Exception) {
-                binding.tvCategoryState.text =
-                    "Không tải được danh mục: ${e.localizedMessage}"
+                binding.tvCategoryState.text = "Không tải được danh mục: ${e.localizedMessage}"
             }
         }
     }
@@ -168,9 +182,7 @@ class HomeActivity : AppCompatActivity() {
     private fun loadServicesForPicker() {
         lifecycleScope.launch {
             try {
-                val response =
-                    RetrofitClient.customerCatalogApi.getServices()
-
+                val response = RetrofitClient.customerCatalogApi.getServices()
                 if (response.isSuccessful) {
                     allServices = response.body().orEmpty()
                 }
@@ -190,20 +202,35 @@ class HomeActivity : AppCompatActivity() {
             return
         }
 
-        val names = allServices.map {
-            "${it.serviceName} • ${it.categoryName}"
-        }.toTypedArray()
+        val labels = allServices.map {
+            "${it.serviceName}\n${it.categoryName}"
+        }
+
+        val adapter = object : ArrayAdapter<String>(
+            this,
+            android.R.layout.simple_list_item_1,
+            labels
+        ) {
+            override fun getView(
+                position: Int,
+                convertView: View?,
+                parent: ViewGroup
+            ): View {
+                val tv = super.getView(position, convertView, parent) as TextView
+                tv.text = labels[position]
+                tv.setTextColor(Color.parseColor("#2C201A"))
+                tv.textSize = 15f
+                tv.setPadding(32, 28, 32, 28)
+                return tv
+            }
+        }
 
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Chọn dịch vụ cần sửa")
-            .setItems(names) { _, index ->
+            .setTitle("Chọn dịch vụ cần quét")
+            .setAdapter(adapter) { _, index ->
                 val service = allServices[index]
-
                 startActivity(
-                    Intent(
-                        this,
-                        NearbyShopsActivity::class.java
-                    ).apply {
+                    Intent(this, NearbyShopsActivity::class.java).apply {
                         putExtra("SERVICE_ID", service.serviceId)
                         putExtra("SERVICE_NAME", service.serviceName)
                     }
@@ -213,11 +240,9 @@ class HomeActivity : AppCompatActivity() {
             .create()
 
         dialog.show()
-        dialog.window?.setBackgroundDrawableResource(
-            com.example.fixnear.R.drawable.fixnear_dialog_bg
-        )
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-            ?.setTextColor(0xFFA5652B.toInt())
+        dialog.window?.setBackgroundDrawableResource(com.example.fixnear.R.drawable.fixnear_dialog_bg)
+        dialog.findViewById<TextView>(androidx.appcompat.R.id.alertTitle)?.setTextColor(Color.parseColor("#66442F"))
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(Color.parseColor("#A5652B"))
     }
 
     private fun loadCustomerProfile() {
@@ -228,44 +253,28 @@ class HomeActivity : AppCompatActivity() {
             return
         }
 
-        val token =
-            if (rawToken.startsWith("Bearer ", ignoreCase = true))
-                rawToken
-            else
-                "Bearer $rawToken"
+        val token = if (rawToken.startsWith("Bearer ", ignoreCase = true)) {
+            rawToken
+        } else {
+            "Bearer $rawToken"
+        }
 
         lifecycleScope.launch {
             try {
-                val response =
-                    RetrofitClient.customerApi.getProfile(token)
+                val response = RetrofitClient.customerApi.getProfile(token)
 
                 if (response.isSuccessful) {
                     response.body()?.let { profile ->
-                        binding.tvGreeting.text =
-                            "Xin chào, ${profile.fullName}!"
-
-                        binding.tvAddress.text =
-                            profile.addressLine
-                                ?.takeIf { it.isNotBlank() }
-                                ?: "Chưa thiết lập địa chỉ"
+                        binding.tvGreeting.text = "Xin chào, ${profile.fullName}!"
+                        binding.tvAddress.text = profile.addressLine?.takeIf { it.isNotBlank() }
+                            ?: "Chưa thiết lập địa chỉ"
                     }
                 } else {
-                    binding.tvAddress.text =
-                        "Chưa tải được địa chỉ"
+                    binding.tvAddress.text = "Chưa tải được địa chỉ"
                 }
             } catch (_: Exception) {
-                binding.tvAddress.text =
-                    "Không kết nối được hồ sơ khách hàng"
+                binding.tvAddress.text = "Không kết nối được hồ sơ khách hàng"
             }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        if (::sessionManager.isInitialized) {
-            setupGreeting()
-            loadCustomerProfile()
         }
     }
 }

@@ -1,6 +1,5 @@
 
 package com.example.fixnear.ui.manager
-
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
