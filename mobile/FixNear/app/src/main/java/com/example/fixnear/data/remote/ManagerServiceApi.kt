@@ -48,4 +48,10 @@ interface ManagerServiceApi {
         @Query("shopId") shopId: Int,
         @Body request: AddServicePriceRequest
     ): Response<JsonElement>
+
+    @GET("api/shops/{shopId}/profile")
+    suspend fun getShopProfile(
+        @Header("Authorization") token: String,
+        @Path("shopId") shopId: Int
+    ): Response<JsonElement>
 }

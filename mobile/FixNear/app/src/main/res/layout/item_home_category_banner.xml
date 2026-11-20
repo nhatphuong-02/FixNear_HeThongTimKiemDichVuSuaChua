@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="255dp"
+    android:layout_height="match_parent"
+    android:layout_marginEnd="12dp"
+    android:background="@drawable/fixnear_customer_cream"
+    android:orientation="vertical"
+    android:padding="18dp">
+
+    <TextView
+        android:id="@+id/tvCategoryIcon"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:gravity="center"
+        android:text="⚙"
+        android:textColor="#A5652B"
+        android:textSize="25sp"/>
+
+    <TextView
+        android:id="@+id/tvCategoryName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="9dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="Điện lạnh"
+        android:textColor="#251A14"
+        android:textSize="17sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tvCategoryDescription"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="5dp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:text="Các dịch vụ sửa chữa phù hợp"
+        android:textColor="#8B7160"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/tvCategoryAction"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Xem dịch vụ ›"
+        android:textColor="#A5652B"
+        android:textSize="12sp"
+        android:textStyle="bold"/>
+
+</LinearLayout>
