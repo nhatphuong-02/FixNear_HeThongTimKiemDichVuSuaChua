@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp" android:padding="16dp"
+    android:orientation="vertical" android:background="@drawable/fixnear_shop_service_card">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical">
+        <TextView android:id="@+id/tvCustomer" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" android:text="Khách hàng"
+            android:textSize="15sp" android:textStyle="bold" android:textColor="#FFF8F1"/>
+        <TextView android:id="@+id/tvDate" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#C7B9AF" android:textSize="12sp"/>
+    </LinearLayout>
+    <TextView android:id="@+id/tvStars" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:layout_marginTop="9dp"
+        android:textColor="#D8975B" android:textSize="20sp"/>
+    <TextView android:id="@+id/tvComment" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:layout_marginTop="8dp"
+        android:textColor="#FFF4EA" android:textSize="14sp"/>
+    <ImageView android:id="@+id/imgReview" android:layout_width="match_parent"
+        android:layout_height="170dp" android:layout_marginTop="10dp"
+        android:scaleType="centerCrop" android:contentDescription="Ảnh đánh giá"
+        android:visibility="gone"/>
+    <TextView android:id="@+id/tvImagesCount" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:layout_marginTop="4dp"
+        android:textColor="#D8975B" android:textSize="12sp" android:visibility="gone"/>
+</LinearLayout>

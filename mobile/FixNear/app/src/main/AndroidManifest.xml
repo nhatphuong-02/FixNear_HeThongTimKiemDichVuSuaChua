@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -15,60 +16,43 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Fixnear"
         android:usesCleartextTraffic="true">
+
         <activity
             android:name=".ui.splash.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.Fixnear.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.home.HomeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.auth.LoginActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize"></activity>
-        <activity
-            android:name=".ui.auth.RegisterActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".ui.profile.ProfileActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".ui.auth.ChooseRegisterRoleActivity"
-            android:exported="false" />
 
-        <activity
-            android:name=".ui.auth.RoleRegisterActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.manager.ManagerHomeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.manager.ShopProfileActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.manager.ShopMembersActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.manager.ShopServicesActivity"
-            android:exported="false"/>
-        <activity
-            android:name=".ui.home.NearbyShopsActivity"
-            android:exported="false"/>
-        <activity
-            android:name=".ui.home.CustomerCatalogActivity"
-            android:exported="false"/>
-        <activity
-            android:name=".ui.manager.ManagerRepairRequestsActivity"
-            android:exported="false" />
+        <activity android:name=".ui.home.CustomerRepairRequestsActivity" android:exported="false" />
+        <activity android:name=".ui.home.CustomerRepairDetailActivity" android:exported="false" />
+        <activity android:name=".ui.home.CustomerUpcomingSchedulesActivity" android:exported="false" />
+        <activity android:name=".ui.home.CreateRepairRequestActivity" android:exported="false" />
+        <activity android:name=".ui.home.ShopDetailActivity" android:exported="false" />
+        <activity android:name=".ui.home.ShopReviewsActivity" android:exported="false" />
+        <activity android:name=".ui.home.HomeActivity" android:exported="false" />
+        <activity android:name=".ui.auth.LoginActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.auth.RegisterActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.profile.ProfileActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.auth.ChooseRegisterRoleActivity" android:exported="false" />
+        <activity android:name=".ui.auth.RoleRegisterActivity" android:exported="false" />
+        <activity android:name=".ui.manager.ManagerHomeActivity" android:exported="false" />
+        <activity android:name=".ui.manager.ShopProfileActivity" android:exported="false" />
+        <activity android:name=".ui.manager.ShopMembersActivity" android:exported="false" />
+        <activity android:name=".ui.manager.ShopServicesActivity" android:exported="false" />
+        <activity android:name=".ui.home.NearbyShopsActivity" android:exported="false" />
+        <activity android:name=".ui.home.CustomerCatalogActivity" android:exported="false" />
+        <activity android:name=".ui.manager.ManagerRepairRequestsActivity" android:exported="false" />
+        <activity android:name=".ui.home.CustomerQuoteDetailActivity" android:exported="false" />
+        <activity android:name=".ui.home.CustomerQuotesActivity" android:exported="false" />
+        <activity android:name=".ui.home.CustomerConversationsActivity" android:exported="false" />
+        <activity android:name=".ui.home.CustomerChatActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.home.CustomerNotificationsActivity" android:exported="false" />
+        <activity android:name=".ui.home.CustomerBillingActivity" android:exported="false" />
+        <activity android:name=".ui.home.CustomerReviewActivity" android:exported="false" />
     </application>
 
 </manifest>

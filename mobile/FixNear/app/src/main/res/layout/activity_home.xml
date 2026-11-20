@@ -60,6 +60,42 @@
 
         </LinearLayout>
 
+        <!-- NÚT THÔNG BÁO VÀ HUY HIỆU CHƯA ĐỌC -->
+        <FrameLayout
+            android:id="@+id/btnNotifications"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginEnd="10dp"
+            android:contentDescription="Xem thông báo"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="center"
+                android:background="@drawable/fixnear_role_card"
+                android:src="@drawable/fixnear_ic_bell"
+                android:tint="#D8975B"
+                android:padding="12dp"
+                android:contentDescription="Biểu tượng thông báo" />
+            <TextView
+                android:id="@+id/tvNotificationBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:background="@drawable/fixnear_pill_gold"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:gravity="center"
+                android:minWidth="19dp"
+                android:minHeight="19dp"
+                android:text="0"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="#291B13"
+                android:visibility="gone" />
+        </FrameLayout>
+
         <!-- AVATAR -->
         <ImageView
             android:id="@+id/tvProfileAvatar"
@@ -186,6 +222,42 @@
           android:textColor="#FFFFFF"
           android:textSize="14sp"
           android:textStyle="bold"/>
+
+      <!-- CUSTOMER: YÊU CẦU VÀ LỊCH SỬA CHỮA -->
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="14dp"
+          android:orientation="horizontal">
+
+          <androidx.appcompat.widget.AppCompatButton
+              android:id="@+id/btnMyRequests"
+              android:layout_width="0dp"
+              android:layout_height="54dp"
+              android:layout_weight="1"
+              android:background="@drawable/fixnear_customer_cream"
+              android:backgroundTint="@null"
+              android:text="Yêu cầu của tôi"
+              android:textAllCaps="false"
+              android:textColor="#66442F"
+              android:textSize="13sp"
+              android:textStyle="bold" />
+
+          <Space android:layout_width="10dp" android:layout_height="1dp" />
+
+          <androidx.appcompat.widget.AppCompatButton
+              android:id="@+id/btnUpcomingSchedules"
+              android:layout_width="0dp"
+              android:layout_height="54dp"
+              android:layout_weight="1"
+              android:background="@drawable/fixnear_customer_cream"
+              android:backgroundTint="@null"
+              android:text="Lịch sắp tới"
+              android:textAllCaps="false"
+              android:textColor="#66442F"
+              android:textSize="13sp"
+              android:textStyle="bold" />
+      </LinearLayout>
 
       <!-- DANH MỤC DỊCH VỤ -->
       <LinearLayout
