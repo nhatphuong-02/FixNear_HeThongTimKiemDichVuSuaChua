@@ -4,6 +4,25 @@ namespace FixNear.Features.Manager.Interfaces;
 
 public interface IManagerService
 {
+    #region T01 - Xem thông tin cửa hàng
+
+    Task<object> GetShopsAsync(int managerId);
+
+    Task<object?> GetShopAsync(
+        int managerId,
+        int shopId);
+
+    #endregion
+
+    #region T02 - Cập nhật thông tin cửa hàng
+
+    Task<bool> UpdateShopAsync(
+        int managerId,
+        int shopId,
+        UpdateShopDto dto);
+
+    #endregion
+
     #region T03 - Quản lý ảnh cửa hàng
 
     Task<object> GetShopImagesAsync(
@@ -89,6 +108,35 @@ public interface IManagerService
         UpdateServicePriceDto dto);
 
     #endregion
+
+    #region T06 - Quản lý kỹ thuật viên
+
+Task<object?> GetTechniciansAsync(
+    int managerId,
+    int shopId);
+
+Task<object?> GetTechnicianAsync(
+    int managerId,
+    int shopId,
+    int technicianId);
+
+Task<object?> AddTechnicianAsync(
+    int managerId,
+    int shopId,
+    AddTechnicianToShopDto dto);
+
+Task<bool> UpdateTechnicianAsync(
+    int managerId,
+    int shopId,
+    int technicianId,
+    UpdateTechnicianShopDto dto);
+
+Task<bool> RemoveTechnicianAsync(
+    int managerId,
+    int shopId,
+    int technicianId);
+
+#endregion
 
     #region T07 - Xem danh sách yêu cầu sửa chữa
 

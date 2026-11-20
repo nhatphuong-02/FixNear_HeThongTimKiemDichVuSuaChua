@@ -12,9 +12,9 @@ import com.example.fixnear.data.remote.RetrofitClient
 import com.example.fixnear.databinding.ActivityLoginBinding
 import com.example.fixnear.helper.setupPasswordToggle
 import com.example.fixnear.ui.home.HomeActivity
+import com.example.fixnear.ui.manager.ManagerHomeActivity
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
@@ -156,10 +156,27 @@ class LoginActivity : AppCompatActivity() {
                     ).show()
 
                     // Chuyển sang màn hình Home
+
+                    val destination = when (loginData.roleType) {
+                        1 -> HomeActivity::class.java
+
+                        2 -> ManagerHomeActivity::class.java
+
+                        else -> {
+                            Toast.makeText(
+                                this@LoginActivity,
+                                "Vai trò này chưa có trang chủ",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            return@launch
+                        }
+                    }
+
                     val intent = Intent(
                         this@LoginActivity,
-                        HomeActivity::class.java
+                        destination
                     )
+
 
                     intent.flags =
                         Intent.FLAG_ACTIVITY_NEW_TASK or
@@ -194,7 +211,7 @@ class LoginActivity : AppCompatActivity() {
                 }
 
             } catch (e: Exception) {
-
+                Log.e("FIXNEAR_LOGIN", "Lỗi đăng nhập", e)
                 Log.e(
                     "LOGIN_ERROR",
                     "Lỗi gọi API đăng nhập",

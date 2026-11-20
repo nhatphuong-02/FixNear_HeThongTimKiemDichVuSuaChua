@@ -16,53 +16,81 @@
         android:paddingTop="20dp"
         android:paddingBottom="28dp">
 
-        <!-- Logo -->
+
+        <!-- THANH TRÊN: GIỐNG SHOP / TECH -->
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <!-- Nút quay lại -->
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:text="‹"
+                android:textSize="32sp"
+                android:textColor="#FFF4EA"
+                android:background="@drawable/fixnear_role_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Quay lại"/>
+
+            <!-- Logo căn giữa -->
+            <TextView
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Fix"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="FixNear"
+                android:textSize="20sp"
                 android:textColor="#D8975B"
-                android:textSize="24sp"
                 android:textStyle="bold"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Near"
-                android:textColor="#FFF4EA"
-                android:textSize="24sp"
-                android:textStyle="bold"/>
+            <!-- Cân bằng với nút bên trái -->
+            <View
+                android:layout_width="48dp"
+                android:layout_height="1dp"/>
+
         </LinearLayout>
 
-        <!-- Tiêu đề -->
+        <!-- NHÃN VAI TRÒ -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="7dp"
+            android:paddingBottom="7dp"
+            android:background="@drawable/fixnear_role_card"
+            android:text="Tài khoản khách hàng"
+            android:textColor="#E8AE7A"
+            android:textSize="12sp"/>
+
+        <!-- TIÊU ĐỀ -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="13dp"
             android:text="Tạo tài khoản"
-            android:textColor="#FFF4EA"
             android:textSize="27sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:textColor="#FFF4EA"/>
 
-        <View
-            android:layout_width="42dp"
-            android:layout_height="3dp"
-            android:layout_marginTop="9dp"
-            android:background="#D8975B"/>
-
+        <!-- MÔ TẢ -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="22dp"
             android:text="Tham gia FixNear để kết nối với dịch vụ sửa chữa gần bạn."
-            android:textColor="#C5B6AA"
             android:textSize="13sp"
-            android:lineSpacingExtra="3dp"/>
+            android:lineSpacingExtra="3dp"
+            android:textColor="#C7B9AF"/>
+
 
         <!-- Form đăng ký -->
         <LinearLayout

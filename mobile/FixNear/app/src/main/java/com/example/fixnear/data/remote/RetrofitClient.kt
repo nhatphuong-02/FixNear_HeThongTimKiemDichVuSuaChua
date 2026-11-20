@@ -5,7 +5,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    private const val BASE_URL = "http://192.168.100.102:5150/"
+    private const val BASE_URL = "http://192.168.1.51:5150/"
 
     val authApi: AuthApi by lazy {
         Retrofit.Builder()
@@ -29,5 +29,12 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(LocationApi::class.java)
+    }
+    val shopApi: ShopApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ShopApi::class.java)
     }
 }

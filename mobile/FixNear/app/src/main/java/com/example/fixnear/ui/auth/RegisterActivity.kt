@@ -315,7 +315,7 @@ class RegisterActivity : AppCompatActivity() {
             binding.radioGroupGender.checkedRadioButtonId
         ) {
             binding.rbMale.id -> 1
-            binding.rbFemale.id -> 2
+            binding.rbFemale.id -> 0
             else -> {
                 Toast.makeText(
                     this,
@@ -374,7 +374,9 @@ class RegisterActivity : AppCompatActivity() {
             password = password,
             provinceId = selectedProvinceId,
             wardId = selectedWardId,
-            addressLine = addressLine
+            addressLine = addressLine,
+            recipientName = fullName,
+            recipientPhone = phone
         )
 
         callRegisterApi(request)
@@ -393,12 +395,14 @@ class RegisterActivity : AppCompatActivity() {
                     Toast.makeText(
                         this@RegisterActivity,
                         response.body()?.message
-                            ?: "Đăng ký thành công",
+                            ?: "Vui lòng kiểm tra email để nhập OTP",
                         Toast.LENGTH_LONG
                     ).show()
 
-                    finish()
-
+                    RegistrationOtpHelper.show(
+                        this@RegisterActivity,
+                        request.email
+                    )
                 } else {
                     val errorBody = response.errorBody()?.string()
 
