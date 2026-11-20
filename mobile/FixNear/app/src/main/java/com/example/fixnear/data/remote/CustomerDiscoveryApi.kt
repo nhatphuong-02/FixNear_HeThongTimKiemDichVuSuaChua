@@ -13,6 +13,9 @@ interface CustomerDiscoveryApi {
         @Path("serviceId") serviceId: Int,
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
-        @Query("radiusKm") radiusKm: Double = 10.0
+        @Query("radiusKm") radiusKm: Double = 10.0,
+        @Query("keyword") keyword: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("pageSize") pageSize: Int = 10
     ): Response<JsonElement>
 }
