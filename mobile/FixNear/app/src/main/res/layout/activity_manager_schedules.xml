@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#151210"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
+
+        <TextView
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:background="@drawable/fixnear_role_card"
+            android:text="‹"
+            android:textColor="#FFF4EA"
+            android:textSize="30sp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="FixNear"
+            android:textColor="#D8975B"
+            android:textSize="21sp"
+            android:textStyle="bold"/>
+
+        <View
+            android:layout_width="48dp"
+            android:layout_height="1dp"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="18dp"
+        android:text="Lịch phân công"
+        android:textColor="#FFF4EA"
+        android:textSize="24sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tvShopInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="7dp"
+        android:text="Lịch sửa chữa của cửa hàng"
+        android:textColor="#B9A79B"
+        android:textSize="13sp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="22dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tabCurrent"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@drawable/fixnear_role_card"
+            android:gravity="center"
+            android:text="Lịch hiện tại"
+            android:textColor="#D8975B"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tabHistory"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/fixnear_role_card"
+            android:gravity="center"
+            android:text="Kèm lịch sử"
+            android:textColor="#C7B9AF"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="22dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvScheduleCount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Danh sách lịch"
+            android:textColor="#FFF4EA"
+            android:textSize="17sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/btnRefresh"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:paddingHorizontal="10dp"
+            android:text="Làm mới"
+            android:textColor="#D8975B"
+            android:textSize="13sp"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="Đang tải lịch sửa chữa..."
+        android:textColor="#B9A79B"
+        android:textSize="13sp"/>
+
+    <ProgressBar
+        android:id="@+id/progressLoading"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:indeterminateTint="#D8975B"
+        android:visibility="gone"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSchedules"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="12dp"
+        android:paddingBottom="18dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        tools:listitem="@layout/item_manager_schedule"/>
+
+</LinearLayout>

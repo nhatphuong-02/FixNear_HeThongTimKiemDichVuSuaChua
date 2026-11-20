@@ -69,6 +69,15 @@
         <activity
             android:name=".ui.manager.ManagerRepairRequestsActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.manager.ManagerRepairDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.manager.ManagerSchedulesActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.manager.ManagerAssignActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>

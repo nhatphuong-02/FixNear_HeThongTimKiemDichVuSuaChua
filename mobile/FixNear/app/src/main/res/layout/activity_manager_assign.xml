@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#151210"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:background="@drawable/fixnear_role_card"
+            android:text="‹"
+            android:textColor="#FFF4EA"
+            android:textSize="30sp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="FixNear"
+            android:textColor="#D8975B"
+            android:textStyle="bold"
+            android:textSize="21sp"/>
+
+        <View
+            android:layout_width="48dp"
+            android:layout_height="1dp"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="20dp"
+        android:text="Phân công kỹ thuật viên"
+        android:textColor="#FFF4EA"
+        android:textStyle="bold"
+        android:textSize="23sp"/>
+
+    <TextView
+        android:id="@+id/tvRequestInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="8dp"
+        android:text="Yêu cầu sửa chữa"
+        android:textColor="#D8975B"
+        android:textSize="14sp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="26dp"
+        android:text="Chọn kỹ thuật viên"
+        android:textColor="#FFF4EA"
+        android:textSize="18sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tvState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="12dp"
+        android:text="Đang chuẩn bị danh sách nhân viên..."
+        android:textColor="#B9A79B"
+        android:textSize="13sp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvTechnicians"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="12dp"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:orientation="vertical"
+        android:background="#302925">
+
+        <TextView
+            android:id="@+id/tvSelected"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chưa chọn kỹ thuật viên"
+            android:textColor="#FFF4EA"
+            android:textSize="13sp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnAssign"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/fixnear_register_button"
+            android:backgroundTint="@null"
+            android:text="Xác nhận phân công"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:enabled="false"/>
+    </LinearLayout>
+</LinearLayout>

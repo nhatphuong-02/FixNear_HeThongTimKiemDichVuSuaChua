@@ -46,14 +46,36 @@
                         android:textSize="29sp"
                         android:textStyle="bold"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="QUẢN LÝ"
-                        android:textColor="#D8975B"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:padding="10dp"/>
+                    <FrameLayout
+                        android:id="@+id/layoutNotification"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                        <ImageView
+                            android:id="@+id/ivNotification"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_notification_bell"
+                            android:tint="#D8975B"
+                            android:contentDescription="Thông báo" />
+
+                        <TextView
+                            android:id="@+id/tvNotificationBadge"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="top|end"
+                            android:gravity="center"
+                            android:background="@drawable/bg_notification_badge"
+                            android:text="0"
+                            android:textColor="#FFFFFF"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
                 </LinearLayout>
 
                 <!-- LỜI CHÀO -->
@@ -533,6 +555,44 @@
                 android:textStyle="bold"
                 android:clickable="true"
                 android:focusable="true"/>
+
+            <LinearLayout
+                android:id="@+id/rowCustomerChats"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/fixnear_manager_cream_card"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="18dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="34dp"
+                    android:layout_height="wrap_content"
+                    android:text="✉"
+                    android:textColor="#A5652B"
+                    android:textSize="25sp"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Tin nhắn khách hàng"
+                    android:textColor="#251A14"
+                    android:textSize="15sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="›"
+                    android:textColor="#A5652B"
+                    android:textSize="28sp"/>
+
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"

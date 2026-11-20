@@ -21,6 +21,7 @@ import com.example.fixnear.data.model.customer.NearbyShopItem
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import android.util.Log
 
 class NearbyShopsActivity : AppCompatActivity() {
 
@@ -232,6 +233,12 @@ class NearbyShopsActivity : AppCompatActivity() {
         latitude: Double,
         longitude: Double
     ) {
+        Log.d(
+            "FIXNEAR_GPS",
+            "serviceId=$serviceId, " +
+                    "latitude=$latitude, " +
+                    "longitude=$longitude, radiusKm=10"
+        )
         showState("Đang tìm tiệm sửa chữa gần bạn...", true)
 
         lifecycleScope.launch {
