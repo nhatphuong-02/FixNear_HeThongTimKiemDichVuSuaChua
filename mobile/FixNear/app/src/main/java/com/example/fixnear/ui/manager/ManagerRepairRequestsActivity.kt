@@ -1,6 +1,7 @@
+
 package com.example.fixnear.ui.manager
 
-import android.content.res.ColorStateList
+import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
@@ -17,11 +18,9 @@ import com.example.fixnear.data.local.SessionManager
 import com.example.fixnear.data.model.ManagerRepairItem
 import com.example.fixnear.data.remote.RetrofitClient
 import com.example.fixnear.databinding.ActivityManagerRepairRequestsBinding
-import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 class ManagerRepairRequestsActivity : AppCompatActivity() {
 
@@ -30,9 +29,11 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
 
     private var shopId = -1
     private var filter = "all"
+
     private var allItems = emptyList<ManagerRepairItem>()
     private var isLoading = false
     private var hasLoaded = false
+    private var hasResumedOnce = false
 
     private val caramel = 0xFFD8975B.toInt()
     private val inactive = 0xFFC7B9AF.toInt()
@@ -60,16 +61,69 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
             finish()
         }
 
+        setupRecyclerView()
+        setupFilters()
+        setupRefresh()
+
+        // Nhận bộ lọc từ ManagerHomeActivity.
+        val initialFilter = intent
+            .getStringExtra("INITIAL_FILTER")
+            ?.lowercase()
+            .orEmpty()
+
+        selectFilter(
+            when (initialFilter) {
+                "pending" -> "pending"
+                "processing" -> "processing"
+                "completed" -> "completed"
+                else -> "all"
+            }
+        )
+
+        loadRepairRequests()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // Không GET hai lần khi Activity vừa được tạo.
+        // Khi quay lại từ màn chi tiết/phân công sẽ GET mới.
+        if (hasResumedOnce) {
+            loadRepairRequests()
+        } else {
+            hasResumedOnce = true
+        }
+    }
+
+    private fun setupRecyclerView() {
+
         requestAdapter = ManagerRepairAdapter { item ->
-            loadRepairDetail(item.repairRequestId)
+
+            startActivity(
+                Intent(
+                    this,
+                    ManagerRepairDetailActivity::class.java
+                ).apply {
+                    putExtra("SHOP_ID", shopId)
+
+                    putExtra(
+                        "REPAIR_REQUEST_ID",
+                        item.repairRequestId
+                    )
+                }
+            )
         }
 
         binding.rvRepairRequests.apply {
             layoutManager = LinearLayoutManager(
                 this@ManagerRepairRequestsActivity
             )
+
             adapter = requestAdapter
         }
+    }
+
+    private fun setupFilters() {
 
         binding.tabAll.setOnClickListener {
             selectFilter("all")
@@ -86,16 +140,17 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
         binding.tabCompleted.setOnClickListener {
             selectFilter("completed")
         }
+    }
+
+    private fun setupRefresh() {
 
         binding.btnRefresh.setOnClickListener {
             loadRepairRequests()
         }
-
-        selectFilter("all")
-        loadRepairRequests()
     }
 
     private fun authorization(): String? {
+
         val raw = SessionManager(this)
             .getToken()
             ?.trim()
@@ -109,33 +164,44 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
         }
     }
 
-    // ==========================================
-    // GET /api/manager/repair-requests
-    // ==========================================
+    // ============================================
+    // GET /api/manager/repair-requests?shopId=...
+    // ============================================
 
     private fun loadRepairRequests() {
+
         if (isLoading) return
 
         if (shopId <= 0) {
-            showError("ShopId không hợp lệ. Hãy mở từ Manager Home.")
+            showError(
+                "ShopId không hợp lệ. Hãy mở từ Manager Home."
+            )
             return
         }
 
         val token = authorization()
 
         if (token == null) {
-            showError("Phiên đăng nhập không hợp lệ.")
+            showError(
+                "Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại."
+            )
             return
         }
 
         isLoading = true
+
         binding.progressLoading.visibility = View.VISIBLE
         binding.tvState.visibility = View.VISIBLE
-        binding.tvState.text = "Đang tải yêu cầu sửa chữa..."
+
+        binding.tvState.text =
+            "Đang tải yêu cầu sửa chữa..."
+
         binding.btnRefresh.isEnabled = false
 
         lifecycleScope.launch {
+
             try {
+
                 val response =
                     RetrofitClient.managerRepairApi
                         .getRepairRequests(
@@ -144,15 +210,24 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
                         )
 
                 if (!response.isSuccessful) {
-                    showError(
-                        when (response.code()) {
-                            401 -> "Phiên đăng nhập hết hạn."
-                            403 -> "Tài khoản không có quyền xem yêu cầu của Shop này."
-                            404 -> "Không tìm thấy dữ liệu cửa hàng."
-                            else ->
-                                "Không tải được yêu cầu: HTTP ${response.code()}"
-                        }
-                    )
+
+                    val message = when (response.code()) {
+
+                        401 ->
+                            "Phiên đăng nhập hết hạn."
+
+                        403 ->
+                            "Tài khoản không có quyền xem yêu cầu của Shop này."
+
+                        404 ->
+                            "Không tìm thấy cửa hàng."
+
+                        else ->
+                            "Không tải được yêu cầu sửa chữa. " +
+                                    "HTTP ${response.code()}"
+                    }
+
+                    showError(message)
                     return@launch
                 }
 
@@ -160,7 +235,7 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
 
                 if (items == null) {
                     showError(
-                        "Backend trả JSON không đúng cấu trúc danh sách."
+                        "Backend trả về danh sách không hợp lệ."
                     )
                     return@launch
                 }
@@ -170,23 +245,31 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
                 }
 
                 hasLoaded = true
+
                 applyFilter()
 
             } catch (e: Exception) {
+
                 showError(
-                    "Lỗi kết nối: ${e.localizedMessage}"
+                    "Không thể kết nối backend:\n" +
+                            (e.localizedMessage ?: "Lỗi không xác định")
                 )
+
             } finally {
+
                 isLoading = false
-                binding.progressLoading.visibility = View.GONE
+
+                binding.progressLoading.visibility =
+                    View.GONE
+
                 binding.btnRefresh.isEnabled = true
             }
         }
     }
 
-    // ==========================================
+    // ============================================
     // ĐỌC RESPONSE { message, data }
-    // ==========================================
+    // ============================================
 
     private fun extractArray(
         body: JsonElement?
@@ -197,22 +280,30 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
         }
 
         val array = when {
-            body.isJsonArray -> body.asJsonArray
+
+            body.isJsonArray -> {
+                body.asJsonArray
+            }
 
             body.isJsonObject -> {
+
                 val root = body.asJsonObject
                 val data = root.get("data")
 
                 when {
-                    data?.isJsonArray == true ->
+
+                    data?.isJsonArray == true -> {
                         data.asJsonArray
+                    }
 
                     data?.isJsonObject == true -> {
+
                         val nested = data.asJsonObject
 
-                        val list = nested.get("items")
-                            ?: nested.get("results")
-                            ?: nested.get("repairRequests")
+                        val list =
+                            nested.get("items")
+                                ?: nested.get("results")
+                                ?: nested.get("repairRequests")
 
                         if (list?.isJsonArray == true) {
                             list.asJsonArray
@@ -228,77 +319,164 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
             else -> return null
         }
 
-        return array.mapNotNull {
-            if (it.isJsonObject) it.asJsonObject else null
+        return array.mapNotNull { element ->
+
+            if (element.isJsonObject) {
+                element.asJsonObject
+            } else {
+                null
+            }
         }
     }
+
+    // ============================================
+    // HELPER LẤY GIÁ TRỊ JSON
+    // ============================================
 
     private fun JsonObject.textOf(
         vararg keys: String
     ): String {
-        for (key in keys) {
-            val value = entrySet().firstOrNull {
-                it.key.equals(key, ignoreCase = true)
-            }?.value
 
-            if (value != null &&
+        for (key in keys) {
+
+            val value = entrySet()
+                .firstOrNull { entry ->
+                    entry.key.equals(
+                        key,
+                        ignoreCase = true
+                    )
+                }
+                ?.value
+
+            if (
+                value != null &&
                 !value.isJsonNull &&
                 value.isJsonPrimitive
             ) {
                 return value.asString
             }
         }
+
         return ""
     }
+
+    private fun JsonObject.customerNameText(): String {
+
+        val directName = textOf(
+            "customerName",
+            "customerFullName"
+        )
+
+        if (directName.isNotBlank()) {
+            return directName
+        }
+
+        val customer = get("customer")
+
+        if (customer?.isJsonObject == true) {
+
+            val nestedName = customer.asJsonObject.textOf(
+                "fullName",
+                "customerName",
+                "name"
+            )
+
+            if (nestedName.isNotBlank()) {
+                return nestedName
+            }
+        }
+
+        val customerId = textOf("customerId")
+
+        return if (customerId.isNotBlank()) {
+            "Khách hàng #$customerId"
+        } else {
+            "Chưa có thông tin"
+        }
+    }
+
+    private fun statusText(status: String): String {
+
+        return when (status.trim().toIntOrNull()) {
+
+            1 -> "Chờ tiếp nhận"
+            2 -> "Đã tiếp nhận"
+            3 -> "Đã từ chối"
+            4 -> "Đã phân công"
+            5 -> "Đang khảo sát"
+            6 -> "Đã báo giá"
+            7 -> "Khách đã duyệt giá"
+            8 -> "Đang sửa chữa"
+            9 -> "Đã sửa xong"
+            10 -> "Đã thanh toán"
+            11 -> "Đã hủy"
+
+            else -> "Chưa xác định trạng thái"
+        }
+    }
+
+    private fun formatDate(value: String): String {
+
+        if (value.isBlank()) {
+            return ""
+        }
+
+        return value
+            .replace("T", " ")
+            .substringBefore(".")
+            .take(19)
+    }
+
+    // ============================================
+    // MAP BACKEND -> MODEL RECYCLERVIEW
+    // ============================================
 
     private fun parseRepairItem(
         item: JsonObject
     ): ManagerRepairItem? {
 
         val id = item.textOf(
-            "repairRequestId", "id"
+            "repairRequestId",
+            "id"
         ).toIntOrNull() ?: return null
 
+        if (id <= 0) return null
+
         val status = item.textOf(
-            "status", "repairStatus"
+            "status",
+            "repairStatus"
         )
 
-        val customerName = item.textOf(
-            "customerName"
+        val customerName = item.customerNameText()
+
+        val description = item.textOf(
+            "description",
+            "issueDescription"
         ).ifBlank {
-            val customer = item.get("customer")
-            if (customer?.isJsonObject == true) {
-                customer.asJsonObject.textOf(
-                    "fullName", "customerName", "name"
-                )
-            } else {
-                ""
-            }
+            "Chưa có mô tả sự cố"
         }
 
         return ManagerRepairItem(
             repairRequestId = id,
             customerName = customerName,
-            description = item.textOf(
-                "description", "issueDescription"
-            ),
+            description = description,
             statusCode = status,
-            statusLabel = if (status.isBlank()) {
-                "Chưa rõ trạng thái"
-            } else {
-                "Trạng thái: $status"
-            },
-            createdAt = item.textOf(
-                "createdAt", "requestedAt"
-            ).replace("T", " ").take(19)
+            statusLabel = statusText(status),
+            createdAt = formatDate(
+                item.textOf(
+                    "createdAt",
+                    "requestedAt"
+                )
+            )
         )
     }
 
-    // ==========================================
-    // LỌC DANH SÁCH
-    // ==========================================
+    // ============================================
+    // FILTER
+    // ============================================
 
     private fun selectFilter(value: String) {
+
         filter = value
 
         listOf(
@@ -313,10 +491,14 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
             tab.setTextColor(
                 if (selected) caramel else inactive
             )
+
             tab.setTypeface(
                 null,
-                if (selected) Typeface.BOLD
-                else Typeface.NORMAL
+                if (selected) {
+                    Typeface.BOLD
+                } else {
+                    Typeface.NORMAL
+                }
             )
         }
 
@@ -324,35 +506,38 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
     }
 
     private fun statusGroup(status: String): String {
+
         return when (
-            status.trim()
-                .lowercase(Locale.ROOT)
-                .replace("_", "")
-                .replace(" ", "")
+            status.trim().toIntOrNull()
         ) {
-            "pending", "waiting",
-            "requested", "chờxửlý",
-            "chờtiếpnhận" -> "pending"
 
-            "accepted", "processing",
-            "inprogress", "đangxửlý",
-            "repairing" -> "processing"
+            1 -> "pending"
 
-            "completed", "paid",
-            "hoàntất", "đãhoànthành" -> "completed"
+            2, 4, 5, 6, 7, 8 -> "processing"
+
+            9, 10 -> "completed"
+
+            // Từ chối và hủy vẫn hiển thị ở "Tất cả".
+            3, 11 -> "closed"
 
             else -> "unknown"
         }
     }
 
     private fun applyFilter() {
-        if (!::requestAdapter.isInitialized) return
+
+        if (!::requestAdapter.isInitialized) {
+            return
+        }
 
         val filtered = if (filter == "all") {
+
             allItems
+
         } else {
-            allItems.filter {
-                statusGroup(it.statusCode) == filter
+
+            allItems.filter { item ->
+                statusGroup(item.statusCode) == filter
             }
         }
 
@@ -361,50 +546,68 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
         binding.tvResultCount.text =
             "Danh sách yêu cầu (${filtered.size})"
 
-        if (!hasLoaded) return
+        if (!hasLoaded) {
+            return
+        }
 
         binding.tvState.visibility =
-            if (filtered.isEmpty()) View.VISIBLE else View.GONE
-
-        binding.tvState.text =
-            if (allItems.isEmpty()) {
-                "Cửa hàng chưa có yêu cầu sửa chữa."
-            } else if (
-                filter != "all" &&
-                allItems.any {
-                    statusGroup(it.statusCode) == "unknown"
-                }
-            ) {
-                "Chưa ánh xạ trạng thái số của backend. " +
-                        "Xem tab Tất cả để không bỏ sót yêu cầu."
+            if (filtered.isEmpty()) {
+                View.VISIBLE
             } else {
-                "Không có yêu cầu phù hợp bộ lọc."
+                View.GONE
             }
+
+        binding.tvState.text = when {
+
+            allItems.isEmpty() ->
+                "Cửa hàng chưa có yêu cầu sửa chữa."
+
+            filtered.isNotEmpty() ->
+                ""
+
+            filter != "all" &&
+                    allItems.any {
+                        statusGroup(it.statusCode) == "unknown"
+                    } ->
+                "Có trạng thái chưa được nhận diện. " +
+                        "Hãy mở tab Tất cả để xem."
+
+            else ->
+                "Không có yêu cầu phù hợp bộ lọc."
+        }
     }
 
     private fun showError(message: String) {
+
         binding.tvState.visibility = View.VISIBLE
         binding.tvState.text = message
 
-        // Không giữ lại danh sách cũ khi request thất bại.
         allItems = emptyList()
         hasLoaded = false
-        requestAdapter.submitItems(emptyList())
-        binding.tvResultCount.text = "Danh sách yêu cầu"
+
+        if (::requestAdapter.isInitialized) {
+            requestAdapter.submitItems(emptyList())
+        }
+
+        binding.tvResultCount.text =
+            "Danh sách yêu cầu (0)"
     }
 
-    // ==========================================
-    // GET CHI TIẾT YÊU CẦU
-    // ==========================================
+    // ============================================
+    // GET CHI TIẾT - GIỮ LẠI NẾU CẦN POPUP
+    // ============================================
 
     private fun loadRepairDetail(repairRequestId: Int) {
+
         val token = authorization() ?: run {
             toast("Vui lòng đăng nhập lại.")
             return
         }
 
         lifecycleScope.launch {
+
             try {
+
                 val response =
                     RetrofitClient.managerRepairApi
                         .getRepairDetail(
@@ -414,16 +617,21 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
                         )
 
                 if (!response.isSuccessful) {
+
                     toast(
-                        "Không tải được chi tiết: HTTP ${response.code()}"
+                        "Không tải được chi tiết: " +
+                                "HTTP ${response.code()}"
                     )
+
                     return@launch
                 }
 
                 val body = response.body()
 
                 val data = when {
+
                     body?.isJsonObject == true -> {
+
                         val root = body.asJsonObject
                         val nested = root.get("data")
 
@@ -438,129 +646,197 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
                 }
 
                 if (data == null) {
-                    toast("Chi tiết từ backend không hợp lệ.")
+
+                    toast(
+                        "Chi tiết từ backend không hợp lệ."
+                    )
+
                     return@launch
                 }
 
+                // Không cần parse response thêm lần nữa.
                 showDetailDialog(repairRequestId, data)
 
             } catch (e: Exception) {
-                toast("Lỗi tải chi tiết: ${e.localizedMessage}")
+
+                toast(
+                    "Lỗi tải chi tiết: " +
+                            (e.localizedMessage ?: "Không xác định")
+                )
             }
         }
     }
+
+    // ============================================
+    // POPUP CHI TIẾT - KHÔNG HIỂN THỊ JSON THÔ
+    // ============================================
 
     private fun showDetailDialog(
         repairRequestId: Int,
         data: JsonObject
     ) {
+
         val density = resources.displayMetrics.density
-        fun dp(value: Int) = (value * density).toInt()
+
+        fun dp(value: Int): Int {
+            return (value * density).toInt()
+        }
 
         val container = LinearLayout(this).apply {
+
             orientation = LinearLayout.VERTICAL
+
             setPadding(
-                dp(20), dp(22), dp(20), dp(22)
+                dp(20),
+                dp(22),
+                dp(20),
+                dp(22)
             )
-            setBackgroundResource(R.drawable.fixnear_dialog_bg)
+
+            setBackgroundResource(
+                R.drawable.fixnear_dialog_bg
+            )
         }
 
         container.addView(
             TextView(this).apply {
+
                 text = "Yêu cầu #$repairRequestId"
                 textSize = 21f
                 setTextColor(dark)
-                setTypeface(null, Typeface.BOLD)
+
+                setTypeface(
+                    null,
+                    Typeface.BOLD
+                )
             }
         )
 
         fun addDetail(label: String, value: String) {
-            if (value.isBlank()) return
+
+            if (value.isBlank()) {
+                return
+            }
 
             container.addView(
                 TextView(this).apply {
+
                     text = label
                     textSize = 12f
                     setTextColor(brown)
+
                 },
-                LinearLayout.LayoutParams(-1, -2).apply {
+                LinearLayout.LayoutParams(
+                    -1,
+                    -2
+                ).apply {
                     topMargin = dp(15)
                 }
             )
 
             container.addView(
                 TextView(this).apply {
+
                     text = value
                     textSize = 15f
                     setTextColor(dark)
+
                 },
-                LinearLayout.LayoutParams(-1, -2).apply {
+                LinearLayout.LayoutParams(
+                    -1,
+                    -2
+                ).apply {
                     topMargin = dp(4)
                 }
             )
         }
 
+        // Tên khách hàng có fallback theo CustomerId.
         addDetail(
             "Khách hàng",
-            data.textOf("customerName")
+            data.customerNameText()
         )
 
         addDetail(
             "Mô tả sự cố",
-            data.textOf("description", "issueDescription")
+            data.textOf(
+                "description",
+                "issueDescription"
+            ).ifBlank {
+                "Chưa có mô tả sự cố"
+            }
+        )
+
+        val status = data.textOf(
+            "status",
+            "repairStatus"
         )
 
         addDetail(
-            "Trạng thái backend",
-            data.textOf("status", "repairStatus")
+            "Trạng thái",
+            statusText(status)
         )
 
-        addDetail(
-            "Phương thức sửa chữa",
-            data.textOf("repairMethod")
+        val repairMethod = data.textOf(
+            "repairMethod"
         )
+
+        if (repairMethod.isNotBlank()) {
+            addDetail(
+                "Phương thức sửa chữa",
+                "Phương thức $repairMethod"
+            )
+        }
 
         addDetail(
             "Thời gian tạo",
-            data.textOf("createdAt").replace("T", " ")
+            formatDate(
+                data.textOf("createdAt")
+            )
         )
 
-        addDetail(
-            "Địa chỉ",
-            data.textOf("address", "addressLine")
+        val address = data.textOf(
+            "address",
+            "addressLine"
         )
 
-        // Các trường chưa có nhãn UI được giữ nguyên để
-        // không giấu dữ liệu backend khi kiểm thử.
-        container.addView(
-            TextView(this).apply {
-                text = "Dữ liệu chi tiết từ backend"
-                textSize = 12f
-                setTextColor(brown)
-            },
-            LinearLayout.LayoutParams(-1, -2).apply {
-                topMargin = dp(20)
-            }
-        )
+        if (address.isNotBlank()) {
+            addDetail("Địa chỉ", address)
+        }
 
-        container.addView(
-            TextView(this).apply {
-                text = GsonBuilder()
-                    .setPrettyPrinting()
-                    .create()
-                    .toJson(data)
-                textSize = 11f
-                setTextColor(brown)
-                setTextIsSelectable(true)
-            },
-            LinearLayout.LayoutParams(-1, -2).apply {
-                topMargin = dp(8)
-            }
-        )
+        val serviceCount =
+            data.get("services")
+                ?.takeIf { it.isJsonArray }
+                ?.asJsonArray
+                ?.size()
+
+        if (serviceCount != null) {
+            addDetail(
+                "Dịch vụ yêu cầu",
+                "$serviceCount dịch vụ"
+            )
+        }
+
+        val imageCount =
+            data.get("images")
+                ?.takeIf { it.isJsonArray }
+                ?.asJsonArray
+                ?.size()
+
+        if (imageCount != null) {
+            addDetail(
+                "Hình ảnh",
+                "$imageCount hình ảnh"
+            )
+        }
+
+        // Không còn GsonBuilder.toJson(data).
+        // Không hiển thị JSON debug.
 
         val dialog = AlertDialog.Builder(this)
             .setView(
                 ScrollView(this).apply {
+                    isFillViewport = true
                     addView(container)
                 }
             )
@@ -578,11 +854,13 @@ class ManagerRepairRequestsActivity : AppCompatActivity() {
             (resources.displayMetrics.heightPixels * 0.75f).toInt()
         )
 
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            ?.setTextColor(caramel)
+        dialog.getButton(
+            AlertDialog.BUTTON_POSITIVE
+        )?.setTextColor(caramel)
     }
 
     private fun toast(message: String) {
+
         Toast.makeText(
             this,
             message,
