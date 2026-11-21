@@ -26,6 +26,8 @@ import com.example.fixnear.data.model.technician.RepairStatus
 import com.example.fixnear.data.model.technician.TechnicianAssignment
 import com.example.fixnear.data.remote.RetrofitClient
 import com.example.fixnear.databinding.ActivityAssignmentBinding
+import com.example.fixnear.ui.review.TechnicianReviewsActivity
+import com.example.fixnear.ui.review.TechnicianFeedbackActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -57,6 +59,29 @@ class AssignmentActivity : AppCompatActivity() {
         binding.btnRetryAssignments.setOnClickListener {
             loadAssignments()
         }
+
+// UI08 - Mo man hinh danh gia Technician
+        binding.btnOpenTechnicianReviews.setOnClickListener {
+
+            val intent = Intent(
+                this@AssignmentActivity,
+                TechnicianReviewsActivity::class.java
+            )
+
+            startActivity(intent)
+        }
+
+// UI09 - Mo man hinh phan hoi khach hang
+        binding.btnOpenTechnicianFeedback.setOnClickListener {
+
+            val intent = Intent(
+                this@AssignmentActivity,
+                TechnicianFeedbackActivity::class.java
+            )
+
+            startActivity(intent)
+        }
+
 
         setupRecyclerView()
         setupFilters()

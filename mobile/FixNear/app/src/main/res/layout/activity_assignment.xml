@@ -84,6 +84,54 @@
                 android:textColor="@color/text_secondary_dark"
                 android:lineSpacingExtra="3dp" />
 
+            <!-- TECHNICIAN UI08 - UI09 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Đánh giá và phản hồi"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary_dark" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <!-- UI08 - DANH GIA -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenTechnicianReviews"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Đánh giá"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary_card"
+                    app:backgroundTint="@color/accent_gold"
+                    app:cornerRadius="14dp" />
+
+                <!-- UI09 - PHAN HOI -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenTechnicianFeedback"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="Phản hồi"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary_card"
+                    app:backgroundTint="@color/card_cream"
+                    app:cornerRadius="14dp" />
+
+            </LinearLayout>
+
             <!-- STATISTICS TITLE -->
             <TextView
                 style="@style/FixNearSectionTitle"

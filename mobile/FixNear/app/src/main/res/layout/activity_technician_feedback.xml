@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_dark"
+    android:padding="20dp">
+
+    <!-- HEADER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/btnBackFeedback"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="‹"
+            android:textSize="32sp"
+            android:textColor="@color/text_primary_dark"
+            android:contentDescription="Quay lại"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Phản hồi khách hàng"
+            android:textColor="@color/text_primary_dark"
+            android:textSize="21sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- THONG TIN PHAN HOI -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        app:cardBackgroundColor="@color/card_cream"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ý kiến từ khách hàng"
+                android:textColor="@color/text_primary_card"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvFeedbackDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Theo dõi những nhận xét để cải thiện chất lượng sửa chữa và phục vụ khách hàng."
+                android:textColor="@color/text_secondary_card"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:background="@color/border_card" />
+
+            <TextView
+                android:id="@+id/tvFeedbackCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Số nhận xét: --"
+                android:textColor="@color/accent_gold_dark"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- TIEU DE DANH SACH -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:layout_marginBottom="12dp"
+        android:text="Danh sách nhận xét"
+        android:textColor="@color/text_primary_dark"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- NOI DUNG PHAN HOI -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- DANH SACH NHAN XET -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvTechnicianFeedback"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="12dp"
+            android:visibility="gone" />
+
+        <!-- TRANG THAI TRONG / LOI -->
+        <LinearLayout
+            android:id="@+id/layoutFeedbackState"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tvFeedbackStateTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Chưa có nhận xét"
+                android:textColor="@color/text_primary_dark"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvFeedbackStateMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:text="Các nhận xét của khách hàng sẽ hiển thị tại đây khi có dữ liệu."
+                android:textColor="@color/text_secondary_dark"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRetryFeedback"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="Thử lại"
+                android:textAllCaps="false"
+                android:textColor="@color/text_primary_card"
+                android:visibility="gone"
+                app:backgroundTint="@color/accent_gold"
+                app:cornerRadius="12dp" />
+
+        </LinearLayout>
+
+        <!-- DANG TAI DU LIEU -->
+        <ProgressBar
+            android:id="@+id/progressFeedback"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/accent_gold"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+    <!-- XEM THEM -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLoadMoreFeedback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Xem thêm nhận xét"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary_card"
+        android:visibility="gone"
+        app:backgroundTint="@color/card_cream"
+        app:cornerRadius="14dp" />
+
+    <ProgressBar
+        android:id="@+id/progressMoreFeedback"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:indeterminateTint="@color/accent_gold"
+        android:visibility="gone" />
+
+</LinearLayout>

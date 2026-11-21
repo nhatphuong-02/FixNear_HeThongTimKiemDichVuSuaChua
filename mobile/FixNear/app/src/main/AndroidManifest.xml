@@ -85,7 +85,22 @@
         <activity
             android:name=".ui.repair.RepairProgressActivity"
             android:exported="false" />
-
+        <!-- TECHNICIAN UI06 - HOA DON SUA CHUA -->
+        <activity
+            android:name=".ui.invoice.TechnicianInvoiceActivity"
+            android:exported="false" />
+        <!-- TECHNICIAN UI07 - THANH TOAN -->
+        <activity
+            android:name=".ui.payment.TechnicianPaymentActivity"
+            android:exported="false" />
+        <!-- TECHNICIAN UI08 - DANH GIA -->
+        <activity
+            android:name=".ui.review.TechnicianReviewsActivity"
+            android:exported="false" />
+        <!-- TECHNICIAN UI09 - PHAN HOI KHACH HANG -->
+        <activity
+            android:name=".ui.review.TechnicianFeedbackActivity"
+            android:exported="false" />
         <!-- CUSTOMER -->
         <activity
             android:name=".ui.home.CustomerRepairRequestsActivity"

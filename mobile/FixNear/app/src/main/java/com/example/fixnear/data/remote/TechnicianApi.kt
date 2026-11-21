@@ -12,6 +12,20 @@ import retrofit2.http.Query
 
 interface TechnicianApi {
 
+    // UI08 - Lay ho so de xac dinh technicianId
+    @GET("api/technician/me/profile")
+    suspend fun getMyReviewProfile():
+            Response<ApiResponse<TechnicianReviewProfile>>
+
+    // UI08 - Lay danh gia cua Technician
+    @GET("api/technicians/{technicianId}/reviews")
+    suspend fun getTechnicianReviews(
+        @Path("technicianId") technicianId: Int,
+        @Query("page") page: Int = 1,
+        @Query("pageSize") pageSize: Int = 10
+    ): Response<ApiResponse<TechnicianReviewPage>>
+
+
     @GET("api/technician/assignments")
     suspend fun getAssignments(): Response<ApiResponse<List<TechnicianAssignment>>>
 

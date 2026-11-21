@@ -424,6 +424,35 @@
                 android:stateListAnimator="@null"
                 android:visibility="gone" />
 
+            <!-- TECHNICIAN UI06 - HOA DON -->
+            <Button
+                android:id="@+id/btnViewInvoice"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="16dp"
+                android:text="Xem hóa đơn sửa chữa"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@color/button_primary_text"
+                android:backgroundTint="@color/accent_gold"
+                android:stateListAnimator="@null" />
+
+            <!-- TECHNICIAN UI07 - THANH TOAN -->
+            <Button
+                android:id="@+id/btnViewPayment"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="12dp"
+                android:text="Theo dõi thanh toán"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@color/button_secondary_text"
+                android:backgroundTint="@color/card_cream"
+                android:stateListAnimator="@null" />
+
+
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

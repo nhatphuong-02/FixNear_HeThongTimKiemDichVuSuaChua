@@ -15,6 +15,8 @@ import com.example.fixnear.data.model.technician.SurveyRequest
 import com.example.fixnear.data.model.technician.TechnicianAssignment
 import com.example.fixnear.data.remote.RetrofitClient
 import com.example.fixnear.ui.repair.RepairProgressActivity
+import com.example.fixnear.ui.invoice.TechnicianInvoiceActivity
+import com.example.fixnear.ui.payment.TechnicianPaymentActivity
 import com.example.fixnear.databinding.ActivityAssignmentDetailBinding
 import com.example.fixnear.ui.quote.CreateQuoteActivity
 import kotlinx.coroutines.CancellationException
@@ -92,6 +94,58 @@ class AssignmentDetailActivity : AppCompatActivity() {
             }
         }
 
+
+        // UI06 - Mo man hinh hoa don
+        binding.btnViewInvoice.setOnClickListener {
+
+            val repairRequestId =
+                currentAssignment?.repairRequestId ?: -1
+
+            if (repairRequestId <= 0) {
+                showMessage(
+                    "Chưa có thông tin yêu cầu sửa chữa"
+                )
+                return@setOnClickListener
+            }
+
+            val intent = Intent(
+                this@AssignmentDetailActivity,
+                TechnicianInvoiceActivity::class.java
+            ).apply {
+                putExtra(
+                    "repairRequestId",
+                    repairRequestId
+                )
+            }
+
+            startActivity(intent)
+        }
+
+        // UI07 - Mo man hinh thanh toan
+        binding.btnViewPayment.setOnClickListener {
+
+            val repairRequestId =
+                currentAssignment?.repairRequestId ?: -1
+
+            if (repairRequestId <= 0) {
+                showMessage(
+                    "Chưa có thông tin yêu cầu sửa chữa"
+                )
+                return@setOnClickListener
+            }
+
+            val intent = Intent(
+                this@AssignmentDetailActivity,
+                TechnicianPaymentActivity::class.java
+            ).apply {
+                putExtra(
+                    "repairRequestId",
+                    repairRequestId
+                )
+            }
+
+            startActivity(intent)
+        }
 
         if (assignmentId <= 0) {
             showMessage("Không tìm thấy mã công việc")
