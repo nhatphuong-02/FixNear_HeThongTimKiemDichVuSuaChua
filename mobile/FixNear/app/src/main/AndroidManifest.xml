@@ -123,6 +123,7 @@
             android:name=".ui.home.CustomerUpcomingSchedulesActivity"
             android:exported="false" />
 
+        <activity
             android:name=".ui.home.CustomerCatalogActivity"
             android:exported="false" />
 
