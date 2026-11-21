@@ -11,10 +11,12 @@ import com.example.fixnear.data.model.LoginRequest
 import com.example.fixnear.data.remote.RetrofitClient
 import com.example.fixnear.databinding.ActivityLoginBinding
 import com.example.fixnear.helper.setupPasswordToggle
+import com.example.fixnear.ui.assignment.AssignmentActivity
 import com.example.fixnear.ui.home.HomeActivity
 import com.example.fixnear.ui.manager.ManagerHomeActivity
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
@@ -37,10 +39,10 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setupEvents() {
+
         binding.btnLogin.setOnClickListener {
             login()
         }
-
 
         binding.btnGoRegister.setOnClickListener {
             val intent = Intent(
@@ -49,38 +51,40 @@ class LoginActivity : AppCompatActivity() {
             )
             startActivity(intent)
         }
-
     }
 
     private fun login() {
+
         val account = binding.edtEmail.text.toString().trim()
         val password = binding.edtPassword.text.toString()
 
         if (account.isBlank()) {
-            binding.edtEmail.error = "Vui lòng nhập email hoặc số điện thoại"
+            binding.edtEmail.error =
+                "Vui lòng nhập email hoặc số điện thoại"
             binding.edtEmail.requestFocus()
             return
         }
 
         if (password.isBlank()) {
-            binding.edtPassword.error = "Vui lòng nhập mật khẩu"
+            binding.edtPassword.error =
+                "Vui lòng nhập mật khẩu"
             binding.edtPassword.requestFocus()
             return
         }
 
-        val request =
-            if(account.contains("@"))
-                LoginRequest(
-                    null,
-                    account,
-                    password
-                )
-            else
-                LoginRequest(
-                    account,
-                    null,
-                    password
-                )
+        val request = if (account.contains("@")) {
+            LoginRequest(
+                null,
+                account,
+                password
+            )
+        } else {
+            LoginRequest(
+                account,
+                null,
+                password
+            )
+        }
 
         callLoginApi(request)
     }
@@ -92,6 +96,7 @@ class LoginActivity : AppCompatActivity() {
             binding.btnLogin.isEnabled = false
 
             try {
+
                 val response = RetrofitClient.authApi.login(request)
 
                 if (response.isSuccessful) {
@@ -120,11 +125,10 @@ class LoginActivity : AppCompatActivity() {
                             "Không nhận được Token từ máy chủ",
                             Toast.LENGTH_LONG
                         ).show()
-
                         return@launch
                     }
 
-                    // Lưu thông tin tài khoản và Token
+                    // Luu thong tin tai khoan va Token
                     sessionManager.saveLogin(
                         userId = loginData.userId,
                         fullName = loginData.fullName,
@@ -132,7 +136,7 @@ class LoginActivity : AppCompatActivity() {
                         token = token
                     )
 
-                    // Kiểm tra trạng thái lưu Token
+                    // Kiem tra Token da duoc luu
                     val savedToken = sessionManager.getToken()
 
                     if (savedToken.isNullOrBlank()) {
@@ -149,18 +153,17 @@ class LoginActivity : AppCompatActivity() {
                         "Đăng nhập thành công. Token đã được lưu."
                     )
 
-                    Toast.makeText(
-                        this@LoginActivity,
-                        response.body()?.message ?: "Đăng nhập thành công",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    // Chuyển sang màn hình Home
-
+                    // Dieu huong theo vai tro
                     val destination = when (loginData.roleType) {
+
+                        // Customer
                         1 -> HomeActivity::class.java
 
+                        // Manager
                         2 -> ManagerHomeActivity::class.java
+
+                        // Technician
+                        3 -> AssignmentActivity::class.java
 
                         else -> {
                             Toast.makeText(
@@ -172,21 +175,28 @@ class LoginActivity : AppCompatActivity() {
                         }
                     }
 
+                    Toast.makeText(
+                        this@LoginActivity,
+                        response.body()?.message
+                            ?: "Đăng nhập thành công",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
                     val intent = Intent(
                         this@LoginActivity,
                         destination
-                    )
-
-
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_NEW_TASK or
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    ).apply {
+                        flags =
+                            Intent.FLAG_ACTIVITY_NEW_TASK or
+                                    Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
 
                     startActivity(intent)
 
                 } else {
 
-                    val errorBody = response.errorBody()?.string()
+                    val errorBody =
+                        response.errorBody()?.string()
 
                     Log.e(
                         "LOGIN_ERROR",
@@ -211,9 +221,9 @@ class LoginActivity : AppCompatActivity() {
                 }
 
             } catch (e: Exception) {
-                Log.e("FIXNEAR_LOGIN", "Lỗi đăng nhập", e)
+
                 Log.e(
-                    "LOGIN_ERROR",
+                    "FIXNEAR_LOGIN",
                     "Lỗi gọi API đăng nhập",
                     e
                 )
@@ -225,6 +235,7 @@ class LoginActivity : AppCompatActivity() {
                 ).show()
 
             } finally {
+
                 binding.btnLogin.isEnabled = true
             }
         }

@@ -13,6 +13,7 @@
         android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
+        android:name=".FixNearApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -57,9 +58,69 @@
             android:name=".ui.auth.RoleRegisterActivity"
             android:exported="false" />
 
+        <!-- HOME -->
         <!-- CUSTOMER HOME -->
         <activity
             android:name=".ui.home.HomeActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.profile.ProfileActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- TECHNICIAN UI01 - DANH SACH CONG VIEC -->
+        <activity
+            android:name=".ui.assignment.AssignmentActivity"
+            android:exported="false" />
+
+        <!-- TECHNICIAN UI02 - CHI TIET VA KHAO SAT -->
+        <activity
+            android:name=".ui.assignment.AssignmentDetailActivity"
+            android:exported="false" />
+
+        <!-- TECHNICIAN UI03 - TAO BAO GIA -->
+        <activity
+            android:name=".ui.quote.CreateQuoteActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- TECHNICIAN UI04 - CHI TIET BAO GIA -->
+        <activity
+            android:name=".ui.quote.QuoteDetailActivity"
+            android:exported="false" />
+
+        <!-- TECHNICIAN UI05 - TIEN DO SUA CHUA -->
+        <activity
+            android:name=".ui.repair.RepairProgressActivity"
+            android:exported="false" />
+        <!-- TECHNICIAN UI06 - HOA DON SUA CHUA -->
+        <activity
+            android:name=".ui.invoice.TechnicianInvoiceActivity"
+            android:exported="false" />
+        <!-- TECHNICIAN UI07 - THANH TOAN -->
+        <activity
+            android:name=".ui.payment.TechnicianPaymentActivity"
+            android:exported="false" />
+        <!-- TECHNICIAN UI08 - DANH GIA -->
+        <activity
+            android:name=".ui.review.TechnicianReviewsActivity"
+            android:exported="false" />
+        <!-- TECHNICIAN UI09 - PHAN HOI KHACH HANG -->
+        <activity
+            android:name=".ui.review.TechnicianFeedbackActivity"
+            android:exported="false" />
+        <!-- CUSTOMER -->
+        <activity
+            android:name=".ui.home.CustomerRepairRequestsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerRepairDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerUpcomingSchedulesActivity"
             android:exported="false" />
 
         <activity
@@ -84,6 +145,19 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.home.ShopDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.ShopReviewsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.NearbyShopsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerCatalogActivity"
             android:name=".ui.home.CustomerRepairRequestsActivity"
             android:exported="false" />
 
@@ -102,6 +176,10 @@
 
         <activity
             android:name=".ui.home.CustomerQuoteDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerQuotesActivity"
             android:exported="false" />
 
         <!-- CUSTOMER CHAT -->
@@ -128,6 +206,7 @@
             android:name=".ui.home.CustomerReviewActivity"
             android:exported="false" />
 
+        <!-- MANAGER -->
         <!-- CUSTOMER PROFILE -->
         <activity
             android:name=".ui.profile.ProfileActivity"
