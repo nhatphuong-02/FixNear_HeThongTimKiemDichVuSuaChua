@@ -1,29 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical" android:background="#151210"
-    android:fitsSystemWindows="true" android:padding="18dp">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="54dp"
-        android:gravity="center_vertical" android:orientation="horizontal">
-        <TextView android:id="@+id/btnBack" android:layout_width="48dp" android:layout_height="48dp"
-            android:gravity="center" android:text="‹" android:textSize="32sp" android:textColor="#FFF4EA"/>
-        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-            android:gravity="center" android:text="Báo giá của yêu cầu" android:textStyle="bold"
-            android:textSize="19sp" android:textColor="#D8975B"/>
-        <TextView android:id="@+id/btnRefresh" android:layout_width="52dp" android:layout_height="48dp"
-            android:gravity="center" android:text="↻" android:textSize="27sp" android:textColor="#FFF4EA"/>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#151210"
+    android:fitsSystemWindows="true"
+    android:padding="20dp">
+
+    <!-- HEADER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btnBack"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:background="@drawable/fixnear_role_card"
+            android:gravity="center"
+            android:text="‹"
+            android:textSize="30sp"
+            android:textColor="#FFF4EA"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Báo giá sửa chữa"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#D8975B"/>
+
+        <TextView
+            android:id="@+id/btnRefresh"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:gravity="center"
+            android:text="↻"
+            android:textSize="27sp"
+            android:textColor="#FFF4EA"
+            android:clickable="true"
+            android:focusable="true"/>
     </LinearLayout>
-    <ProgressBar android:id="@+id/progress" android:layout_width="match_parent" android:layout_height="3dp"
-        android:indeterminateTint="#D8975B" android:visibility="gone"/>
-    <TextView android:id="@+id/tvState" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="14dp" android:layout_marginBottom="12dp"
-        android:textColor="#C7B9AF" android:textSize="13sp" android:text="Đang tải..."/>
-    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
-        android:fillViewport="true">
-        <LinearLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:paddingBottom="22dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:text="Báo giá của yêu cầu"
+        android:textColor="#FFF4EA"
+        android:textSize="23sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:text="Xem chi phí dự kiến và phản hồi báo giá từ cửa hàng"
+        android:textColor="#C7B9AF"
+        android:textSize="13sp"/>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_marginTop="20dp"
+        android:indeterminate="true"
+        android:indeterminateTint="#D8975B"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/tvState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="14dp"
+        android:text="Đang tải báo giá..."
+        android:textColor="#C7B9AF"
+        android:textSize="14sp"
+        android:lineSpacingExtra="4dp"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="false"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"/>
+
     </ScrollView>
-    <Button android:id="@+id/btnLoadMore" android:layout_width="match_parent" android:layout_height="48dp"
-    android:text="Xem thêm báo giá" android:textColor="#FFF4EA" android:backgroundTint="#5C4030"
-    android:textAllCaps="false" android:visibility="gone"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnLoadMore"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/fixnear_register_button"
+        android:backgroundTint="#604231"
+        android:text="Xem thêm báo giá"
+        android:textAllCaps="false"
+        android:textColor="#FFF4EA"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:visibility="gone"/>
+
 </LinearLayout>
