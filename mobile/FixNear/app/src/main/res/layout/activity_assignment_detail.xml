@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_dark"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- HEADER -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="20dp"
+            android:background="@color/background_dark">
+
+            <!-- BACK BUTTON -->
+            <TextView
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:text="‹"
+                android:textSize="34sp"
+                android:textColor="@color/accent_gold"
+                android:background="@drawable/bg_register_input"
+                android:backgroundTint="@color/input_background"
+                android:contentDescription="Quay lại"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- HEADER TITLE -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="Chi tiết công việc"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="@color/text_primary_dark" />
+
+            <!-- ROLE BADGE -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TECHNICIAN"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_gold"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="7dp"
+                android:background="@drawable/bg_header_role" />
+
+        </LinearLayout>
+
+        <!-- MAIN CONTENT -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="28dp">
+
+            <!-- REPAIR REQUEST ID -->
+            <TextView
+                android:id="@+id/tvRepairRequestId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="#Mã yêu cầu"
+                android:textSize="23sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_gold" />
+
+            <!-- REPAIR STATUS -->
+            <TextView
+                android:id="@+id/tvAssignmentDetailStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="9dp"
+                android:text="Trạng thái công việc"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_gold"
+                android:background="@drawable/bg_header_role" />
+
+            <!-- INFORMATION CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:cardBackgroundColor="@color/card_cream"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/border_card"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <!-- CARD TITLE -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Thông tin công việc"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary_card" />
+
+                    <!-- CUSTOMER LABEL -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:text="Khách hàng"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_secondary_card" />
+
+                    <!-- CUSTOMER NAME -->
+                    <TextView
+                        android:id="@+id/tvDetailCustomerName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Tên khách hàng"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary_card" />
+
+                    <!-- SHOP LABEL -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Cửa hàng phụ trách"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_secondary_card" />
+
+                    <!-- SHOP NAME -->
+                    <TextView
+                        android:id="@+id/tvDetailShopName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Tên cửa hàng"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary_card" />
+
+                    <!-- SERVICES LABEL -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Dịch vụ yêu cầu"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_secondary_card" />
+
+                    <!-- SERVICES -->
+                    <TextView
+                        android:id="@+id/tvDetailServices"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Danh sách dịch vụ"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/accent_brown" />
+
+                    <!-- REPAIR METHOD LABEL -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Hình thức sửa chữa"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_secondary_card" />
+
+                    <!-- REPAIR METHOD -->
+                    <TextView
+                        android:id="@+id/tvDetailRepairType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Hình thức sửa chữa"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary_card" />
+
+                    <!-- APPOINTMENT LABEL -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Lịch hẹn"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_secondary_card" />
+
+                    <!-- APPOINTMENT -->
+                    <TextView
+                        android:id="@+id/tvDetailAppointment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Thời gian hẹn"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary_card" />
+
+                    <!-- DESCRIPTION LABEL -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Mô tả tình trạng thiết bị"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_secondary_card" />
+
+                    <!-- DESCRIPTION -->
+                    <TextView
+                        android:id="@+id/tvDetailDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Mô tả tình trạng"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary_card"
+                        android:lineSpacingExtra="3dp" />
+
+                    <!-- NOTE LABEL -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Ghi chú phân công"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_secondary_card" />
+
+                    <!-- NOTE -->
+                    <TextView
+                        android:id="@+id/tvDetailNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Ghi chú"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary_card"
+                        android:lineSpacingExtra="3dp" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- START SURVEY -->
+            <Button
+                android:id="@+id/btnStartSurvey"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="18dp"
+                android:text="Bắt đầu khảo sát"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@color/button_primary_text"
+                android:backgroundTint="@color/accent_gold"
+                android:stateListAnimator="@null"
+                android:visibility="gone" />
+
+            <!-- SURVEY FORM -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/layoutSurveyForm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/card_cream"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/border_card"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <!-- SURVEY TITLE -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Thông tin khảo sát"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary_card" />
+
+                    <!-- DIAGNOSIS LABEL -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:text="Nội dung lỗi / chẩn đoán *"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary_card"
+                        android:labelFor="@id/edtDiagnosis" />
+
+                    <!-- DIAGNOSIS INPUT -->
+                    <EditText
+                        android:id="@+id/edtDiagnosis"
+                        android:layout_width="match_parent"
+                        android:layout_height="140dp"
+                        android:layout_marginTop="8dp"
+                        android:gravity="top|start"
+                        android:hint="Nhập tình trạng lỗi và kết quả kiểm tra (5–2000 ký tự)"
+                        android:textSize="14sp"
+                        android:textColor="@color/input_text"
+                        android:textColorHint="@color/input_hint"
+                        android:background="@drawable/bg_register_input"
+                        android:backgroundTint="@color/input_background"
+                        android:padding="14dp"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:maxLength="2000"
+                        android:importantForAutofill="no" />
+
+                    <!-- RECOMMENDATION LABEL -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:text="Phương án sửa chữa"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary_card"
+                        android:labelFor="@id/edtRecommendation" />
+
+                    <!-- RECOMMENDATION INPUT -->
+                    <EditText
+                        android:id="@+id/edtRecommendation"
+                        android:layout_width="match_parent"
+                        android:layout_height="110dp"
+                        android:layout_marginTop="8dp"
+                        android:gravity="top|start"
+                        android:hint="Đề xuất phương án sửa chữa (tối đa 1000 ký tự)"
+                        android:textSize="14sp"
+                        android:textColor="@color/input_text"
+                        android:textColorHint="@color/input_hint"
+                        android:background="@drawable/bg_register_input"
+                        android:backgroundTint="@color/input_background"
+                        android:padding="14dp"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:maxLength="1000"
+                        android:importantForAutofill="no" />
+
+                    <!-- SAVE SURVEY -->
+                    <Button
+                        android:id="@+id/btnSaveSurvey"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Lưu khảo sát"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textAllCaps="false"
+                        android:textColor="@color/button_primary_text"
+                        android:backgroundTint="@color/accent_gold"
+                        android:stateListAnimator="@null" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- SURVEY COMPLETED -->
+            <TextView
+                android:id="@+id/tvSurveyDone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:padding="16dp"
+                android:text="✓ Đã khảo sát"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/status_completed"
+                android:background="@drawable/bg_header_role"
+                android:visibility="gone" />
+
+            <!-- CREATE QUOTE -->
+            <Button
+                android:id="@+id/btnCreateQuote"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="12dp"
+                android:text="Tạo báo giá"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@color/button_primary_text"
+                android:backgroundTint="@color/accent_gold"
+                android:stateListAnimator="@null"
+                android:visibility="gone" />
+
+            <!-- REPAIR PROGRESS -->
+            <Button
+                android:id="@+id/btnRepairProgress"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="12dp"
+                android:text="Quản lý sửa chữa"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@color/button_primary_text"
+                android:backgroundTint="@color/accent_gold"
+                android:stateListAnimator="@null"
+                android:visibility="gone" />
+
+            <!-- TECHNICIAN UI06 - HOA DON -->
+            <Button
+                android:id="@+id/btnViewInvoice"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="16dp"
+                android:text="Xem hóa đơn sửa chữa"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@color/button_primary_text"
+                android:backgroundTint="@color/accent_gold"
+                android:stateListAnimator="@null" />
+
+            <!-- TECHNICIAN UI07 - THANH TOAN -->
+            <Button
+                android:id="@+id/btnViewPayment"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="12dp"
+                android:text="Theo dõi thanh toán"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@color/button_secondary_text"
+                android:backgroundTint="@color/card_cream"
+                android:stateListAnimator="@null" />
+
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

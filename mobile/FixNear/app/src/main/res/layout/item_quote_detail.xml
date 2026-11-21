@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/card_cream"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/border_card"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- TEN HANG MUC VA NUT XOA -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvQuoteItemName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/text_primary_card"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="Tên hạng mục sửa chữa" />
+
+            <TextView
+                android:id="@+id/btnRemoveQuoteItem"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:gravity="center"
+                android:text="Xóa"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/button_secondary_text"
+                android:background="@drawable/bg_register_input"
+                android:backgroundTint="@color/button_secondary"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Xóa hạng mục báo giá" />
+        </LinearLayout>
+
+        <!-- LOAI HANG MUC -->
+        <TextView
+            android:id="@+id/tvQuoteItemType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/accent_brown"
+            android:textSize="13sp"
+            tools:text="Hạng mục sửa chữa" />
+
+        <!-- SO LUONG -->
+        <TextView
+            android:id="@+id/tvQuoteItemQuantity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/text_secondary_card"
+            android:textSize="14sp"
+            tools:text="Số lượng: 1" />
+
+        <!-- DON GIA -->
+        <TextView
+            android:id="@+id/tvQuoteItemUnitPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/text_secondary_card"
+            android:textSize="14sp"
+            tools:text="Đơn giá: Theo danh mục" />
+
+        <!-- DIVIDER -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="12dp"
+            android:background="@color/border_card" />
+
+        <!-- THANH TIEN -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Thành tiền dự kiến"
+                android:textColor="@color/text_primary_card"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvQuoteItemAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accent_brown"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                tools:text="Theo Backend" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

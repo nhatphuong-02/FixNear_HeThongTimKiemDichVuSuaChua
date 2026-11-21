@@ -1,22 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Theme chính FixNear: Dark Mode cố định -->
     <style name="Base.Theme.Fixnear"
-        parent="Theme.Material3.DayNight.NoActionBar" />
+        parent="Theme.Material3.Dark.NoActionBar">
 
+        <!-- Màu thương hiệu -->
+        <item name="colorPrimary">@color/accent_gold</item>
+        <item name="colorOnPrimary">@color/text_primary_card</item>
+        <item name="colorSecondary">@color/accent_gold_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Nền ứng dụng -->
+        <item name="android:colorBackground">@color/background_dark</item>
+        <item name="colorSurface">@color/background_dark_secondary</item>
+        <item name="colorOnSurface">@color/text_primary_dark</item>
+
+        <!-- Màu chữ -->
+        <item name="android:textColor">@color/text_primary_dark</item>
+
+        <!-- Thanh trạng thái -->
+        <item name="android:statusBarColor">@color/background_dark</item>
+        <item name="android:navigationBarColor">@color/background_dark</item>
+
+        <!-- Icon trên thanh trạng thái -->
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Không dùng màu nền sáng khi chuyển màn hình -->
+        <item name="android:windowBackground">@color/background_dark</item>
+
+    </style>
+
+    <!-- Theme mặc định toàn ứng dụng -->
     <style name="Theme.Fixnear"
         parent="Base.Theme.Fixnear" />
 
+    <!-- Theme màn hình Splash -->
     <style name="Theme.Fixnear.Starting"
         parent="Theme.SplashScreen">
 
-        <item name="windowSplashScreenBackground">#F7F8FC</item>
+        <item name="windowSplashScreenBackground">@color/background_dark</item>
 
-        <!-- Dùng logo chỉ có biểu tượng, không kèm chữ -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/logo_mark</item>>
+        <!-- Logo FixNear -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo_mark</item>
 
-        <item name="windowSplashScreenIconBackgroundColor">#F7F8FC</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/background_dark</item>
 
+        <!-- Theme chuyển tiếp sau Splash -->
         <item name="postSplashScreenTheme">@style/Theme.Fixnear</item>
 
     </style>

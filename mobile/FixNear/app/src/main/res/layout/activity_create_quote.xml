@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_dark"
+    android:fitsSystemWindows="true">
+
+    <!-- HEADER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="20dp">
+
+        <TextView
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="‹"
+            android:textSize="34sp"
+            android:textColor="@color/accent_gold"
+            android:background="@drawable/bg_register_input"
+            android:backgroundTint="@color/input_background"
+            android:contentDescription="Quay lại"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FIXNEAR"
+                android:textColor="@color/accent_gold"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tạo báo giá"
+                android:textColor="@color/text_primary_dark"
+                android:textSize="19sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TECHNICIAN"
+            android:textColor="@color/accent_gold"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_header_role"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="7dp" />
+    </LinearLayout>
+
+    <!-- SCROLLABLE CONTENT -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Chi phí sửa chữa"
+                android:textSize="23sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary_dark" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Chọn các hạng mục và lập báo giá cho khách hàng."
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary_dark" />
+
+            <!-- REQUEST INFORMATION -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:cardBackgroundColor="@color/card_cream"
+                app:cardCornerRadius="18dp"
+                app:strokeColor="@color/border_card"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="THÔNG TIN YÊU CẦU"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/accent_brown" />
+
+                    <TextView
+                        android:id="@+id/tvQuoteRepairRequestId"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Mã yêu cầu: Đang tải"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary_card" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="14dp"
+                        android:background="@color/border_card" />
+
+                    <TextView
+                        android:id="@+id/tvQuoteShopId"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Cửa hàng: Đang tải"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary_card" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ADD QUOTE ITEM -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="@color/card_cream"
+                app:cardCornerRadius="18dp"
+                app:strokeColor="@color/border_card"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="THÊM HẠNG MỤC"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/accent_brown" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Loại hạng mục"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary_card" />
+
+                    <Spinner
+                        android:id="@+id/spinnerQuoteItemType"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_register_input"
+                        android:backgroundTint="@color/input_background"
+                        android:paddingHorizontal="12dp"
+                        android:popupBackground="@color/card_cream"
+                        android:contentDescription="Chọn loại hạng mục báo giá" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Dịch vụ / hạng mục / linh kiện"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary_card" />
+
+                    <Spinner
+                        android:id="@+id/spinnerQuoteCatalog"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_register_input"
+                        android:backgroundTint="@color/input_background"
+                        android:paddingHorizontal="12dp"
+                        android:popupBackground="@color/card_cream"
+                        android:contentDescription="Chọn danh mục từ cửa hàng" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Số lượng"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary_card"
+                        android:labelFor="@id/edtQuoteQuantity" />
+
+                    <EditText
+                        android:id="@+id/edtQuoteQuantity"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_register_input"
+                        android:backgroundTint="@color/input_background"
+                        android:paddingHorizontal="14dp"
+                        android:hint="Nhập số lượng"
+                        android:inputType="numberDecimal"
+                        android:textSize="14sp"
+                        android:textColor="@color/input_text"
+                        android:textColorHint="@color/input_hint" />
+
+                    <Button
+                        android:id="@+id/btnAddQuoteItem"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Thêm vào báo giá"
+                        android:textAllCaps="false"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/button_primary_text"
+                        android:backgroundTint="@color/accent_gold"
+                        android:enabled="false" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- CATALOG LOADING -->
+            <LinearLayout
+                android:id="@+id/layoutQuoteCatalogLoading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="20dp"
+                android:visibility="gone">
+
+                <ProgressBar
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:indeterminateTint="@color/accent_gold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Đang tải danh mục..."
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary_dark" />
+            </LinearLayout>
+
+            <!-- CATALOG ERROR -->
+            <LinearLayout
+                android:id="@+id/layoutQuoteCatalogError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="18dp"
+                android:background="@drawable/bg_register_card"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvQuoteCatalogError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Không thể tải danh mục."
+                    android:textColor="@color/text_primary_card"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btnRetryQuoteCatalog"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="12dp"
+                    android:text="Thử lại"
+                    android:textAllCaps="false"
+                    android:textColor="@color/button_primary_text"
+                    android:backgroundTint="@color/accent_gold" />
+            </LinearLayout>
+
+            <!-- QUOTE DETAILS -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="@color/card_cream"
+                app:cardCornerRadius="18dp"
+                app:strokeColor="@color/border_card"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="CHI TIẾT BÁO GIÁ"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/accent_brown" />
+
+                    <TextView
+                        android:id="@+id/tvQuoteItemsEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:padding="20dp"
+                        android:gravity="center"
+                        android:text="Chưa có hạng mục báo giá"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary_card" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvQuoteDetails"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:nestedScrollingEnabled="false"
+                        android:clipToPadding="false"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- QUOTE TOTAL -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="@color/background_dark_tertiary"
+                app:cardCornerRadius="18dp"
+                app:strokeColor="@color/accent_gold"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="TỔNG CHI PHÍ DỰ KIẾN"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_secondary_dark" />
+
+                    <TextView
+                        android:id="@+id/tvQuoteTotal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="0 đ"
+                        android:textSize="30sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/accent_gold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Tổng tiền chính thức được Backend xác nhận khi tạo báo giá."
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary_dark" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- VALID UNTIL -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="@color/card_cream"
+                app:cardCornerRadius="18dp"
+                app:strokeColor="@color/border_card"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="THỜI HẠN BÁO GIÁ"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/accent_brown" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Ngày hết hạn"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary_card"
+                        android:labelFor="@id/edtQuoteValidUntil" />
+
+                    <EditText
+                        android:id="@+id/edtQuoteValidUntil"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="8dp"
+                        android:paddingHorizontal="14dp"
+                        android:background="@drawable/bg_register_input"
+                        android:backgroundTint="@color/input_background"
+                        android:hint="Chọn ngày hết hạn"
+                        android:textSize="14sp"
+                        android:textColor="@color/input_text"
+                        android:textColorHint="@color/input_hint"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:inputType="none" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- BOTTOM ACTIONS -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="16dp"
+        android:background="@color/background_dark_secondary">
+
+        <Button
+            android:id="@+id/btnSaveQuoteDraft"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_weight="1"
+            android:text="Lưu nháp"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textAllCaps="false"
+            android:textColor="@color/button_secondary_text"
+            android:backgroundTint="@color/button_secondary"
+            android:enabled="false" />
+
+        <Button
+            android:id="@+id/btnSubmitQuote"
+            android:visibility="gone"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="Gửi báo giá"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textAllCaps="false"
+            android:textColor="@color/button_primary_text"
+            android:backgroundTint="@color/accent_gold"
+            android:enabled="false" />
+
+    </LinearLayout>
+</LinearLayout>
