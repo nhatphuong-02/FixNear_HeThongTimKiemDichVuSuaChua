@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- ===================================== -->
-    <!-- FIXNEAR - CARD STYLES                -->
-    <!-- ===================================== -->
+    <!-- FIXNEAR - CARD STYLES -->
 
-    <!-- Card nội dung chung -->
     <style name="FixNearCard">
         <item name="cardBackgroundColor">@color/card_cream</item>
         <item name="cardCornerRadius">18dp</item>
@@ -14,45 +11,36 @@
         <item name="strokeWidth">1dp</item>
     </style>
 
-    <!-- Card thống kê -->
     <style name="FixNearStatCard" parent="FixNearCard">
         <item name="cardCornerRadius">16dp</item>
         <item name="cardElevation">2dp</item>
         <item name="strokeWidth">0dp</item>
     </style>
 
-    <!-- Card trạng thái trống / lỗi -->
     <style name="FixNearEmptyCard" parent="FixNearCard">
         <item name="cardCornerRadius">18dp</item>
         <item name="cardElevation">1dp</item>
     </style>
 
+    <!-- FIXNEAR - TEXT STYLES -->
 
-    <!-- ===================================== -->
-    <!-- FIXNEAR - TEXT STYLES               -->
-    <!-- ===================================== -->
-
-    <!-- Tiêu đề Section trên nền tối -->
     <style name="FixNearSectionTitle">
         <item name="android:textSize">18sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/text_primary_dark</item>
     </style>
 
-    <!-- Tiêu đề bên trong Card kem -->
     <style name="FixNearCardTitle">
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/text_primary_card</item>
     </style>
 
-    <!-- Nội dung mô tả bên trong Card -->
     <style name="FixNearCardSubtitle">
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/text_secondary_card</item>
     </style>
 
-    <!-- Trạng thái / thông báo trong Card -->
     <style name="FixNearEmptyTitle">
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">bold</item>
@@ -64,40 +52,28 @@
         <item name="android:textColor">@color/text_secondary_card</item>
     </style>
 
+    <!-- FIXNEAR - BUTTON STYLES -->
 
-    <!-- ===================================== -->
-    <!-- FIXNEAR - BUTTON STYLES             -->
-    <!-- ===================================== -->
-
-    <!-- Nội dung chữ nút chính -->
     <style name="FixNearButtonText">
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/text_primary_card</item>
     </style>
 
+    <!-- FIXNEAR - STAT STYLES -->
 
-    <!-- ===================================== -->
-    <!-- FIXNEAR - STAT STYLES               -->
-    <!-- ===================================== -->
-
-    <!-- Tên trạng thái -->
     <style name="FixNearStatLabel">
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">@color/text_secondary_card</item>
     </style>
 
-    <!-- Số liệu thống kê -->
     <style name="FixNearStatValue">
         <item name="android:textSize">24sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/text_primary_card</item>
     </style>
 
-
-    <!-- ===================================== -->
-    <!-- FIXNEAR - BOTTOM NAVIGATION          -->
-    <!-- ===================================== -->
+    <!-- FIXNEAR - BOTTOM NAVIGATION -->
 
     <style name="HomeNavItem">
         <item name="android:layout_width">0dp</item>
@@ -108,7 +84,6 @@
         <item name="android:focusable">true</item>
     </style>
 
-    <!-- Icon Navigation -->
     <style name="HomeNavIcon">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -116,12 +91,25 @@
         <item name="android:textColor">@color/text_secondary_dark</item>
     </style>
 
-    <!-- Label Navigation -->
     <style name="HomeNavLabel">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">11sp</item>
         <item name="android:textColor">@color/text_secondary_dark</item>
+    </style>
+
+    <!-- MANAGER - REPAIR FILTER -->
+
+    <style name="ManagerRepairFilter">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_marginEnd">10dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:background">@drawable/fixnear_role_card</item>
+        <item name="android:textColor">#C7B9AF</item>
+        <item name="android:textSize">13sp</item>
     </style>
 
 </resources>

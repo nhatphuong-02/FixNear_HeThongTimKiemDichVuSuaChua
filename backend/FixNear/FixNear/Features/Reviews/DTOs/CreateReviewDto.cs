@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace FixNear.Features.Reviews.DTOs
 {
@@ -7,6 +7,10 @@ namespace FixNear.Features.Reviews.DTOs
         [Range(1, int.MaxValue,
             ErrorMessage = "Mã yêu cầu sửa chữa không hợp lệ")]
         public int RepairRequestId { get; set; }
+
+        // 1: Shop, 2: Technician; mac dinh 1 de tuong thich Mobile cu.
+        [Range(1, 2)]
+        public int ReviewType { get; set; } = 1;
 
         [Range(1, 5,
             ErrorMessage = "Số sao đánh giá phải từ 1 đến 5")]

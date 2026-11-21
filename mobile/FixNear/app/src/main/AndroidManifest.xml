@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:name=".FixNearApp"
@@ -16,73 +18,155 @@
         android:theme="@style/Theme.Fixnear"
         android:usesCleartextTraffic="true">
 
-        <!-- UI01 - Danh sach cong viec -->
-        <activity
-            android:name=".ui.assignment.AssignmentActivity"
-            android:exported="false" />
-
-        <!-- UI02 - Chi tiet cong viec va khao sat -->
-        <activity
-            android:name=".ui.assignment.AssignmentDetailActivity"
-            android:exported="false" />
-
-        <!-- UI03 - Tao bao gia -->
-        <activity
-            android:name=".ui.quote.CreateQuoteActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".ui.quote.QuoteDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.repair.RepairProgressActivity"
-            android:exported="false" />
-        <!-- Splash -->
+        <!-- SPLASH -->
         <activity
             android:name=".ui.splash.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.Fixnear.Starting">
 
             <intent-filter>
-                <action
-                    android:name="android.intent.action.MAIN" />
-
-                <category
-                    android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
 
-        <!-- Home -->
-        <activity
-            android:name=".ui.home.HomeActivity"
-            android:exported="false" />
-
-        <!-- Login -->
+        <!-- AUTH -->
         <activity
             android:name=".ui.auth.LoginActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Register -->
         <activity
             android:name=".ui.auth.RegisterActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Profile -->
+        <activity
+            android:name=".ui.auth.ChooseRegisterRoleActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.auth.RoleRegisterActivity"
+            android:exported="false" />
+
+        <!-- HOME -->
+        <activity
+            android:name=".ui.home.HomeActivity"
+            android:exported="false" />
+
         <activity
             android:name=".ui.profile.ProfileActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Choose Register Role -->
+        <!-- TECHNICIAN UI01 - DANH SACH CONG VIEC -->
         <activity
-            android:name=".ui.auth.ChooseRegisterRoleActivity"
+            android:name=".ui.assignment.AssignmentActivity"
             android:exported="false" />
 
-        <!-- Role Register -->
+        <!-- TECHNICIAN UI02 - CHI TIET VA KHAO SAT -->
         <activity
-            android:name=".ui.auth.RoleRegisterActivity"
+            android:name=".ui.assignment.AssignmentDetailActivity"
+            android:exported="false" />
+
+        <!-- TECHNICIAN UI03 - TAO BAO GIA -->
+        <activity
+            android:name=".ui.quote.CreateQuoteActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- TECHNICIAN UI04 - CHI TIET BAO GIA -->
+        <activity
+            android:name=".ui.quote.QuoteDetailActivity"
+            android:exported="false" />
+
+        <!-- TECHNICIAN UI05 - TIEN DO SUA CHUA -->
+        <activity
+            android:name=".ui.repair.RepairProgressActivity"
+            android:exported="false" />
+
+        <!-- CUSTOMER -->
+        <activity
+            android:name=".ui.home.CustomerRepairRequestsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerRepairDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerUpcomingSchedulesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CreateRepairRequestActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.ShopDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.ShopReviewsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.NearbyShopsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerCatalogActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerQuoteDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerQuotesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerConversationsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerChatActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.home.CustomerNotificationsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerBillingActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.CustomerReviewActivity"
+            android:exported="false" />
+
+        <!-- MANAGER -->
+        <activity
+            android:name=".ui.manager.ManagerHomeActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.manager.ShopProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.manager.ShopMembersActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.manager.ShopServicesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.manager.ManagerRepairRequestsActivity"
             android:exported="false" />
 
     </application>

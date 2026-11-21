@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/fixnear_customer_cream"
+    android:orientation="vertical"
+    android:padding="17dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Địa chỉ giao dịch"
+            android:textColor="#251A14"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvDefault"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mặc định"
+            android:textColor="#A5652B"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Địa chỉ"
+        android:textColor="#66442F"
+        android:textSize="14sp"/>
+
+    <TextView
+        android:id="@+id/tvRecipient"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Người nhận • Số điện thoại"
+        android:textColor="#8B7160"
+        android:textSize="13sp"/>
+
+    <TextView
+        android:id="@+id/tvLocked"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Địa chỉ đã khóa"
+        android:textColor="#A5652B"
+        android:textSize="12sp"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <TextView
+            android:id="@+id/btnEditAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:gravity="center"
+            android:text="Chỉnh sửa"
+            android:textColor="#66442F"
+            android:textSize="13sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/btnSetDefault"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:gravity="center"
+            android:text="Đặt mặc định"
+            android:textColor="#A5652B"
+            android:textSize="13sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+</LinearLayout>

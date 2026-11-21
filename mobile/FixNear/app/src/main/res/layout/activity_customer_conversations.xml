@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#151210" android:orientation="vertical" android:fitsSystemWindows="true" android:padding="18dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="52dp" android:orientation="horizontal" android:gravity="center_vertical">
+        <TextView android:id="@+id/btnBack" android:layout_width="48dp" android:layout_height="48dp" android:text="‹" android:textSize="32sp" android:gravity="center" android:textColor="#FFF4EA"/>
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Tin nhắn của tôi" android:textSize="20sp" android:textStyle="bold" android:textColor="#D8975B"/>
+        <TextView android:id="@+id/btnRefresh" android:layout_width="48dp" android:layout_height="48dp" android:text="↻" android:gravity="center" android:textSize="27sp" android:textColor="#FFF4EA"/>
+    </LinearLayout>
+    <ProgressBar android:id="@+id/progress" android:layout_width="match_parent" android:layout_height="3dp" android:indeterminateTint="#D8975B" android:visibility="gone"/>
+    <TextView android:id="@+id/tvState" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginVertical="14dp" android:text="Đang tải hội thoại..." android:textColor="#C7B9AF" android:textSize="13sp"/>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true">
+        <LinearLayout android:id="@+id/container" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingBottom="12dp"/>
+    </ScrollView>
+    <Button android:id="@+id/btnLoadMore" android:layout_width="match_parent" android:layout_height="48dp" android:text="Xem thêm hội thoại" android:textAllCaps="false" android:textColor="#FFF4EA" android:backgroundTint="#5C4030" android:visibility="gone"/>
+</LinearLayout>

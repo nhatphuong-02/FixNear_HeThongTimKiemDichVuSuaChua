@@ -1,4 +1,4 @@
-﻿using FixNear.Domain.Enums;
+using FixNear.Domain.Enums;
 using FixNear.Domain.Models.Billing;
 using FixNear.Domain.Models.Customers;
 using FixNear.Domain.Models.Identity;
@@ -1404,9 +1404,12 @@ public partial class FixNearDbContext : DbContext
                 .HasFilter("([TechnicianId] IS NOT NULL)");
 
             entity.HasIndex(
-                e => e.RepairRequestId,
-                "UX_Review_Request")
+                e => new { e.RepairRequestId, e.ReviewType },
+                "UX_Review_Request_Type")
                 .IsUnique();
+
+            entity.Property(e => e.ReviewType)
+                .HasDefaultValue(1, "DF_Review_ReviewType");
 
             entity.Property(e => e.Comment)
                 .HasMaxLength(2000);
@@ -1426,10 +1429,10 @@ public partial class FixNearDbContext : DbContext
                 .HasConstraintName("FK_Review_Customer");
 
             entity.HasOne(d => d.RepairRequest)
-                .WithOne(p => p.ReviewRepairRequest)
-                .HasForeignKey<Review>(d => d.RepairRequestId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Review_Request");
+                 .WithMany()
+                 .HasForeignKey(d => d.RepairRequestId)
+                 .OnDelete(DeleteBehavior.ClientSetNull)
+                 .HasConstraintName("FK_Review_Request");
 
             entity.HasOne(d => d.Shop)
                 .WithMany(p => p.Review)
@@ -1785,7 +1788,8 @@ public partial class FixNearDbContext : DbContext
         // ============================================================
         modelBuilder.Entity<ShopRepairItem>(entity =>
         {
-            entity.ToTable("ShopRepairItem");
+            entity.ToTable("ShopRepairItem",
+                tb => tb.HasTrigger("trg_ShopRepairItem_SetUpdatedAt"));
 
             entity.HasKey(e => e.ShopRepairItemId);
 
@@ -1825,7 +1829,8 @@ public partial class FixNearDbContext : DbContext
 
         modelBuilder.Entity<ShopRepairPart>(entity =>
         {
-            entity.ToTable("ShopRepairPart");
+            entity.ToTable("ShopRepairPart",
+                tb => tb.HasTrigger("trg_ShopRepairPart_SetUpdatedAt"));
 
             entity.HasKey(e => e.ShopRepairPartId);
 

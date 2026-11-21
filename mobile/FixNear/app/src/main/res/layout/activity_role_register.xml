@@ -220,11 +220,49 @@
                     android:textColorHint="#B5A59B"
                     android:textSize="14sp"/>
 
+                <!-- TỈNH / THÀNH PHỐ -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Tỉnh / Thành phố"
+                    android:textColor="#66442F"
+                    android:textStyle="bold"
+                    android:textSize="13sp"/>
+
+                <Spinner
+                    android:id="@+id/spShopProvince"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="7dp"
+                    android:background="@drawable/fixnear_auth_input"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp"/>
+
+                <!-- PHƯỜNG / XÃ -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Phường / Xã"
+                    android:textColor="#66442F"
+                    android:textStyle="bold"
+                    android:textSize="13sp"/>
+
+                <Spinner
+                    android:id="@+id/spShopWard"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="7dp"
+                    android:background="@drawable/fixnear_auth_input"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp"/>
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
-                    android:text="Địa chỉ cửa hàng"
+                    android:text="Địa chỉ chi tiết"
                     android:textColor="#66442F"
                     android:textStyle="bold"
                     android:textSize="13sp"/>
